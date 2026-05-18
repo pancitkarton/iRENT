@@ -24,4 +24,4 @@ The system does not manage online payments, repair services, warranty claims, or
 
 # ERD
 
-![erd.png](https://imgur.com/a/96u6wN5)
+<img width="428" height="327" alt="erd" src="https://github.com/user-attachments/assets/f1008e8d-c8a4-48f9-a9f0-3909d4df5967" />
