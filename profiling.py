@@ -24,12 +24,14 @@ def login():
     print("Invalid username or password.")
 
 while True:
-  choice = input("\n1. Sign Up\n2. Login\n3. Exit\n Choose an option: ")
+  choice = input("\n1. Sign Up\n2. Login\n3. Show all users\n4. Exit\n Choose an option: ")
   if choice == "1":
     signup()
   elif choice == "2":
     login()
   elif choice == "3":
+    print(users)
+  elif choice == "4":
     break
   else:
     print("Invalid choice.")
