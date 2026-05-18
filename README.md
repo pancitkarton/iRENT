@@ -14,7 +14,7 @@ Authorized staff will be able to add new devices, update device information, rem
 
 The system does not manage online payments, repair services, warranty claims, or multi-branch inventory. Its primary purpose is to maintain accurate rental records and monitor device availability. It may include maintenance tracking, reminders for overdue returns, and warranty management for rented devices in future enhancements.
 
-# Sample Queries
+## Sample Queries
 
 > 1. Find all devices currently available for rental within a given date range
 > 2. Show all rental transactions for a specific customer
@@ -22,6 +22,6 @@ The system does not manage online payments, repair services, warranty claims, or
 > 4. Display all overdue rentals and the customers responsible
 > 5. Calculate total revenue generated per device type over a specific period
 
-# ERD
+## ERD
 
 <img width="428" height="327" alt="erd" src="https://github.com/user-attachments/assets/f1008e8d-c8a4-48f9-a9f0-3909d4df5967" />
