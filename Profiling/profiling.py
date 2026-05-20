@@ -1,44 +1,4 @@
-# Task 1 - Profiling logic
-users = {}
-
-def signup():
-  username = input("Create a username: ")
-  if username in users:
-    print("Username already exists!")
-  else:
-    password = input("Create a password: ")
-    users[username] = password       #username must match with password, and vice versa
-    confirmpassword = input("Confirm password: ")
-    if confirmpassword == password:
-      print("Sign-up successful!")
-    else:
-      print("Wrong password!")
-
-def login():
-  username = input("Enter username: ")
-  password = input("Enter password: ")
-
-  if username in users and users[username] == password:
-    print("Login successful! Welcome back.")
-
-  else:
-    print("Invalid username or password.")
-
-while True:
-  choice = input("\n1. Sign Up\n2. Login\n3. Show all users\n4. Exit\n Choose an option: ")
-  if choice == "1":
-    signup()
-  elif choice == "2":
-    login()
-  elif choice == "3":
-    print(users)
-  elif choice == "4":
-    break
-  else:
-    print("Invalid choice.")
-
-
-# Task 1.1 - Profiling database
+# Task 1.1 - Profiling Logic with Database
 import sqlite3
 
 users = {}  #call this function in order to create a database and a table for login credentials
@@ -55,6 +15,7 @@ CREATE TABLE IF NOT EXISTS Login (
 ''')
 conn.commit()
 
+#Start - Merged code from Garcia and Piamonte
 def signup():
   username = input("Create Username: ")
   if username in users:
@@ -82,13 +43,15 @@ def login():
     print("Login successful. Welcome!")
   else:
     print("Invalid username or password. Try Again!")
+#End - Merged code from Garcia and Piamonte
 
 def show_users():
-  cursor.execute("SELECT Username FROM Login")
+  cursor.execute("SELECT Username, Password FROM Login")
   users = cursor.fetchall()
+  
   print("Registered Users:")
   for user in users:
-    print(user[0]) #displays only stored username and password 
+    print("Username:", user[0], "| Password:", user[1]) #displays only stored username, and password 
 
 while True:
   choice = input("""
@@ -114,4 +77,4 @@ Choose an option: """)
 conn.close() 
 
 
-# Task 1.2 - Profiling tkinter
+# Task 1.1 - Profiling Logic with Tkinter
