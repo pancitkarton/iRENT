@@ -17,7 +17,7 @@ conn.commit()
 
 #Start - Merged code from Garcia and Piamonte
 def signup():
-  username = input("Create Username: ")
+  username = input("\nCreate Username: ")
   if username in users:
     print("Username already exists!")
   else:
@@ -31,9 +31,9 @@ def signup():
       print("Sign-up successful!")
     else:
       print("Invalid password. Try Again!")
-      
+
 def login():
-  username = input("Enter Username: ")
+  username = input("\nEnter Username: ")
   password = input("Enter Password: ")
 
   cursor.execute("SELECT * FROM Login WHERE Username = ? AND Password = ?", (username, password))
@@ -48,10 +48,10 @@ def login():
 def show_users():
   cursor.execute("SELECT Username, Password FROM Login")
   users = cursor.fetchall()
-  
-  print("Registered Users:")
+
+  print("\nRegistered Users:")
   for user in users:
-    print("Username:", user[0], "| Password:", user[1]) #displays only stored username, and password 
+    print("Username:", user[0], "| Password:", user[1]) #displays only stored username, and password
 
 while True:
   choice = input("""
@@ -59,9 +59,8 @@ while True:
 2. Login
 3. Show all users
 4. Exit
-
 Choose an option: """)
-  
+
   if choice == "1":
     signup()
   elif choice == "2":
@@ -74,7 +73,7 @@ Choose an option: """)
   else:
     print("Invalid choice. Try Again!")
 
-conn.close() 
+conn.close()
 
 
 # Task 1.1 - Profiling Logic with Tkinter
