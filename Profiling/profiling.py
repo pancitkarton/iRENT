@@ -3,7 +3,7 @@ import sqlite3
 
 users = {}  #call this function in order to create a database and a table for login credentials
 
-conn = sqlite3.connect("iRENT.db")
+conn = sqlite3.connect("Profiling/iRENT.db")
 cursor = conn.cursor()
 
 cursor.execute('''
