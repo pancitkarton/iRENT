@@ -1,4 +1,4 @@
-# Task 1.1 - Profiling Logic with Database
+# Database for Profiling 
 import sqlite3
 
 users = {}  #call this function in order to create a database and a table for login credentials
@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS Login (
 ''')
 conn.commit()
 
-#Start - Merged code from Garcia and Piamonte
+
 def signup():
   username = input("Create Username: ")
   if username in users:
@@ -43,7 +43,6 @@ def login():
     print("Login successful. Welcome!")
   else:
     print("Invalid username or password. Try Again!")
-#End - Merged code from Garcia and Piamonte
 
 def show_users():
   cursor.execute("SELECT Username, Password FROM Login")
@@ -58,7 +57,6 @@ while True:
 1. Sign Up
 2. Login
 3. Show all users
-
 4. Exit
 
 Choose an option: """)
@@ -75,7 +73,4 @@ Choose an option: """)
   else:
     print("Invalid choice. Try Again!")
 
-conn.close() 
-
-# Task 1.1 - Profiling Logic with Tkinter (Frianeza, Quitollo)
-# add here
+conn.close()
