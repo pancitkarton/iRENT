@@ -6,71 +6,128 @@ users = {}  #call this function in order to create a database and a table for lo
 conn = sqlite3.connect("iRENT.db")
 cursor = conn.cursor()
 
-cursor.execute('''
-CREATE TABLE IF NOT EXISTS Login (
-    Login_Id INTEGER PRIMARY KEY AUTOINCREMENT,
-    Username TEXT(20) NOT NULL UNIQUE,
-    Password TEXT(20) NOT NULL
+# Create table; VARCHAR is used for no maximum length of characters
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS Users (
+        UserID INTEGER PRIMARY KEY AUTOINCREMENT,
+        Username VARCHAR NOT NULL UNIQUE,
+        Password VARCHAR NOT NULL,
+        FirstName VARCHAR NOT NULL,
+        LastName VARCHAR NOT NULL,
+        HomeAddress VARCHAR NOT NULL,
+        ContactNumber VARCHAR NOT NULL UNIQUE
 )
-''')
+""")
 conn.commit()
 
 
 def signup():
-  username = input("Create Username: ")
-  if username in users:
-    print("Username already exists!")
-  else:
-    password = input("Create Password: ")
-    users[username] = password
-    confirmpassword = input("Confirm Password: ")
+    first_name = input("Enter First Name: ")
+    last_name = input("Enter Last Name: ")
+    contact_no = input("Enter Contact Number: ")
+    home_ad = input("Enter Home Address: ")
 
-    if confirmpassword == password:
-      cursor.execute("INSERT INTO Login (Username, Password) VALUES (?, ?)", (username, password)) #stores the username and password into the database
-      conn.commit()
-      print("Sign-up successful!")
+    username = input("Create Username: ")
+
+    # Check if username already exists in database
+    cursor.execute("SELECT * FROM Users WHERE Username = ?", (username,))
+    existing_user = cursor.fetchone()
+
+    if existing_user:
+        print("Username already exists!")
+
     else:
-      print("Invalid password. Try Again!")
+        password = input("Create Password: ")
+        confirm_password = input("Confirm Password: ")
+
+        if confirm_password == password:
+
+            # Insert user into database
+            cursor.execute("""
+            INSERT INTO Users
+            (Username, Password, FirstName, LastName, HomeAddress, ContactNumber)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """, (
+                username,
+                password,
+                first_name,
+                last_name,
+                contact_no,
+                home_ad
+            ))
+
+            conn.commit()
+            print("Sign-up successful!")
+
+        else:
+            print("Passwords do not match. Try Again!")
+
 
 def login():
-  username = input("Enter Username: ")
-  password = input("Enter Password: ")
+    username = input("Enter Username: ")
+    password = input("Enter Password: ")
 
-  cursor.execute("SELECT * FROM Login WHERE Username = ? AND Password = ?", (username, password))
-  result = cursor.fetchone() #retrieves the username and password from the database, and checks if they match with the input
+    cursor.execute("""
+    SELECT * FROM Users
+    WHERE Username = ? AND Password = ?
+    """, (username, password))
 
-  if result:
-    print("Login successful. Welcome!")
-  else:
-    print("Invalid username or password. Try Again!")
+    result = cursor.fetchone()
+
+    # Check if username and password match
+    if result:
+        print("Login successful. Welcome!")
+    else:
+        print("Invalid username or password. Try Again!")
+
 
 def show_users():
-  cursor.execute("SELECT Username, Password FROM Login")
-  users = cursor.fetchall()
+    cursor.execute("""
+    SELECT Username, Password, FirstName, LastName,
+           ContactNumber, HomeAddress
+    FROM Users
+    """)
 
-  print("Registered Users:")
-  for user in users:
-    print("Username:", user[0], "| Password:", user[1]) #displays only stored username, and password
+    users = cursor.fetchall()
 
+    print("\nRegistered Users:")
+
+    for user in users:
+        print("-----------------------------------")
+        print("First Name:", user[2])
+        print("Last Name:", user[3])
+        print("Contact No:", user[4])
+        print("Home Address:", user[5])
+        print("Username:", user[0])
+        print("Password:", user[1])
+
+
+# Main Menu
 while True:
-  choice = input("""
+
+    choice = input("""
 1. Sign Up
 2. Login
-3. Show all users
+3. Show All Users
 4. Exit
 
 Choose an option: """)
 
-  if choice == "1":
-    signup()
-  elif choice == "2":
-    login()
-  elif choice == "3":
-    show_users()
-  elif choice == "4":
-    break
+    if choice == "1":
+        signup()
 
-  else:
-    print("Invalid choice. Try Again!")
+    elif choice == "2":
+        login()
 
+    elif choice == "3":
+        show_users()
+
+    elif choice == "4":
+        print("Program Closed.")
+        break
+
+    else:
+        print("Invalid choice. Try Again!")
+
+# Close database connection
 conn.close()
