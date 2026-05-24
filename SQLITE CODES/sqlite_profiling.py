@@ -130,4 +130,4 @@ Choose an option: """)
         print("Invalid choice. Try Again!")
 
 # Close database connection
-conn.close()
+conn.close() 
