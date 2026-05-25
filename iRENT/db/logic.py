@@ -10,25 +10,28 @@ conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 
 cursor.execute("""
-CREATE TABLE IF NOT EXISTS Users (
-        UserID INTEGER PRIMARY KEY AUTOINCREMENT,
-        Username VARCHAR NOT NULL UNIQUE,
-        Password VARCHAR NOT NULL,
+CREATE TABLE IF NOT EXISTS Staff (
+        StaffID INTEGER PRIMARY KEY AUTOINCREMENT,
         FirstName VARCHAR NOT NULL,
+        MiddleName VARCHAR NULL,
         LastName VARCHAR NOT NULL,
-        HomeAddress VARCHAR NOT NULL,
-        ContactNumber VARCHAR NOT NULL UNIQUE
+        Suffix VARCHAR NULL,
+        ContactNo VARCHAR NOT NULL UNIQUE,
+        EmailAdd VARCHAR NOT NULL UNIQUE,
+        StaffRole VARCHAR NOT NULL,
+        Username VARCHAR NOT NULL UNIQUE,
+        Password VARCHAR NOT NULL
 )
 """)
 conn.commit()
 
 
-#LOG-IN FUNCTION
+#Log-in function
 def login(username, password):
         if not username or not password:
             return "empty"
         
-        cursor.execute("SELECT * FROM Users WHERE Username = ? AND Password = ?", (username, password))
+        cursor.execute("SELECT * FROM Staff WHERE Username = ? AND Password = ?", (username, password))
         result = cursor.fetchone() #retrieves the username and password from the database, and checks if they match with the input
 
         if result:
@@ -37,9 +40,8 @@ def login(username, password):
              return "fail"
 
 
-
-#SIGN-UP FUNCTION
-def signup(username,password,confirm,first_name,last_name,home_address,contact_number):
+#Sign-up function
+def signup(first_name, middle_name, last_name, suffix, contact_no, email_add, staff_role, username, password):
 
     if not username or not password:
         return "empty"
@@ -47,7 +49,6 @@ def signup(username,password,confirm,first_name,last_name,home_address,contact_n
     # Check if password matches
     if password != confirm:
          return "mismatch"
-    
 
     # Check if username exists
     cursor.execute(
@@ -57,11 +58,52 @@ def signup(username,password,confirm,first_name,last_name,home_address,contact_n
     if cursor.fetchone():
         return "exists"
 
-    #Inserts user into database
+    # Check if contact number already exists
     cursor.execute(
-        "INSERT INTO Users (Username, Password, FirstName, LastName, HomeAddress, ContactNumber) VALUES (?, ?, ?, ?, ?, ?)",
-        (username, password, first_name, last_name, home_address, contact_number)
+        "SELECT * FROM Users WHERE ContactNumber = ?",
+        (contact_no,)
     )
+    if cursor.fetchone():
+        return "contact_exists"
+
+    # Check if email already exists
+    cursor.execute(
+        "SELECT * FROM Users WHERE EmailAdd = ?",
+        (email_add,)
+    )
+    if cursor.fetchone():
+        return "email_exists"
+
+
+# Inserts user into database
+    cursor.execute("""
+        INSERT INTO Users
+        (
+            FirstName,
+            MiddleName,
+            LastName,
+            Suffix,
+            ContactNo,
+            EmailAdd,
+            StaffRole,
+            Username,
+            Password
+        )
+
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """,
+    (
+        first_name, 
+        middle_name, 
+        last_name, 
+        suffix, 
+        contact_no, 
+        email_add, 
+        staff_role, 
+        username, 
+        password
+    ))
+
     conn.commit()
 
     return "success"
