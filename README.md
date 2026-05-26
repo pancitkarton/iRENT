@@ -25,3 +25,8 @@ The system does not manage online payments, repair services, warranty claims, or
 ## ERD
 
 https://drive.google.com/file/d/1HpiIY3K7n26zIdcJEohIvlb7cMSDMl0L/view?usp=sharing
+
+
+## RELATIONAL DATABASE
+
+https://drive.google.com/file/d/1D7aZLVfBPcahX4_sa_Qfdi-SRJ1VVPQ0/view?usp=sharing
