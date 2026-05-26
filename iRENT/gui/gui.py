@@ -51,7 +51,6 @@ class iRENT:
 
         logo_label.image = logo
         logo_label.pack(expand=True)
-    
 
 
     #LOG-IN SECTION (RIGHT SIDE)
@@ -228,7 +227,7 @@ class iRENT:
             highlightthickness=2
         )
         create_username.pack(fill="x", pady=(0, 15), ipady=8)
-        
+
         # Password
         tk.Label(
             form_frame, 
@@ -276,16 +275,121 @@ class iRENT:
         )
         confirm_password.pack(fill="x", pady=(0, 20), ipady=8)
 
+        # Name frame para sa first and last name
+        name_frame = tk.Frame(form_frame, bg="#313338")
+        name_frame.pack(fill="x", pady=(0, 15))
+
+        #First Name
+        tk.Label(
+            name_frame,
+            text="First Name",
+            font=("Arial", 10, "bold"),
+            bg="#313338",
+            fg="#FFFFFF",
+            anchor="w"
+        ).grid(row=0, column=0, sticky="w", padx=(0, 10))
+
+        create_firstname = tk.Entry(
+            name_frame,
+            font=("Arial", 12),
+            bg="#313338",
+            fg="#FFFFFF",
+            relief="solid",
+            bd=0,
+            highlightbackground="#ffd735",
+            highlightcolor="#ffd735",
+            highlightthickness=2
+        )
+
+        create_firstname.grid(row=1, column=0, padx=(0, 10), ipady=8)
+
+        # Last Name
+        tk.Label(
+            name_frame,
+            text="Last Name",
+            font=("Arial", 10, "bold"),
+            bg="#313338",
+            fg="#FFFFFF",
+            anchor="w"
+        ).grid(row=0, column=1, sticky="w")
+
+        create_lastname = tk.Entry(
+            name_frame,
+            font=("Arial", 12),
+            bg="#313338",
+            fg="#FFFFFF",
+            relief="solid",
+            bd=0,
+            highlightbackground="#ffd735",
+            highlightcolor="#ffd735",
+            highlightthickness=2
+        )
+
+        create_lastname.grid(row=1, column=1, ipady=8)
+
+
+         # Email
+        tk.Label(
+            form_frame, 
+            text="Email Address", 
+            font=("Arial", 10, "bold"),
+            bg="#313338",
+            fg="#FFFFFF",
+            anchor="w"
+        ).pack(fill="x", pady=(0, 5))
+        
+        create_email = tk.Entry(
+            form_frame,
+            font=("Arial", 12),
+            bg="#313338",
+            fg="#FFFFFF",
+            relief="solid",
+            bd=0,
+            highlightbackground="#ffd735",
+            highlightcolor="#ffd735",
+            highlightthickness=2
+        )
+        create_email.pack(fill="x", pady=(0, 15), ipady=8)
+
+         # Contact Number
+        tk.Label(
+            form_frame, 
+            text="Contact Number", 
+            font=("Arial", 10, "bold"),
+            bg="#313338",
+            fg="#FFFFFF",
+            anchor="w"
+        ).pack(fill="x", pady=(0, 5))
+        
+        create_contact = tk.Entry(
+            form_frame,
+            font=("Arial", 12),
+            bg="#313338",
+            fg="#FFFFFF",
+            relief="solid",
+            bd=0,
+            highlightbackground="#ffd735",
+            highlightcolor="#ffd735",
+            highlightthickness=2
+        )
+        create_contact.pack(fill="x", pady=(0, 15), ipady=8)
+
         
 
 
         # SIGN-UP FUNCTION
         def signup():
             result = logic.signup(
-                create_username.get(),
-                create_password.get(),
-                confirm_password.get()
-        )
+                create_firstname.get(),     # first_name
+                "",                         # middle_name
+                create_lastname.get(),      # last_name
+                create_contact.get(),       # contact_no
+                create_email.get(),         # email_add
+                "Staff",                    # staff_role
+                create_username.get(),      # username
+                create_password.get(),      # password
+                confirm_password.get(),      # confirm
+            )
 
             if result == "empty":
                 messagebox.showwarning(
@@ -298,6 +402,20 @@ class iRENT:
                 messagebox.showerror(
                     "Error",
                     "Username already exists! Please try again."
+                )
+            
+            # Check if contact exists
+            elif result == "contact_exists":
+                messagebox.showerror(
+                    "Error",
+                    "Contact number already exists."
+                )
+
+            # Check if email exists
+            elif result == "email_exists":
+                messagebox.showerror(
+                    "Error",
+                    "Email already exists."
                 )
 
             # Check password match

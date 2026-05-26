@@ -6,21 +6,20 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 db_path = os.path.join(BASE_DIR, "iRENT.db")
 
-conn = sqlite3.connect(db_path)
-cursor = conn.cursor()
+with sqlite3.connect(db_path) as conn:
+    cursor = conn.cursor()
 
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS Staff (
-        StaffID INTEGER PRIMARY KEY AUTOINCREMENT,
-        FirstName VARCHAR NOT NULL,
-        MiddleName VARCHAR NULL,
-        LastName VARCHAR NOT NULL,
-        Suffix VARCHAR NULL,
-        ContactNo VARCHAR NOT NULL UNIQUE,
-        EmailAdd VARCHAR NOT NULL UNIQUE,
-        StaffRole VARCHAR NOT NULL,
-        Username VARCHAR NOT NULL UNIQUE,
-        Password VARCHAR NOT NULL
+    StaffID INTEGER PRIMARY KEY AUTOINCREMENT,
+    FirstName TEXT NOT NULL,
+    MiddleName TEXT,
+    LastName TEXT NOT NULL,
+    ContactNo TEXT NOT NULL UNIQUE,
+    EmailAdd TEXT NOT NULL UNIQUE,
+    StaffRole TEXT NOT NULL,
+    Username TEXT NOT NULL UNIQUE,
+    Password TEXT NOT NULL
 )
 """)
 conn.commit()
@@ -41,7 +40,7 @@ def login(username, password):
 
 
 #Sign-up function
-def signup(first_name, middle_name, last_name, suffix, contact_no, email_add, staff_role, username, password):
+def signup(first_name, middle_name, last_name, contact_no, email_add, staff_role, username, password, confirm):
 
     if not username or not password:
         return "empty"
@@ -52,7 +51,7 @@ def signup(first_name, middle_name, last_name, suffix, contact_no, email_add, st
 
     # Check if username exists
     cursor.execute(
-        "SELECT * FROM Users WHERE Username = ?",
+        "SELECT * FROM Staff WHERE Username = ?",
         (username,)
     )
     if cursor.fetchone():
@@ -60,7 +59,7 @@ def signup(first_name, middle_name, last_name, suffix, contact_no, email_add, st
 
     # Check if contact number already exists
     cursor.execute(
-        "SELECT * FROM Users WHERE ContactNumber = ?",
+        "SELECT * FROM Staff WHERE ContactNo = ?",
         (contact_no,)
     )
     if cursor.fetchone():
@@ -68,7 +67,7 @@ def signup(first_name, middle_name, last_name, suffix, contact_no, email_add, st
 
     # Check if email already exists
     cursor.execute(
-        "SELECT * FROM Users WHERE EmailAdd = ?",
+        "SELECT * FROM Staff WHERE EmailAdd = ?",
         (email_add,)
     )
     if cursor.fetchone():
@@ -77,12 +76,11 @@ def signup(first_name, middle_name, last_name, suffix, contact_no, email_add, st
 
 # Inserts user into database
     cursor.execute("""
-        INSERT INTO Users
+        INSERT INTO Staff
         (
             FirstName,
             MiddleName,
             LastName,
-            Suffix,
             ContactNo,
             EmailAdd,
             StaffRole,
@@ -90,13 +88,12 @@ def signup(first_name, middle_name, last_name, suffix, contact_no, email_add, st
             Password
         )
 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     """,
     (
         first_name, 
         middle_name, 
         last_name, 
-        suffix, 
         contact_no, 
         email_add, 
         staff_role, 
