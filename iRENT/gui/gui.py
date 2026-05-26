@@ -51,7 +51,6 @@ class iRENT:
 
         logo_label.image = logo
         logo_label.pack(expand=True)
-    
 
 
     #LOG-IN SECTION (RIGHT SIDE)
@@ -381,10 +380,16 @@ class iRENT:
         # SIGN-UP FUNCTION
         def signup():
             result = logic.signup(
-                create_username.get(),
-                create_password.get(),
-                confirm_password.get()
-        )
+                create_firstname.get(),     # first_name
+                "",                         # middle_name
+                create_lastname.get(),      # last_name
+                create_contact.get(),       # contact_no
+                create_email.get(),         # email_add
+                "Staff",                    # staff_role
+                create_username.get(),      # username
+                create_password.get(),      # password
+                confirm_password.get(),      # confirm
+            )
 
             if result == "empty":
                 messagebox.showwarning(
@@ -397,6 +402,20 @@ class iRENT:
                 messagebox.showerror(
                     "Error",
                     "Username already exists! Please try again."
+                )
+            
+            # Check if contact exists
+            elif result == "contact_exists":
+                messagebox.showerror(
+                    "Error",
+                    "Contact number already exists."
+                )
+
+            # Check if email exists
+            elif result == "email_exists":
+                messagebox.showerror(
+                    "Error",
+                    "Email already exists."
                 )
 
             # Check password match
