@@ -23,9 +23,7 @@ The system does not manage online payments, repair services, warranty claims, or
 > 5. Calculate total revenue generated per device type over a specific period
 
 ## ERD
-
-https://drive.google.com/file/d/1HpiIY3K7n26zIdcJEohIvlb7cMSDMl0L/view?usp=sharing
-
+<img width="1043" height="924" alt="iRENT - ERD (Revised) drawio" src="https://github.com/user-attachments/assets/8424668c-350f-4f0b-80fc-5be08c6cd160" />
 
 ## RELATIONAL DATABASE
 
