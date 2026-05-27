@@ -1,20 +1,31 @@
 import tkinter as tk
 from tkinter import messagebox
+import os
 import sqlite3
 
+
 #DB CREATION
-conn = sqlite3.connect("iRENT.db")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+db_path = os.path.join(BASE_DIR, "iRENT.db")
+
+conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 
-cursor.execute('''
-CREATE TABLE IF NOT EXISTS Users (
-        UserID INTEGER PRIMARY KEY AUTOINCREMENT,
-        Username TEXT(20) NOT NULL UNIQUE,
-        Password TEXT(20) NOT NULL
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS Staff (
+    StaffID INTEGER PRIMARY KEY AUTOINCREMENT,
+    FirstName TEXT NOT NULL,
+    MiddleName TEXT,
+    LastName TEXT NOT NULL,
+    ContactNo TEXT NOT NULL UNIQUE,
+    EmailAdd TEXT NOT NULL UNIQUE,
+    StaffRole TEXT NOT NULL,
+    Username TEXT NOT NULL UNIQUE,
+    Password TEXT NOT NULL
 )
-''')
-
+""")
 conn.commit()
+
 
 
 #TKINTER GUI
@@ -48,7 +59,7 @@ class iRENT:
 
     #LOGO
     def setup_logo_section(self):
-        logo = tk.PhotoImage(file="assets/iRENT_logo.png")
+        logo = tk.PhotoImage(file="iRENT/assets/iRENT_logo.png")
         logo = logo.subsample(3,3)
 
         logo_label = tk.Label(
@@ -184,7 +195,7 @@ class iRENT:
             return
         
         # sa mga ganito ginamit gawa nyo
-        cursor.execute("SELECT * FROM Users WHERE Username = ? AND Password = ?", (username, password))
+        cursor.execute("SELECT * FROM Staff WHERE Username = ? AND Password = ?", (username, password))
         result = cursor.fetchone() #retrieves the username and password from the database, and checks if they match with the input
 
         if result:
@@ -202,7 +213,7 @@ class iRENT:
     # SIGN-UP WINDOW
     def open_signup_window(self):
         signup_window = tk.Toplevel(self.root)
-        signup_window.title("iRENT")
+        signup_window.title("Create iRENT Account")
         signup_window.state("zoomed")
         signup_window.configure(bg="#313338")
 
@@ -220,7 +231,7 @@ class iRENT:
         # Username
         tk.Label(
             form_frame, 
-            text="Choose Username", 
+            text="Choose a Username", 
             font=("Arial", 10, "bold"),
             bg="#313338",
             fg="#FFFFFF",
@@ -239,7 +250,7 @@ class iRENT:
             highlightthickness=2
         )
         create_username.pack(fill="x", pady=(0, 15), ipady=8)
-        
+
         # Password
         tk.Label(
             form_frame, 
@@ -287,63 +298,208 @@ class iRENT:
         )
         confirm_password.pack(fill="x", pady=(0, 20), ipady=8)
 
-        
+        # Name frame para sa first and last name
+        name_frame = tk.Frame(form_frame, bg="#313338")
+        name_frame.pack(fill="x", pady=(0, 15))
 
+        #First Name
+        tk.Label(
+            name_frame,
+            text="First Name",
+            font=("Arial", 10, "bold"),
+            bg="#313338",
+            fg="#FFFFFF",
+            anchor="w"
+        ).grid(row=0, column=0, sticky="w", padx=(0, 10))
+
+        create_firstname = tk.Entry(
+            name_frame,
+            font=("Arial", 12),
+            bg="#313338",
+            fg="#FFFFFF",
+            relief="solid",
+            bd=0,
+            highlightbackground="#ffd735",
+            highlightcolor="#ffd735",
+            highlightthickness=2
+        )
+
+        create_firstname.grid(row=1, column=0, padx=(0, 10), ipady=8)
+
+        # Last Name
+        tk.Label(
+            name_frame,
+            text="Last Name",
+            font=("Arial", 10, "bold"),
+            bg="#313338",
+            fg="#FFFFFF",
+            anchor="w"
+        ).grid(row=0, column=1, sticky="w")
+
+        create_lastname = tk.Entry(
+            name_frame,
+            font=("Arial", 12),
+            bg="#313338",
+            fg="#FFFFFF",
+            relief="solid",
+            bd=0,
+            highlightbackground="#ffd735",
+            highlightcolor="#ffd735",
+            highlightthickness=2
+        )
+
+        create_lastname.grid(row=1, column=1, ipady=8)
+
+
+         # Email
+        tk.Label(
+            form_frame, 
+            text="Email Address", 
+            font=("Arial", 10, "bold"),
+            bg="#313338",
+            fg="#FFFFFF",
+            anchor="w"
+        ).pack(fill="x", pady=(0, 5))
+        
+        create_email = tk.Entry(
+            form_frame,
+            font=("Arial", 12),
+            bg="#313338",
+            fg="#FFFFFF",
+            relief="solid",
+            bd=0,
+            highlightbackground="#ffd735",
+            highlightcolor="#ffd735",
+            highlightthickness=2
+        )
+        create_email.pack(fill="x", pady=(0, 15), ipady=8)
+
+         # Contact Number
+        tk.Label(
+            form_frame, 
+            text="Contact Number", 
+            font=("Arial", 10, "bold"),
+            bg="#313338",
+            fg="#FFFFFF",
+            anchor="w"
+        ).pack(fill="x", pady=(0, 5))
+        
+        create_contact = tk.Entry(
+            form_frame,
+            font=("Arial", 12),
+            bg="#313338",
+            fg="#FFFFFF",
+            relief="solid",
+            bd=0,
+            highlightbackground="#ffd735",
+            highlightcolor="#ffd735",
+            highlightthickness=2
+        )
+        create_contact.pack(fill="x", pady=(0, 15), ipady=8)
+        
 
         # SIGN-UP FUNCTION
         def signup():
+                first_name = create_firstname.get()     # first_name
+                middle_name = ""                        # middle_name
+                last_name = create_lastname.get()     # last_name
+                contact_no = create_contact.get()      # contact_no
+                email_add = create_email.get()        # email_add
+                staff_role = "Staff"                   # staff_role
+                username = create_username.get()    # username
+                password = create_password.get()      # password
+                confirm  =confirm_password.get()     # confirm
 
-            username = create_username.get()
-            password = create_password.get()
-            confirm = confirm_password.get()
 
-            if not username or not password:
+                if not username or not password:
+                    messagebox.showwarning(
+                        "Error",
+                        "Please fill all fields"
+                    )
+                    return
 
-                messagebox.showwarning(
-                    "Error",
-                    "Please fill all fields"
-                )
+                # Password mismatch
+                if password != confirm:
+                    messagebox.showwarning(
+                        "Error",
+                        "Passwords do not match."
+                    )
+                    return
 
-                return
-
-            # Check if username exists
-            cursor.execute(
-                "SELECT * FROM Users WHERE Username = ?",
-                (username,)
-            )
-
-            if cursor.fetchone():
-
-                messagebox.showerror(
-                    "Error",
-                    "Username already exists! Please try again."
-                )
-
-                return
-
-            # Check password match
-            if confirm == password:
-
+                # Username exists
                 cursor.execute(
-                    "INSERT INTO Users (Username, Password) VALUES (?, ?)", #stores the username and password into the database
-                    (username, password)
+                    "SELECT * FROM Staff WHERE Username = ?",
+                    (username,)
                 )
+
+                if cursor.fetchone():
+                    messagebox.showerror(
+                        "Error",
+                        "Username already exists!"
+                    )
+                    return
+
+                # Contact exists
+                cursor.execute(
+                    "SELECT * FROM Staff WHERE ContactNo = ?",
+                    (contact_no,)
+                )
+
+                if cursor.fetchone():
+                    messagebox.showerror(
+                        "Error",
+                        "Contact number already exists."
+                    )
+                    return
+
+                # Email exists
+                cursor.execute(
+                    "SELECT * FROM Staff WHERE EmailAdd = ?",
+                    (email_add,)
+                )
+
+                if cursor.fetchone():
+                    messagebox.showerror(
+                        "Error",
+                        "Email already exists."
+                    )
+                    return
+
+                # INSERT INTO DATABASE
+                cursor.execute("""
+                    INSERT INTO Staff
+                    (
+                        FirstName,
+                        MiddleName,
+                        LastName,
+                        ContactNo,
+                        EmailAdd,
+                        StaffRole,
+                        Username,
+                        Password
+                    )
+
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    first_name,
+                    middle_name,
+                    last_name,
+                    contact_no,
+                    email_add,
+                    staff_role,
+                    username,
+                    password
+                ))
 
                 conn.commit()
 
                 messagebox.showinfo(
                     "Success",
-                    "Sign-up successful! You may now login to your new account."
+                    "Sign-up successful!"
                 )
 
                 signup_window.destroy()
-
-            else:
-
-                messagebox.showerror(
-                    "Error",
-                    "Passwords do not match!"
-                )
 
         # SIGN-UP BUTTON
         signup_btn = tk.Button(
