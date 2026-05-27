@@ -1,3 +1,4 @@
+# db and functions for log-in and sign-up
 import sqlite3
 import os
 
