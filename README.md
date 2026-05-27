@@ -21,9 +21,3 @@ The system does not manage online payments, repair services, warranty claims, or
 > 3. List the most frequently rented devices in the past month
 > 4. Display all overdue rentals and the customers responsible
 > 5. Calculate total revenue generated per device type over a specific period
-
-## ERD
-<img width="1043" height="924" alt="iRENT - ERD (Revised) drawio" src="https://github.com/user-attachments/assets/8424668c-350f-4f0b-80fc-5be08c6cd160" />
-
-## RELATIONAL DATABASE
-<img width="3031" height="541" alt="iRENT - Relational Database drawio" src="https://github.com/user-attachments/assets/66d17b9b-8aaa-4f3d-8cdc-d56252980dad" />
