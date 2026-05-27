@@ -17,7 +17,6 @@ CREATE TABLE IF NOT EXISTS Staff (
     LastName TEXT NOT NULL,
     ContactNo TEXT NOT NULL UNIQUE,
     EmailAdd TEXT NOT NULL UNIQUE,
-    StaffRole TEXT NOT NULL,
     Username TEXT NOT NULL UNIQUE,
     Password TEXT NOT NULL
 )
@@ -29,7 +28,7 @@ conn.commit()
 def login(username, password):
         if not username or not password:
             return "empty"
-        
+
         cursor.execute("SELECT * FROM Staff WHERE Username = ? AND Password = ?", (username, password))
         result = cursor.fetchone() #retrieves the username and password from the database, and checks if they match with the input
 
@@ -40,7 +39,7 @@ def login(username, password):
 
 
 #Sign-up function
-def signup(first_name, middle_name, last_name, contact_no, email_add, staff_role, username, password, confirm):
+def signup(first_name, middle_name, last_name, contact_no, email_add, username, password, confirm):
 
     if not username or not password:
         return "empty"
@@ -83,7 +82,6 @@ def signup(first_name, middle_name, last_name, contact_no, email_add, staff_role
             LastName,
             ContactNo,
             EmailAdd,
-            StaffRole,
             Username,
             Password
         )
@@ -91,13 +89,12 @@ def signup(first_name, middle_name, last_name, contact_no, email_add, staff_role
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     """,
     (
-        first_name, 
-        middle_name, 
-        last_name, 
-        contact_no, 
-        email_add, 
-        staff_role, 
-        username, 
+        first_name,
+        middle_name,
+        last_name,
+        contact_no,
+        email_add,
+        username,
         password
     ))
 

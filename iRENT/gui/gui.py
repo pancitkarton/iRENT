@@ -9,27 +9,27 @@ class iRENT:
         self.root = root
         self.root.title("iRENT")
         self.root.state("zoomed")
-        
+
         # Main container
         main_frame = tk.Frame(root)
-        main_frame.pack(fill="both", expand=True)       
-        
+        main_frame.pack(fill="both", expand=True)
+
         # Left frame (60%)
         self.left_frame = tk.Frame(main_frame, bg="#ffd735", width=700)
         self.left_frame.pack(side="left", fill="both", expand=True, padx=0, pady=0)
         self.left_frame.pack_propagate(False)  # Prevent shrinking
-        
+
         # Right frame (40%)
         self.right_frame = tk.Frame(main_frame, bg="#313338", width=400)
         self.right_frame.pack(side="right", fill="both", expand=True)
         self.right_frame.pack_propagate(False)
-        
+
         # Design the left side (Logo); calling function
         self.setup_logo_section()
-        
+
         # Design the right side (Login form); calling function
         self.setup_login_section()
-    
+
 
 
     #LOGO
@@ -41,7 +41,7 @@ class iRENT:
         logo = logo.subsample(3,3)
 
         logo_label = tk.Label(
-            self.left_frame, 
+            self.left_frame,
             fg="white",
             image = logo,
             bg="#ffd735"
@@ -56,26 +56,26 @@ class iRENT:
         # centers form in right frame
         form_frame = tk.Frame(self.right_frame, bg="#313338")
         form_frame.pack(expand=True)
-        
+
         # Title
         tk.Label(
-            form_frame, 
-            text="Welcome Back!", 
+            form_frame,
+            text="Welcome Back!",
             font=("Arial", 24, "bold"),
             fg="#ffd735",
             bg="#313338"
         ).pack(pady=(0, 20))
-        
+
         # Username
         tk.Label(
-            form_frame, 
-            text="Username", 
+            form_frame,
+            text="Username",
             font=("Arial", 10, "bold"),
             bg="#313338",
             fg="#FFFFFF",
             anchor="w"
         ).pack(fill="x", pady=(0, 5))
-        
+
         self.username_entry = tk.Entry(
             form_frame,
             font=("Arial", 12),
@@ -88,17 +88,17 @@ class iRENT:
             highlightthickness=2
         )
         self.username_entry.pack(fill="x", pady=(0, 15), ipady=8)
-        
+
         # Password
         tk.Label(
-            form_frame, 
-            text="Password", 
+            form_frame,
+            text="Password",
             font=("Arial", 10, "bold"),
             bg="#313338",
             fg="#FFFFFF",
             anchor="w"
         ).pack(fill="x", pady=(0, 5))
-        
+
         self.password_entry = tk.Entry(
             form_frame,
             font=("Arial", 12),
@@ -111,7 +111,7 @@ class iRENT:
             show="*"
         )
         self.password_entry.pack(fill="x", pady=(0, 20), ipady=8)
-        
+
         #LOG-IN BUTTON
         login_btn = tk.Button(
             form_frame,
@@ -124,10 +124,10 @@ class iRENT:
             command=self.login
         )
         login_btn.pack(fill="x", pady=(0, 20), ipady=8)
-        
+
         links_frame = tk.Frame(form_frame, bg="#313338")
         links_frame.pack(fill="x", pady=(10, 0))
-        
+
         def on_enter(e):
             login_btn.config(fg="#ffd735", bg="#232624")
 
@@ -146,7 +146,7 @@ class iRENT:
             bg="#313338",
             fg="#7F7F7F",
         ).pack(side="left")
-        
+
         # CREATE ACC
         create_btn = tk.Label(
             links_frame,
@@ -158,7 +158,7 @@ class iRENT:
         )
         create_btn.pack(side="right")
         create_btn.bind("<Button-1>", lambda e: self.open_signup_window())
-    
+
 
 
 
@@ -166,7 +166,7 @@ class iRENT:
     def login(self):
         username = self.username_entry.get()
         password = self.password_entry.get()
-        
+
         result = logic.login(username, password)
 
         if result == "empty":
@@ -181,7 +181,7 @@ class iRENT:
         elif result == "success":
             messagebox.showinfo("Login successful.", f"Welcome {username}!")
 
-    
+
 
 
 
@@ -194,9 +194,9 @@ class iRENT:
 
         form_frame = tk.Frame(signup_window, bg="#313338")
         form_frame.place(relx=0.5, rely=0.5, anchor="center")
-        
+
         signup_label = tk.Label(
-            form_frame, 
+            form_frame,
             text="Create an Account",
             font = ("Helvetica", 24, "bold"),
             fg= "#ffd735",
@@ -205,14 +205,14 @@ class iRENT:
 
         # Username
         tk.Label(
-            form_frame, 
-            text="Choose a Username", 
+            form_frame,
+            text="Choose a Username",
             font=("Arial", 10, "bold"),
             bg="#313338",
             fg="#FFFFFF",
             anchor="w"
         ).pack(fill="x", pady=(0, 5))
-        
+
         create_username = tk.Entry(
             form_frame,
             font=("Arial", 12),
@@ -228,14 +228,14 @@ class iRENT:
 
         # Password
         tk.Label(
-            form_frame, 
-            text="Create Password", 
+            form_frame,
+            text="Create Password",
             font=("Arial", 10, "bold"),
             bg="#313338",
             fg="#FFFFFF",
             anchor="w"
         ).pack(fill="x", pady=(0, 5))
-        
+
         create_password = tk.Entry(
             form_frame,
             font=("Arial", 12),
@@ -252,14 +252,14 @@ class iRENT:
 
         # Confirm Password
         tk.Label(
-            form_frame, 
-            text="Confirm Password", 
+            form_frame,
+            text="Confirm Password",
             font=("Arial", 10, "bold"),
             bg="#313338",
             fg="#FFFFFF",
             anchor="w"
         ).pack(fill="x", pady=(0, 5))
-        
+
         confirm_password = tk.Entry(
             form_frame,
             font=("Arial", 12),
@@ -328,14 +328,14 @@ class iRENT:
 
          # Email
         tk.Label(
-            form_frame, 
-            text="Email Address", 
+            form_frame,
+            text="Email Address",
             font=("Arial", 10, "bold"),
             bg="#313338",
             fg="#FFFFFF",
             anchor="w"
         ).pack(fill="x", pady=(0, 5))
-        
+
         create_email = tk.Entry(
             form_frame,
             font=("Arial", 12),
@@ -351,14 +351,14 @@ class iRENT:
 
          # Contact Number
         tk.Label(
-            form_frame, 
-            text="Contact Number", 
+            form_frame,
+            text="Contact Number",
             font=("Arial", 10, "bold"),
             bg="#313338",
             fg="#FFFFFF",
             anchor="w"
         ).pack(fill="x", pady=(0, 5))
-        
+
         create_contact = tk.Entry(
             form_frame,
             font=("Arial", 12),
@@ -372,7 +372,7 @@ class iRENT:
         )
         create_contact.pack(fill="x", pady=(0, 15), ipady=8)
 
-        
+
 
 
         # SIGN-UP FUNCTION
@@ -383,7 +383,7 @@ class iRENT:
                 create_lastname.get(),      # last_name
                 create_contact.get(),       # contact_no
                 create_email.get(),         # email_add
-                "Staff",                    # staff_role
+                "Staff",                    #
                 create_username.get(),      # username
                 create_password.get(),      # password
                 confirm_password.get(),      # confirm
@@ -401,7 +401,7 @@ class iRENT:
                     "Error",
                     "Username already exists! Please try again."
                 )
-            
+
             # Check if contact exists
             elif result == "contact_exists":
                 messagebox.showerror(
@@ -417,7 +417,7 @@ class iRENT:
                 )
 
             # Check password match
-            elif result == "mismatch": 
+            elif result == "mismatch":
                 messagebox.showwarning("Error", "Passwords do not match.")
 
 
