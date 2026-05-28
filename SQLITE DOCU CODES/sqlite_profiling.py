@@ -15,7 +15,6 @@ CREATE TABLE IF NOT EXISTS Staff (
         Suffix VARCHAR,
         ContactNo VARCHAR NOT NULL UNIQUE,
         EmailAdd VARCHAR NOT NULL UNIQUE,
-        StaffRole VARCHAR NOT NULL,
         Username VARCHAR NOT NULL UNIQUE,
         Password VARCHAR NOT NULL
 )
