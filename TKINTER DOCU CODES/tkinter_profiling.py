@@ -19,7 +19,6 @@ CREATE TABLE IF NOT EXISTS Staff (
     LastName TEXT NOT NULL,
     ContactNo TEXT NOT NULL UNIQUE,
     EmailAdd TEXT NOT NULL UNIQUE,
-    StaffRole TEXT NOT NULL,
     Username TEXT NOT NULL UNIQUE,
     Password TEXT NOT NULL
 )
