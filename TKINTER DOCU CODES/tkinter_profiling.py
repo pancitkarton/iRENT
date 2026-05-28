@@ -404,7 +404,6 @@ class iRENT:
                 last_name = create_lastname.get()     # last_name
                 contact_no = create_contact.get()      # contact_no
                 email_add = create_email.get()        # email_add
-                staff_role = "Staff"                   # staff_role
                 username = create_username.get()    # username
                 password = create_password.get()      # password
                 confirm  =confirm_password.get()     # confirm
