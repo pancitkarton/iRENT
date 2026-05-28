@@ -86,7 +86,7 @@ def signup(first_name, middle_name, last_name, contact_no, email_add, username, 
             Password
         )
 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     """,
     (
         first_name,
