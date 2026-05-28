@@ -383,7 +383,6 @@ class iRENT:
                 create_lastname.get(),      # last_name
                 create_contact.get(),       # contact_no
                 create_email.get(),         # email_add
-                "Staff",                    #
                 create_username.get(),      # username
                 create_password.get(),      # password
                 confirm_password.get(),      # confirm
