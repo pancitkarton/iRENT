@@ -473,12 +473,11 @@ class iRENT:
                         LastName,
                         ContactNo,
                         EmailAdd,
-                        StaffRole,
                         Username,
                         Password
                     )
 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     first_name,
@@ -486,7 +485,6 @@ class iRENT:
                     last_name,
                     contact_no,
                     email_add,
-                    staff_role,
                     username,
                     password
                 ))
