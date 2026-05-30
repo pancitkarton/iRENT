@@ -33,8 +33,6 @@ def make_database():
             Suffix TEXT,
             ContactNumber TEXT NOT NULL UNIQUE,
             EmailAddress TEXT NOT NULL UNIQUE,
-            IdentificationNo TEXT NOT NULL UNIQUE,
-            IdentificationType TEXT NOT NULL
         )
     ''')
     
