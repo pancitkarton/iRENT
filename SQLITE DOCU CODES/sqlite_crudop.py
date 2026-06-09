@@ -1,12 +1,23 @@
-#Database code only. All to be compiled by Quitollo and Frianeza for tkinter.
+# Database code only. All to be compiled by Quitollo and Frianeza for tkinter.
 import sqlite3
+import os
+
+# Database path setup
+# Gets the exact directory where this python file lives
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Forces the database to be named iRENT.db inside that exact directory
+DB_PATH = os.path.join(BASE_DIR, 'iRENT.db')
+
+def get_connection():
+    """Helper function to return a connection with foreign keys enabled."""
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute("PRAGMA foreign_keys = ON")
+    return conn
 
 def make_database():
-    conn = sqlite3.connect('iRENT.db')
+    conn = get_connection()
     cursor = conn.cursor()
-    
-    cursor.execute("PRAGMA foreign_keys = ON")
-    
+
     # Get Staff table from profiling
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Staff (
@@ -21,8 +32,9 @@ def make_database():
             Password VARCHAR NOT NULL
         )
     ''')
-        #To reference profiling ID. Kayo nalang mag-ayos.
-    
+
+    #To reference profiling ID. Kayo nalang mag-ayos.
+
     # Create Customer table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Customer (
@@ -35,7 +47,7 @@ def make_database():
             EmailAddress TEXT NOT NULL UNIQUE,
         )
     ''')
-    
+
     # Create Rental table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Rental (
@@ -52,7 +64,7 @@ def make_database():
             FOREIGN KEY (StaffID) REFERENCES Staff(StaffID) ON DELETE RESTRICT
         )
     ''')
-    
+
     # Create Rental Item table (associative entity between Rental and Device)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS RentalItem (
@@ -68,7 +80,7 @@ def make_database():
             FOREIGN KEY (DeviceID) REFERENCES Device(DeviceID) ON DELETE RESTRICT
         )
     ''')
-    
+
     # Create Device table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Device (
@@ -83,7 +95,7 @@ def make_database():
             FOREIGN KEY (BrandID) REFERENCES Brand(BrandID) ON DELETE SET NULL
         )
     ''')
-    
+
     # Create table for multivalued attribute DeviceSpecs (under Device)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS DeviceSpecs (
@@ -107,7 +119,7 @@ def make_database():
             TypeName TEXT NOT NULL UNIQUE
         )
     ''')
-    
+
     # Create Brand table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Brand (
@@ -115,21 +127,144 @@ def make_database():
             BrandName TEXT NOT NULL UNIQUE
         )
     ''')
-    
+
     conn.commit()
-    
-#The next set of codes is for CRUD operations for each table. All to be done by Garcia, Piamonte, Quitollo. 
+
+#The next set of codes is for CRUD operations for each table. All to be done by Garcia, Piamonte, Quitollo.
 
 # For Create/Insert/Add
 
+def add_customer(conn, first_name, middle_name, last_name, suffix, contact, email):
+    """Registers a new customer into the system."""
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO Customer (FirstName, MiddleName, LastName, Suffix, ContactNumber, EmailAddress)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', (first_name, middle_name, last_name, suffix, contact, email))
+    conn.commit()
+    return cursor.lastrowid
+
+def add_device(conn, model, serial_number, price, func_status, appearance, avail_status, type_id, brand_id):
+    """Adds a new electronic device to the inventory."""
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO Device (Model, SerialNumber, RentalPrice, FunctionalStatus, Appearance, AvailabilityStatus, DeviceTypeID, BrandID)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (model, serial_number, price, func_status, appearance, avail_status, type_id, brand_id))
+    conn.commit()
+    return cursor.lastrowid
+
+def create_rental_transaction(conn, s_month, s_day, s_year, ex_month, ex_day, ex_year, status, fee, customer_id, staff_id):
+    """Creates a new rental record."""
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO Rental (SRentalMonth, SRentalDay, SRentalYear, ExReturnMonth, ExReturnDay, ExReturnYear, RentalStatus, TotalRentalFee, CustomerID, StaffID)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (s_month, s_day, s_year, ex_month, ex_day, ex_year, status, fee, customer_id, staff_id))
+    conn.commit()
+    return cursor.lastrowid
 
 # For Read, Search, and Display
 
+def get_all_available_devices(conn):
+    """Fetches all devices currently marked as 'Available'."""
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT d.DeviceID, d.Model, d.SerialNumber, d.RentalPrice, t.TypeName, b.BrandName
+        FROM Device d
+        LEFT JOIN DeviceType t ON d.DeviceTypeID = t.DeviceTypeID
+        LEFT JOIN Brand b ON d.BrandID = b.BrandID
+        WHERE d.AvailabilityStatus = 'Available'
+    ''')
+    return cursor.fetchall()
+
+def get_customer_rental_history(conn, customer_id):
+    """Sample Query 2: Shows all rental transactions for a specific customer."""
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT r.RentalID, r.RentalStatus, r.TotalRentalFee, r.SRentalMonth, r.SRentalDay, r.SRentalYear
+        FROM Rental r
+        WHERE r.CustomerID = ?
+    ''', (customer_id,))
+    return cursor.fetchall()
+
+def get_overdue_rentals(conn, current_year, current_month, current_day):
+    """Sample Query 4: Displays overdue rentals and the responsible customers."""
+    cursor = conn.cursor()
+    # Logic checks if the expected return date is older than the current date provided
+    cursor.execute('''
+        SELECT r.RentalID, c.FirstName, c.LastName, c.ContactNumber, r.ExReturnMonth, r.ExReturnDay, r.ExReturnYear
+        FROM Rental r
+        JOIN Customer c ON r.CustomerID = c.CustomerID
+        WHERE r.RentalStatus = 'Ongoing'
+            AND (r.ExReturnYear < ?
+                OR (r.ExReturnYear = ? AND r.ExReturnMonth < ?)
+                OR (r.ExReturnYear = ? AND r.ExReturnMonth = ? AND r.ExReturnDay   < ?))
+    ''', (current_year, current_year, current_month, current_year, current_month, current_day))
+    return cursor.fetchall()
+
+def search_device_by_model(conn, search_term):
+    """Allows staff to search devices by model string."""
+    cursor = conn.cursor()
+    search_pattern = f"%{search_term}%"
+    cursor.execute("SELECT * FROM Device WHERE Model LIKE ?", (search_pattern,))
+    return cursor.fetchall()
 
 # For Update/Alter/Change
 
+def update_device_availability(conn, device_id, new_status):
+    """Updates device status (e.g., changing 'Available' to 'Rented' or 'Maintenance')."""
+    cursor = conn.cursor()
+    cursor.execute('''
+        UPDATE Device
+        SET AvailabilityStatus = ?
+        WHERE DeviceID = ?
+    ''', (new_status, device_id))
+    conn.commit()
+
+def mark_rental_as_returned(conn, rental_id):
+    """Updates a rental record when equipment is successfully returned."""
+    cursor = conn.cursor()
+    cursor.execute('''
+        UPDATE Rental
+        SET RentalStatus = 'Returned'
+        WHERE RentalID = ?
+    ''', (rental_id,))
+    conn.commit()
+    print(f"Rental {rental_id} successfully marked as Returned.")
 
 # For Delete/Remove
 
+def remove_retired_device(conn, device_id):
+    """Removes damaged or retired equipment from the database entirely."""
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM Device WHERE DeviceID = ?", (device_id,))
+    conn.commit()
+    print(f"Device {device_id} removed from system.")
+
+def remove_customer(conn, customer_id):
+    """Deletes a customer profile (Warning: cascades to delete their rentals if ON DELETE CASCADE is set properly)."""
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM Customer WHERE CustomerID = ?", (customer_id,))
+    conn.commit()
 
 #def main() to be created by Alonzo once all CRUD operations are done.
+
+def main(): # temporary (main) placeholder
+    # Make the database and tables
+    make_database()
+
+    # Establish connection for CRUD operations
+    conn = sqlite3.connect('iRENT.db')
+
+    # You would execute your terminal interface or UI logic here,
+    # passing the 'conn' object to the CRUD functions as needed.
+
+    # Example usage:
+    # new_cust_id = add_customer(conn, "Jane", "A", "Doe", "", "555-1234", "jane@email.com")
+    # print(f"Added new customer with ID: {new_cust_id}")
+
+    conn.close()
+
+if __name__ == "__main__":
+    main()
