@@ -33,7 +33,7 @@ def make_database():
         )
     ''')
 
-    #To reference profiling ID. Kayo nalang mag-ayos.
+    #To reference profiling ID. Paayos nalang, Quitollo.
 
     # Create Customer table
     cursor.execute('''
@@ -111,6 +111,7 @@ def make_database():
     ''')
         #Add more if there's any other specs needed. Nilagay ko muna yung mga common.
         #Revise niyo nalang yung mga variables, especially on NOT NULL ones
+        #Paayos nalang, Quitollo
 
     # Create Device Type table
     cursor.execute('''
@@ -130,10 +131,10 @@ def make_database():
 
     conn.commit()
 
-#The next set of codes is for CRUD operations for each table. All to be done by Garcia, Piamonte, Quitollo.
+#CRUD Ops Done by Garcia, Piamonte
+# Paayos nalang, Quitollo.
 
 # For Create/Insert/Add
-
 def add_customer(conn, first_name, middle_name, last_name, suffix, contact, email):
     """Registers a new customer into the system."""
     cursor = conn.cursor()
@@ -165,7 +166,6 @@ def create_rental_transaction(conn, s_month, s_day, s_year, ex_month, ex_day, ex
     return cursor.lastrowid
 
 # For Read, Search, and Display
-
 def get_all_available_devices(conn):
     """Fetches all devices currently marked as 'Available'."""
     cursor = conn.cursor()
@@ -211,7 +211,6 @@ def search_device_by_model(conn, search_term):
     return cursor.fetchall()
 
 # For Update/Alter/Change
-
 def update_device_availability(conn, device_id, new_status):
     """Updates device status (e.g., changing 'Available' to 'Rented' or 'Maintenance')."""
     cursor = conn.cursor()
@@ -234,7 +233,6 @@ def mark_rental_as_returned(conn, rental_id):
     print(f"Rental {rental_id} successfully marked as Returned.")
 
 # For Delete/Remove
-
 def remove_retired_device(conn, device_id):
     """Removes damaged or retired equipment from the database entirely."""
     cursor = conn.cursor()
@@ -248,7 +246,9 @@ def remove_customer(conn, customer_id):
     cursor.execute("DELETE FROM Customer WHERE CustomerID = ?", (customer_id,))
     conn.commit()
 
-#def main() to be created by Alonzo once all CRUD operations are done.
+
+#def main() by Alonzo
+#Paayos nalang, Quitollo
 
 def main(): # temporary (main) placeholder
     # Make the database and tables

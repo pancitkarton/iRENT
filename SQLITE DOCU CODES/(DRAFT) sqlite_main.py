@@ -1,4 +1,5 @@
-# (DRAFT, FOR TESTING ONLY)
+# (DRAFT TESTING ONLY)
+# Paayos nalang, Quitollo
 
 import sqlite3
 
