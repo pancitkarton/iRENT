@@ -1,10 +1,11 @@
 import tkinter as tk
 from tkinter import messagebox
 from db import logic
+from gui.app import MainApp
 import os
 
 #TKINTER GUI
-class iRENT:
+class AuthApp:
     def __init__(self, root):
         self.root = root
         self.root.title("iRENT")
@@ -172,14 +173,16 @@ class iRENT:
         if result == "empty":
             messagebox.showwarning("Error", "Please fill all fields.")
 
-        #then function na ioopen ung main app pero wala pa tayo dun e
-
         # wrong pass
         elif result == "fail":
             messagebox.showwarning("Error", "Invalid username or password. Try again!")
 
         elif result == "success":
             messagebox.showinfo("Login successful.", f"Welcome {username}!")
+            self.root.destroy()
+            new_root = tk.Tk()
+            app = MainApp(new_root)
+            new_root.mainloop()
 
 
 

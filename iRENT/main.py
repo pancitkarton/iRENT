@@ -1,7 +1,10 @@
 import tkinter as tk
-from gui.gui import iRENT
+from gui.auth import AuthApp
+
+def main():
+    root = tk.Tk()
+    app = AuthApp(root)
+    root.mainloop()
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    app = iRENT(root)
-    root.mainloop()
+    main()
