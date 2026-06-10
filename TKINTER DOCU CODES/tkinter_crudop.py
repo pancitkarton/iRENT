@@ -173,6 +173,7 @@ class MainApp:
 
 
 
+
         #device rental
         device_frame = tk.Frame(form_frame)
         device_frame.grid(row=2, column=0, sticky="ew", padx=10, pady=(10,20))
