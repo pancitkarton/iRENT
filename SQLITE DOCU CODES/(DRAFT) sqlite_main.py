@@ -159,7 +159,7 @@ def run_terminal_interface():
                 email = input("Email Address: ")
 
                 cust_id = add_customer(conn, fname, mname, lname, suffix, contact, email)
-                print(f"✅ Success! Customer added with ID: {cust_id}")
+                print(f"Success! Customer added with ID: {cust_id}")
 
             elif choice == '2':
                 print("\n--- Add New Device ---")
@@ -173,7 +173,7 @@ def run_terminal_interface():
                 brand_id = int(input("Brand ID (integer): "))
 
                 dev_id = add_device(conn, model, serial, price, func, appr, avail, type_id, brand_id)
-                print(f"✅ Success! Device added with ID: {dev_id}")
+                print(f"Success! Device added with ID: {dev_id}")
 
             elif choice == '3':
                 print("\n--- Create Rental Transaction ---")
@@ -188,7 +188,7 @@ def run_terminal_interface():
                 fee = float(input("Total Rental Fee: "))
 
                 rental_id = create_rental_transaction(conn, s_month, s_day, s_year, ex_month, ex_day, ex_year, 'Ongoing', fee, cust_id, staff_id)
-                print(f"✅ Success! Rental created with Transaction ID: {rental_id}")
+                print(f"Success! Rental created with Transaction ID: {rental_id}")
 
             elif choice == '4':
                 print("\n--- Available Devices ---")
@@ -220,7 +220,7 @@ def run_terminal_interface():
 
                 overdue = get_overdue_rentals(conn, c_year, c_month, c_day)
                 if not overdue:
-                    print("✅ No overdue rentals right now.")
+                    print("No overdue rentals right now.")
                 else:
                     for o in overdue:
                         print(f"Rental ID: {o[0]} | Customer: {o[1]} {o[2]} | Contact: {o[3]} | Expected Return: {o[4]}/{o[5]}/{o[6]}")
@@ -239,7 +239,7 @@ def run_terminal_interface():
                 print("\n--- Mark Rental as Returned ---")
                 rental_id = int(input("Enter Rental ID to mark as returned: "))
                 mark_rental_as_returned(conn, rental_id)
-                print(f"✅ Rental {rental_id} successfully marked as Returned.")
+                print(f"Rental {rental_id} successfully marked as Returned.")
 
             elif choice == '9':
                 print("\n--- Remove Retired Device ---")
@@ -247,7 +247,7 @@ def run_terminal_interface():
                 confirm = input(f"Are you sure you want to delete Device ID {dev_id}? (y/n): ")
                 if confirm.lower() == 'y':
                     remove_retired_device(conn, dev_id)
-                    print(f"✅ Device {dev_id} removed from system.")
+                    print(f"Device {dev_id} removed from system.")
                 else:
                     print("Deletion cancelled.")
 
@@ -256,12 +256,12 @@ def run_terminal_interface():
                 break
 
             else:
-                print("❌ Invalid choice. Please enter a number between 0 and 9.")
+                print("Invalid choice. Please enter a number between 0 and 9.")
 
         except ValueError:
-            print("\n❌ Input Error: Please enter the correct data type (e.g., numbers for IDs and prices).")
+            print("\nInput Error: Please enter the correct data type (e.g., numbers for IDs and prices).")
         except sqlite3.Error as e:
-            print(f"\n❌ Database Error: {e}")
+            print(f"\nDatabase Error: {e}")
             print("Note: Check if you are missing data in parent tables (Staff, DeviceType, Brand) for foreign keys.")
 
     # Close the connection when the loop exits
