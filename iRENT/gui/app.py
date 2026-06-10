@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
 from tkcalendar import DateEntry
+import os
 
 
 class MainApp:
@@ -26,10 +27,14 @@ class MainApp:
         )
         header.pack(side="top", fill="x")
 
-        img = Image.open("iRENT/assets/iRENT_logo3.png")
-        img.thumbnail((150, 150))
-        self.logo = ImageTk.PhotoImage(img)
+        BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        logo_path = os.path.join(BASE_DIR, "assets", "iRENT_logo3.png")
 
+        img = Image.open(logo_path)
+        img.thumbnail((150, 150))
+
+        self.logo = ImageTk.PhotoImage(img)
+ 
         logo_label = tk.Label(header, image=self.logo, bg="#ffd735")
         logo_label.pack(side="left", padx=20, pady=15)
 
@@ -167,7 +172,7 @@ class MainApp:
         ).grid(row=1, column=0, sticky="w", padx=5)
 
         self.contact_entry = tk.Entry(contact_frame)
-        self.contact_entryt.grid(row=1, column=1, padx=5, ipady=6)
+        self.contact_entry.grid(row=1, column=1, padx=5, ipady=6)
 
 
         tk.Label(
