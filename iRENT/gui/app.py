@@ -133,28 +133,23 @@ class MainApp:
         )
         rentee_title.grid(row=0,column=0,sticky="w", padx=5, pady=5, columnspan=4)
 
-        fields = [
-            ("FirstName","First Name"), 
-            ("MiddleName","Middle Name"), 
-            ("LastName","Last Name"), 
-            ("Suffix","Suffix")
-        ]
-        self.entries = {}
+        fields = ["First Name", "Middle Name", "Last Name", "Suffix"]
 
+        self.entries = {}
 
         for index, field_name in enumerate(fields):
             label = tk.Label(
                 rentee_info_frame,
                 text=field_name,
-                fg = "black",
+                fg="black",
                 font=("Arial", 12)
             )
-            label.grid(row = 1, column=index, padx=5, pady=(5,0))
+            label.grid(row=1, column=index, padx=5, pady=(5,0))
 
-            name_entry = tk.Entry(rentee_info_frame, width=20)
-            name_entry.grid(row=2, column=index, padx=5,pady=0,ipady=6,sticky="ew")
+            entry = tk.Entry(rentee_info_frame, width=20)
+            entry.grid(row=2, column=index, padx=5, pady=0, ipady=6, sticky="ew")
 
-            self.entries[field_name] = name_entry
+            self.entries[field_name] = entry
 
 
         #contact frame
