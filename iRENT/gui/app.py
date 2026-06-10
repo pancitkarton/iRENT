@@ -105,10 +105,10 @@ class MainApp:
     #data entry
     def create_dataentry(self):
         form_frame = tk.LabelFrame(
-                    self.pages["dataentry"],
-                    bd=2,
-                    relief="groove",    
-                    labelanchor="n",
+            self.pages["dataentry"],
+            bd=2,
+            relief="groove",    
+            labelanchor="n",
         )
         form_frame.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
         form_frame.grid_rowconfigure(3, weight=1)
@@ -128,7 +128,12 @@ class MainApp:
         )
         rentee_title.grid(row=0,column=0,sticky="w", padx=5, pady=5, columnspan=4)
 
-        fields = ["First Name", "Middle Name", "Last Name", "Suffix"]
+        fields = [
+            ("FirstName","First Name"), 
+            ("MiddleName","Middle Name"), 
+            ("LastName","Last Name"), 
+            ("Suffix","Suffix")
+        ]
         self.entries = {}
 
 
@@ -141,10 +146,10 @@ class MainApp:
             )
             label.grid(row = 1, column=index, padx=5, pady=(5,0))
 
-            entry = tk.Entry(rentee_info_frame, width=20)
-            entry.grid(row=2, column=index, padx=5,pady=0,ipady=6,sticky="ew")
+            name_entry = tk.Entry(rentee_info_frame, width=20)
+            name_entry.grid(row=2, column=index, padx=5,pady=0,ipady=6,sticky="ew")
 
-            self.entries[field_name] = entry
+            self.entries[field_name] = name_entry
 
 
         #contact frame
@@ -161,7 +166,8 @@ class MainApp:
             text="Contact Number:"
         ).grid(row=1, column=0, sticky="w", padx=5)
 
-        tk.Entry(contact_frame).grid(row=1, column=1, padx=5, ipady=6)
+        self.contact_entry = tk.Entry(contact_frame)
+        self.contact_entryt.grid(row=1, column=1, padx=5, ipady=6)
 
 
         tk.Label(
@@ -169,7 +175,8 @@ class MainApp:
             text="Email Address:"
         ).grid(row=1, column=2, sticky="w", padx=5)
 
-        tk.Entry(contact_frame).grid(row=1, column=3, padx=5, ipady=6)
+        self.email_entry = tk.Entry(contact_frame)
+        self.email_entry.grid(row=1, column=3, padx=5, ipady=6)
 
 
 
