@@ -1,5 +1,4 @@
 # (DRAFT TESTING ONLY)
-# Paayos nalang, Quitollo
 
 import sqlite3
 
