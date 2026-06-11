@@ -4,6 +4,8 @@ from PIL import Image, ImageTk
 from tkcalendar import DateEntry
 import os
 
+from gui.orders import create_orders
+
 
 class MainApp:
     def __init__(self, root):
@@ -15,7 +17,10 @@ class MainApp:
         self.create_pages()
         self.create_sidebar()
         self.create_dataentry()
+        self.create_orders_page()
+
         self.pages["dataentry"].tkraise()
+
 
 
     def create_layout(self):
@@ -34,7 +39,7 @@ class MainApp:
         img.thumbnail((150, 150))
 
         self.logo = ImageTk.PhotoImage(img)
- 
+
         logo_label = tk.Label(header, image=self.logo, bg="#ffd735")
         logo_label.pack(side="left", padx=20, pady=15)
 
@@ -58,7 +63,7 @@ class MainApp:
     def create_pages(self):
         self.pages = {}
 
-        for name in ["dataentry", "orders", "history", "devices", "overdue"]:
+        for name in ["dataentry", "orders", "order_details", "history", "devices", "overdue"]:
             frame = tk.Frame(self.right)
             frame.grid(row=0, column=0, sticky="nsew")
             self.pages[name] = frame
@@ -70,7 +75,7 @@ class MainApp:
 
     #sidebar
     def create_sidebar(self):
-        search_box = tk.LabelFrame(self.left, bg="#313338")
+        search_box = tk.LabelFrame(self.left, bg="#313338", bd=0)
         search_box.pack(pady=20, fill="x")
 
         tk.Label(
@@ -107,13 +112,19 @@ class MainApp:
             ).pack(pady=15, padx=10, ipady=6, anchor="w")
 
 
+    #view rental orders
+    def create_orders_page(self):
+        create_orders(self.pages["orders"], self)
+
+
+
     #data entry
     def create_dataentry(self):
         form_frame = tk.LabelFrame(
             self.pages["dataentry"],
-            bd=2,
-            relief="groove",    
+            relief="flat",    
             labelanchor="n",
+            bd=0
         )
         form_frame.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
         form_frame.grid_rowconfigure(3, weight=1)
@@ -121,6 +132,8 @@ class MainApp:
 
         rentee_info_frame = tk.LabelFrame(
             form_frame,
+            bd=0,
+            relief="flat"
         )
         rentee_info_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=(10,0))
         for col in range(4):
@@ -147,7 +160,7 @@ class MainApp:
             label.grid(row=1, column=index, padx=5, pady=(5,0))
 
             entry = tk.Entry(rentee_info_frame, width=20)
-            entry.grid(row=2, column=index, padx=5, pady=0, ipady=6, sticky="ew")
+            entry.grid(row=2, column=index, padx=10, pady=(10,20), ipady=6, sticky="ew")
 
             self.entries[field_name] = entry
 
@@ -156,7 +169,8 @@ class MainApp:
         contact_frame = tk.LabelFrame(
             form_frame,
             text="CONTACT INFO",
-            font=("Arial", 12, "bold")
+            font=("Arial", 20, "bold"),
+            bd=0
         )
         contact_frame.grid(row=1, column=0, sticky="ew", padx=10, pady=(10,20))
 
