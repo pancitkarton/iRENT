@@ -5,6 +5,7 @@ from tkcalendar import DateEntry
 import os
 
 from gui.orders import create_orders
+from gui.overdue import create_overdue
 
 
 class MainApp:
@@ -18,6 +19,7 @@ class MainApp:
         self.create_sidebar()
         self.create_dataentry()
         self.create_orders_page()
+        self.create_overdue_page()
 
         self.pages["dataentry"].tkraise()
 
@@ -115,6 +117,10 @@ class MainApp:
     #view rental orders
     def create_orders_page(self):
         create_orders(self.pages["orders"], self)
+
+    #view overdue rentals
+    def create_overdue_page(self):
+        create_overdue(self.pages["overdue"], self)
 
 
 
