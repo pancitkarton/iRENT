@@ -44,11 +44,12 @@ def make_database():
             LastName TEXT NOT NULL,
             Suffix TEXT,
             ContactNumber TEXT NOT NULL UNIQUE,
-            EmailAddress TEXT NOT NULL UNIQUE,
+            EmailAddress TEXT NOT NULL UNIQUE
         )
     ''')
 
     # Create Rental table
+    # Included CustomerID INTEGER NOT NULL, and StaffID INTEGER NOT NULL. They're foreign keys in this table.
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Rental (
             RentalID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -60,6 +61,8 @@ def make_database():
             ExReturnYear INTEGER NOT NULL,
             RentalStatus TEXT NOT NULL,
             TotalRentalFee DECIMAL (10, 2) NOT NULL,
+            CustomerID INTEGER NOT NULL,
+            StaffID INTEGER NOT NULL,
             FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID) ON DELETE CASCADE,
             FOREIGN KEY (StaffID) REFERENCES Staff(StaffID) ON DELETE RESTRICT
         )
@@ -69,19 +72,20 @@ def make_database():
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS RentalItem (
             RentalItemID INTEGER PRIMARY KEY AUTOINCREMENT,
-            FOREIGN KEY (RentalID) REFERENCES Rental(RentalID),
-            FOREIGN KEY (DeviceID) REFERENCES Device(DeviceID),
             PriceAtRental DECIMAL (10, 2) NOT NULL,
             DRMonth INTEGER NOT NULL,
             DRDay INTEGER NOT NULL,
             DRYear INTEGER NOT NULL,
             PenaltyFee DECIMAL (10, 2) NOT NULL,
+            RentalID INTEGER NOT NULL,
+            DeviceID INTEGER NOT NULL,
             FOREIGN KEY (RentalID) REFERENCES Rental(RentalID) ON DELETE CASCADE,
             FOREIGN KEY (DeviceID) REFERENCES Device(DeviceID) ON DELETE RESTRICT
         )
     ''')
 
     # Create Device table
+    # Included DeviceTypeID INTEGER NOT NULL, and BrandID INTEGER NOT NULL. They are foreign keys to this table.
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Device (
             DeviceID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -91,12 +95,15 @@ def make_database():
             FunctionalStatus TEXT CHECK(FunctionalStatus IN ('Excellent', 'Good', 'Fair', 'Poor')),
             Appearance TEXT CHECK(Appearance IN ('New', 'Good', 'Scratched', 'Damaged')),
             AvailabilityStatus TEXT CHECK(AvailabilityStatus IN ('Available', 'Rented', 'Maintenance', 'Retired')),
+            DeviceTypeID INTEGER NOT NULL,
+            BrandID INTEGER NOT NULL,
             FOREIGN KEY (DeviceTypeID) REFERENCES DeviceType(DeviceTypeID) ON DELETE SET NULL,
             FOREIGN KEY (BrandID) REFERENCES Brand(BrandID) ON DELETE SET NULL
         )
     ''')
 
     # Create table for multivalued attribute DeviceSpecs (under Device)
+    # Included DeviceID INTEGER NOT NULL. It is a foreign key to the table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS DeviceSpecs (
             SpecsID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -106,12 +113,10 @@ def make_database():
             OS TEXT NOT NULL,
             ScreenSize TEXT NOT NULL,
             BatteryLife TEXT NOT NULL,
+            DeviceID INTEGER NOT NULL,
             FOREIGN KEY (DeviceID) REFERENCES Device(DeviceID) ON DELETE CASCADE
         )
     ''')
-        #Add more if there's any other specs needed. Nilagay ko muna yung mga common.
-        #Revise niyo nalang yung mga variables, especially on NOT NULL ones
-        #Paayos nalang, Quitollo
 
     # Create Device Type table
     cursor.execute('''
@@ -131,9 +136,8 @@ def make_database():
 
     conn.commit()
 
-#CRUD Ops Done by Garcia, Piamonte
-# Paayos nalang, Quitollo.
 
+# CRUD Ops Done by Garcia, Piamonte
 # For Create/Insert/Add
 def add_customer(conn, first_name, middle_name, last_name, suffix, contact, email):
     """Registers a new customer into the system."""
@@ -247,24 +251,104 @@ def remove_customer(conn, customer_id):
     conn.commit()
 
 
-#def main() by Alonzo
-#Paayos nalang, Quitollo
+#def main() by Alonzo. With initial logic.
+# To be fixed by Garcia
 
-def main(): # temporary (main) placeholder
-    # Make the database and tables
+def main():
+    print(" iRENT Database Management System ")
+
+    # Create database and tables
     make_database()
 
-    # Establish connection for CRUD operations
-    conn = sqlite3.connect('iRENT.db')
+    # Open connection
+    conn = get_connection()
 
-    # You would execute your terminal interface or UI logic here,
-    # passing the 'conn' object to the CRUD functions as needed.
+    try:
+        while True:
+            print("\n--- DATABASE TEST MENU ---")
+            print("1. Show Available Devices")
+            print("2. Search Device by Model")
+            print("3. Add Customer")
+            print("4. Exit")
 
-    # Example usage:
-    # new_cust_id = add_customer(conn, "Jane", "A", "Doe", "", "555-1234", "jane@email.com")
-    # print(f"Added new customer with ID: {new_cust_id}")
+            choice = input("Enter choice: ")
 
-    conn.close()
+            if choice == "1":
+                devices = get_all_available_devices(conn)
+
+                if not devices:
+                    print("No available devices found.")
+                else:
+                    for device in devices:
+                        print(device)
+
+            elif choice == "2":
+                model = input("Enter model name: ")
+                results = search_device_by_model(conn, model)
+
+                if not results:
+                    print("No matching devices found.")
+                else:
+                    for device in results:
+                        print(device)
+
+            elif choice == "3":
+                first = input("First Name: ")
+                middle = input("Middle Name: ")
+                last = input("Last Name: ")
+                suffix = input("Suffix: ")
+                contact = input("Contact Number: ")
+                email = input("Email Address: ")
+
+                customer_id = add_customer(
+                    conn,
+                    first,
+                    middle,
+                    last,
+                    suffix,
+                    contact,
+                    email
+                )
+
+                print(f"Customer added successfully! ID = {customer_id}")
+
+            elif choice == "4":
+                print("Exiting iRENT Database System...")
+                break
+
+            else:
+                print("Invalid choice. Try again.")
+
+    except sqlite3.Error as e:
+        print(f"Database Error: {e}")
+
+    except Exception as e:
+        print(f"Unexpected Error: {e}")
+
+    finally:
+        conn.close()
+
 
 if __name__ == "__main__":
     main()
+    
+# Alternate version of def main, if it is to be connected to GUI Tkinter:
+# def main():
+#   make_database()
+
+#   conn = get_connection()
+
+#   try:
+#       print("Database initialized successfully.")
+#       print("Connection established.")
+
+        # Future Tkinter application starts here
+
+#   except sqlite3.Error as e:
+#       print(f"Database Error: {e}")
+
+#   finally:
+#       conn.close()
+
+# if __name__ == "__main__":
+#   main()
