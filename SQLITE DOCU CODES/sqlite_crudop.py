@@ -251,7 +251,7 @@ def remove_customer(conn, customer_id):
     conn.commit()
 
 
-#def main() by Alonzo. With initial logic.
+#def main() by Alonzo. With initial logic only.
 # To be fixed by Garcia
 
 def main():
@@ -342,7 +342,7 @@ if __name__ == "__main__":
 #       print("Database initialized successfully.")
 #       print("Connection established.")
 
-        # Future Tkinter application starts here
+        # Connect to Tkinter code place here
 
 #   except sqlite3.Error as e:
 #       print(f"Database Error: {e}")
