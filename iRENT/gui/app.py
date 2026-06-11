@@ -23,7 +23,22 @@ class MainApp:
 
         self.pages["dataentry"].tkraise()
 
+    def add_hover(self, btn, enter_bg, leave_bg, enter_fg=None, leave_fg=None):
 
+        def on_enter(e):
+            btn.config(bg=enter_bg)
+            btn.config(cursor="hand2")
+            if enter_fg:
+                btn.config(fg=enter_fg)
+
+        def on_leave(e):
+            btn.config(bg=leave_bg)
+            btn.config(cursor="")
+            if leave_fg:
+                btn.config(fg=leave_fg)
+
+        btn.bind("<Enter>", on_enter)
+        btn.bind("<Leave>", on_leave)
 
     def create_layout(self):
 
@@ -60,8 +75,6 @@ class MainApp:
         self.right.grid_rowconfigure(0, weight=1)
         self.right.grid_columnconfigure(0, weight=1)
 
-
-    #pages
     def create_pages(self):
         self.pages = {}
 
@@ -70,12 +83,9 @@ class MainApp:
             frame.grid(row=0, column=0, sticky="nsew")
             self.pages[name] = frame
 
-            frame.grid_rowconfigure(0,weight=1)
+            frame.grid_rowconfigure(0, weight=1)
             frame.grid_columnconfigure(0, weight=1)
 
-
-
-    #sidebar
     def create_sidebar(self):
         search_box = tk.LabelFrame(self.left, bg="#313338", bd=0)
         search_box.pack(pady=20, fill="x")
@@ -87,13 +97,19 @@ class MainApp:
             fg="white",
             font=("Arial", 14, "bold"),
             anchor="w"
-        ).pack( padx=10,fill="x")
+        ).pack(padx=10, fill="x")
 
         tk.Entry(
             search_box,
             font=("Arial", 12),
-            width=28
-        ).pack(pady=(5,40), padx=10,ipady=6, anchor="w")
+            width=28,
+            bg="#313338",
+            fg="white",
+            highlightbackground="#ffd735",
+            highlightcolor="#ffd735",
+            highlightthickness=2,
+            insertbackground="white"
+        ).pack(pady=(5, 40), padx=10, ipady=6, anchor="w")
 
         buttons = [
             ("View Rental Orders", "orders"),
@@ -102,46 +118,49 @@ class MainApp:
             ("View List of Devices", "devices")
         ]
 
-        for text,page in buttons:
-            tk.Button(
+        for text, page in buttons:
+            btn = tk.Button(
                 search_box,
                 text=text,
                 bg="#ffd735",
                 fg="black",
                 width=25,
                 font=("Arial", 12, "bold"),
+                cursor="hand2",
                 command=lambda p=page: self.pages[p].tkraise()
-            ).pack(pady=15, padx=10, ipady=6, anchor="w")
+            )
+            btn.pack(pady=15, padx=10, ipady=6, anchor="w")
 
+            self.add_hover(
+                btn,
+                enter_bg="#232624",
+                leave_bg="#ffd735",
+                enter_fg="#ffd735",
+                leave_fg="black"
+            )
 
-    #view rental orders
     def create_orders_page(self):
         create_orders(self.pages["orders"], self)
 
-    #view overdue rentals
     def create_overdue_page(self):
         create_overdue(self.pages["overdue"], self)
 
-
-
-    #data entry
     def create_dataentry(self):
         form_frame = tk.LabelFrame(
             self.pages["dataentry"],
-            relief="flat",    
+            relief="flat",
             labelanchor="n",
             bd=0
         )
         form_frame.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
         form_frame.grid_rowconfigure(3, weight=1)
 
-
         rentee_info_frame = tk.LabelFrame(
             form_frame,
             bd=0,
             relief="flat"
         )
-        rentee_info_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=(10,0))
+        rentee_info_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=(10, 0))
         for col in range(4):
             rentee_info_frame.grid_columnconfigure(col, weight=1, uniform="cols")
         
@@ -150,7 +169,7 @@ class MainApp:
             text="RENTEE INFO",
             font=("Arial", 20, "bold")
         )
-        rentee_title.grid(row=0,column=0,sticky="w", padx=5, pady=5, columnspan=4)
+        rentee_title.grid(row=0, column=0, sticky="w", padx=5, pady=5, columnspan=4)
 
         fields = ["First Name", "Middle Name", "Last Name", "Suffix"]
 
@@ -163,68 +182,61 @@ class MainApp:
                 fg="black",
                 font=("Arial", 12)
             )
-            label.grid(row=1, column=index, padx=5, pady=(5,0))
+            label.grid(row=1, column=index, padx=5, pady=(5, 0))
 
             entry = tk.Entry(rentee_info_frame, width=20)
-            entry.grid(row=2, column=index, padx=10, pady=(10,20), ipady=6, sticky="ew")
+            entry.grid(row=2, column=index, padx=10, pady=(10, 20), ipady=6, sticky="ew")
 
             self.entries[field_name] = entry
 
-
-        #contact frame
         contact_frame = tk.LabelFrame(
             form_frame,
             text="CONTACT INFO",
             font=("Arial", 20, "bold"),
             bd=0
         )
-        contact_frame.grid(row=1, column=0, sticky="ew", padx=10, pady=(10,20))
+        contact_frame.grid(row=1, column=0, sticky="ew", padx=10, pady=(40, 30))
 
-        
         tk.Label(
-            contact_frame, 
-            text="Contact Number:"
+            contact_frame,
+            text="Contact Number:",
+            font=("Arial", 12)
         ).grid(row=1, column=0, sticky="w", padx=5)
 
         self.contact_entry = tk.Entry(contact_frame)
         self.contact_entry.grid(row=1, column=1, padx=5, ipady=6)
 
-
         tk.Label(
-            contact_frame, 
-            text="Email Address:"
+            contact_frame,
+            text="Email Address:",
+            font=("Arial", 12)
         ).grid(row=1, column=2, sticky="w", padx=5)
 
         self.email_entry = tk.Entry(contact_frame)
         self.email_entry.grid(row=1, column=3, padx=5, ipady=6)
 
 
-
-        #device rental
         device_frame = tk.Frame(form_frame)
-        device_frame.grid(row=2, column=0, sticky="ew", padx=10, pady=(10,20))
+        device_frame.grid(row=2, column=0, sticky="ew", padx=10, pady=(40, 30))
         
         tk.Label(
-            device_frame, 
-            text="DEVICE RENTAL", 
+            device_frame,
+            text="DEVICE RENTAL",
             font=("Arial", 20, "bold")
         ).grid(row=0, column=0, sticky="w", columnspan=4)
         
-        # row 1 device to rent
         tk.Label(
-            device_frame, 
-            text="Device to Rent:", 
+            device_frame,
+            text="Device to Rent:",
             font=("Arial", 12, "bold")
         ).grid(row=1, column=0, sticky="w", padx=5, pady=5)
 
         self.device_combobox = ttk.Combobox(device_frame, values=["Device 1", "Device 2"])
         self.device_combobox.grid(row=1, column=1, sticky="w", padx=5, pady=5, ipady=6)
-        
 
-        # row 2 rental date and return date
         tk.Label(
-            device_frame, 
-            text="Rental Date:", 
+            device_frame,
+            text="Rental Date:",
             font=("Arial", 12, "bold")
         ).grid(row=2, column=0, sticky="w", padx=5, pady=5)
 
@@ -232,34 +244,37 @@ class MainApp:
         self.rental_calendar.grid(row=2, column=1, sticky="w", padx=5, pady=5, ipady=6)
         
         tk.Label(
-            device_frame, 
-            text="Must Return By:", 
+            device_frame,
+            text="Must Return By:",
             font=("Arial", 12, "bold")
         ).grid(row=2, column=2, sticky="w", padx=5, pady=5)
 
         self.return_by = ttk.Combobox(device_frame, values=["1 day", "3 days"])
         self.return_by.grid(row=2, column=3, sticky="w", padx=5, pady=5, ipady=6)
 
-
-        #bottom
         tk.Label(
-            form_frame, 
+            form_frame,
             text="Rental Total: ₱0.00",
             font=("Arial", 20, "bold")
         ).grid(row=3, column=0, sticky="sw", padx=10, pady=10)
 
-        tk.Button(
+        create_btn = tk.Button(
             form_frame,
             text="Create Rental",
             font=("Arial", 17, "bold"),
-            bg="#ffd735"
-        ).grid(row=3, column=2, sticky="se", padx=10, pady=10)
+            bg="#ffd735",
+            cursor="hand2"
+        )
+        create_btn.grid(row=3, column=2, sticky="se", padx=10, pady=10)
 
-        tk.Button(
+        reset_btn = tk.Button(
             form_frame,
             text="Reset",
             font=("Arial", 17, "bold"),
-            bg="gray"
-        ).grid(row=3, column=3, sticky="se", padx=10, pady=10)
+            bg="gray",
+            cursor="hand2"
+        )
+        reset_btn.grid(row=3, column=3, sticky="se", padx=10, pady=10)
 
-        
+        self.add_hover(create_btn, "#232624", "#ffd735", enter_fg="#ffd735", leave_fg="black")
+        self.add_hover(reset_btn, "#232624", "#eef2f7", "white", "black")
