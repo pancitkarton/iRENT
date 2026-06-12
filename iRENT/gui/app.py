@@ -114,7 +114,7 @@ class MainApp:
         buttons = [
             ("Create Rental", "dataentry"),
             ("View Rental Orders", "orders"),
-            ("View Overdue Rental", "overdue"),
+            ("View Overdue Rentals", "overdue"),
             ("View Rental History", "history"),
             ("View List of Devices", "devices")
         ]
@@ -154,7 +154,11 @@ class MainApp:
             bd=0
         )
         form_frame.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
-        form_frame.grid_rowconfigure(3, weight=1)
+        form_frame.grid_rowconfigure(0, weight=0) #rentee info
+        form_frame.grid_rowconfigure(1, weight=0) #contact infp
+        form_frame.grid_rowconfigure(2, weight=0) #device rental
+        form_frame.grid_rowconfigure(3, weight=1) #buttons/bottom bar
+        form_frame.grid_columnconfigure(0, weight=1) #stretch horizontally
 
         rentee_info_frame = tk.LabelFrame(
             form_frame,
@@ -163,7 +167,7 @@ class MainApp:
         )
         rentee_info_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=(10, 0))
         for col in range(4):
-            rentee_info_frame.grid_columnconfigure(col, weight=1, uniform="cols")
+            rentee_info_frame.grid_columnconfigure(col, weight=0)
         
         rentee_title = tk.Label(
             rentee_info_frame,
@@ -253,29 +257,33 @@ class MainApp:
         self.return_by = ttk.Combobox(device_frame, values=["1 day", "3 days"])
         self.return_by.grid(row=2, column=3, sticky="w", padx=5, pady=5, ipady=6)
 
+        bottom_bar = tk.Frame(form_frame, padx=40, pady=20, bg="#eef2f7")
+        bottom_bar.grid(row =4, column =0, columnspan=4, sticky="sew", padx=10, pady=20)
+
         tk.Label(
-            form_frame,
+            bottom_bar,
             text="Rental Total: ₱0.00",
             font=("Arial", 20, "bold")
-        ).grid(row=3, column=0, sticky="sw", padx=10, pady=10)
+        ).pack(side="left")
+
+        reset_btn = tk.Button(
+            bottom_bar,
+            text="Reset",
+            font=("Arial", 17, "bold"),
+            bg="#eef2f7",
+            cursor="hand2"
+        )
+        reset_btn.pack(side="right", padx=5)
 
         create_btn = tk.Button(
-            form_frame,
+            bottom_bar,
             text="Create Rental",
             font=("Arial", 17, "bold"),
             bg="#ffd735",
             cursor="hand2"
         )
-        create_btn.grid(row=3, column=2, sticky="se", padx=10, pady=10)
+        create_btn.pack(side="right", padx=5)
 
-        reset_btn = tk.Button(
-            form_frame,
-            text="Reset",
-            font=("Arial", 17, "bold"),
-            bg="gray",
-            cursor="hand2"
-        )
-        reset_btn.grid(row=3, column=3, sticky="se", padx=10, pady=10)
 
         self.add_hover(create_btn, "#232624", "#ffd735", enter_fg="#ffd735", leave_fg="black")
         self.add_hover(reset_btn, "#232624", "#eef2f7", "white", "black")
