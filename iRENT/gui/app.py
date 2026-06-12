@@ -4,8 +4,10 @@ from PIL import Image, ImageTk
 from tkcalendar import DateEntry
 import os
 
+
 from gui.orders import create_orders
 from gui.overdue import create_overdue
+from gui.rental import create_dataentry
 
 
 class MainApp:
@@ -17,11 +19,13 @@ class MainApp:
         self.create_layout()
         self.create_pages()
         self.create_sidebar()
-        self.create_dataentry()
+
+        self.create_dashboard()
+        self.create_dataentry_page()
         self.create_orders_page()
         self.create_overdue_page()
 
-        self.pages["dataentry"].tkraise()
+        self.pages["dashboard"].tkraise()
 
     def add_hover(self, btn, enter_bg, leave_bg, enter_fg=None, leave_fg=None):
 
@@ -74,11 +78,11 @@ class MainApp:
         self.right.grid(row=0, column=1, sticky="nsew")
         self.right.grid_rowconfigure(0, weight=1)
         self.right.grid_columnconfigure(0, weight=1)
-
+        
     def create_pages(self):
         self.pages = {}
 
-        for name in ["dataentry", "orders", "order_details", "history", "devices", "overdue"]:
+        for name in ["dashboard","dataentry", "orders", "order_details", "history", "devices", "overdue"]:
             frame = tk.Frame(self.right)
             frame.grid(row=0, column=0, sticky="nsew")
             self.pages[name] = frame
@@ -112,6 +116,7 @@ class MainApp:
         ).pack(pady=(5, 40), padx=10, ipady=6, anchor="w")
 
         buttons = [
+            ("Dashboard", "dashboard"),
             ("Create Rental", "dataentry"),
             ("View Rental Orders", "orders"),
             ("View Overdue Rentals", "overdue"),
@@ -146,144 +151,78 @@ class MainApp:
     def create_overdue_page(self):
         create_overdue(self.pages["overdue"], self)
 
-    def create_dataentry(self):
-        form_frame = tk.LabelFrame(
-            self.pages["dataentry"],
+    def create_dataentry_page(self):
+        create_dataentry(self.pages["dataentry"], self)
+
+    def create_dashboard(self):
+        frame = tk.LabelFrame(
+            self.pages["dashboard"],
             relief="flat",
             labelanchor="n",
-            bd=0
-        )
-        form_frame.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
-        form_frame.grid_rowconfigure(0, weight=0) #rentee info
-        form_frame.grid_rowconfigure(1, weight=0) #contact infp
-        form_frame.grid_rowconfigure(2, weight=0) #device rental
-        form_frame.grid_rowconfigure(3, weight=1) #buttons/bottom bar
-        form_frame.grid_columnconfigure(0, weight=1) #stretch horizontally
-
-        rentee_info_frame = tk.LabelFrame(
-            form_frame,
             bd=0,
-            relief="flat"
+            bg ="#eef2f7"
         )
-        rentee_info_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=(10, 0))
-        for col in range(4):
-            rentee_info_frame.grid_columnconfigure(col, weight=0)
+
+        frame.grid(row=0,column=0, sticky="nsew", padx=20, pady=20)
+
+        frame.grid_columnconfigure(0, weight=1)
+        frame.grid_columnconfigure(1, weight=0) 
+        frame.grid_columnconfigure(2, weight=0) 
+        frame.grid_columnconfigure(3, weight=0) 
+        frame.grid_columnconfigure(4, weight=1)
+
+        tk.Label (
+            frame,
+            text="Welcome, admin!",
+            font=("Arial", 24, "bold"),
+            bg ="#eef2f7",
+            fg="black"
+        ).grid(row=0, column=0, columnspan=4, pady=(0, 20), sticky="w")
+
+        self.create_card(frame, "#5CB85C", "active.png", "5", "Active Rentals", 1, row=1)
+        self.create_card(frame, "#D9534F", "overdue.png", "5", "Overdue Rentals", 2, row=1)
+        self.create_card(frame, "#ebc427", "available.png", "5", "Available for Rent", 3, row=1)
+        self.create_card(frame, "#675DB7", "device.png", "5", "Total Devices", 1, row=2)
+        self.create_card(frame, "#337AB7", "customers.png", "5", "Total Rentees", 2, row=2)
+        self.create_card(frame, "#888E93", "employees.png", "5", "Total Employees", 3, row=2)
+
+
+
+
+    def create_card(self, parent, color, icon_name, number, title, column, row=1):
+
+        BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        icon_path = os.path.join(BASE_DIR, "assets", icon_name)
+        icon = ImageTk.PhotoImage(Image.open(icon_path).resize((90, 90)))
         
-        rentee_title = tk.Label(
-            rentee_info_frame,
-            text="RENTEE INFO",
-            font=("Arial", 20, "bold")
+        if not hasattr(self, 'icons'): self.icons = []
+        self.icons.append(icon) 
+
+        card = tk.Frame(
+            parent,
+            bg=color,
+            width=200,
+            height=200,
+            highlightbackground="black",
+            highlightthickness=2
         )
-        rentee_title.grid(row=0, column=0, sticky="w", padx=5, pady=5, columnspan=4)
+        card.grid(row=row, column=column, sticky="n", padx=23, pady=17)
+        card.pack_propagate(False)
 
-        fields = ["First Name", "Middle Name", "Last Name", "Suffix"]
-
-        self.entries = {}
-
-        for index, field_name in enumerate(fields):
-            label = tk.Label(
-                rentee_info_frame,
-                text=field_name,
-                fg="black",
-                font=("Arial", 12)
-            )
-            label.grid(row=1, column=index, padx=5, pady=(5, 0))
-
-            entry = tk.Entry(rentee_info_frame, width=20)
-            entry.grid(row=2, column=index, padx=10, pady=(10, 20), ipady=6, sticky="ew")
-
-            self.entries[field_name] = entry
-
-        contact_frame = tk.LabelFrame(
-            form_frame,
-            text="CONTACT INFO",
-            font=("Arial", 20, "bold"),
-            bd=0
-        )
-        contact_frame.grid(row=1, column=0, sticky="ew", padx=10, pady=(40, 30))
+        tk.Label(card, image=icon, bg=color).pack(pady=(15, 5))
 
         tk.Label(
-            contact_frame,
-            text="Contact Number:",
-            font=("Arial", 12)
-        ).grid(row=1, column=0, sticky="w", padx=5)
-
-        self.contact_entry = tk.Entry(contact_frame)
-        self.contact_entry.grid(row=1, column=1, padx=5, ipady=6)
-
-        tk.Label(
-            contact_frame,
-            text="Email Address:",
-            font=("Arial", 12)
-        ).grid(row=1, column=2, sticky="w", padx=5)
-
-        self.email_entry = tk.Entry(contact_frame)
-        self.email_entry.grid(row=1, column=3, padx=5, ipady=6)
-
-
-        device_frame = tk.Frame(form_frame)
-        device_frame.grid(row=2, column=0, sticky="ew", padx=10, pady=(40, 30))
-        
-        tk.Label(
-            device_frame,
-            text="DEVICE RENTAL",
-            font=("Arial", 20, "bold")
-        ).grid(row=0, column=0, sticky="w", columnspan=4)
-        
-        tk.Label(
-            device_frame,
-            text="Device to Rent:",
-            font=("Arial", 12, "bold")
-        ).grid(row=1, column=0, sticky="w", padx=5, pady=5)
-
-        self.device_combobox = ttk.Combobox(device_frame, values=["Device 1", "Device 2"])
-        self.device_combobox.grid(row=1, column=1, sticky="w", padx=5, pady=5, ipady=6)
+            card,
+            text=number,
+            font=("Arial", 25, "bold"),
+            fg="white",
+            bg=color
+        ).pack()
 
         tk.Label(
-            device_frame,
-            text="Rental Date:",
-            font=("Arial", 12, "bold")
-        ).grid(row=2, column=0, sticky="w", padx=5, pady=5)
-
-        self.rental_calendar = DateEntry(device_frame, width=12, date_pattern="mm-dd-yyyy")
-        self.rental_calendar.grid(row=2, column=1, sticky="w", padx=5, pady=5, ipady=6)
-        
-        tk.Label(
-            device_frame,
-            text="Must Return By:",
-            font=("Arial", 12, "bold")
-        ).grid(row=2, column=2, sticky="w", padx=5, pady=5)
-
-        self.return_by = ttk.Combobox(device_frame, values=["1 day", "3 days"])
-        self.return_by.grid(row=2, column=3, sticky="w", padx=5, pady=5, ipady=6)
-
-        bottom_bar = tk.Frame(form_frame, padx=40, pady=20, bg="#eef2f7")
-        bottom_bar.grid(row =4, column =0, columnspan=4, sticky="sew", padx=10, pady=20)
-
-        tk.Label(
-            bottom_bar,
-            text="Rental Total: ₱0.00",
-            font=("Arial", 20, "bold")
-        ).pack(side="left")
-
-        reset_btn = tk.Button(
-            bottom_bar,
-            text="Reset",
-            font=("Arial", 17, "bold"),
-            bg="#eef2f7",
-            cursor="hand2"
-        )
-        reset_btn.pack(side="right", padx=5)
-
-        create_btn = tk.Button(
-            bottom_bar,
-            text="Create Rental",
-            font=("Arial", 17, "bold"),
-            bg="#ffd735",
-            cursor="hand2"
-        )
-        create_btn.pack(side="right", padx=5)
-
-
-        self.add_hover(create_btn, "#232624", "#ffd735", enter_fg="#ffd735", leave_fg="black")
-        self.add_hover(reset_btn, "#232624", "#eef2f7", "white", "black")
+            card, 
+            text=title, 
+            font=("Arial", 13, "bold", "italic"), 
+            fg="white", 
+            bg=color
+        ).pack(pady=(0, 20))
