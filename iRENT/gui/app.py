@@ -112,7 +112,7 @@ class MainApp:
         ).pack(pady=(5, 40), padx=10, ipady=6, anchor="w")
 
         buttons = [
-            ("Add a Rental", "dataentry"),
+            ("Create Rental", "dataentry"),
             ("View Rental Orders", "orders"),
             ("View Overdue Rental", "overdue"),
             ("View Rental History", "history"),
