@@ -124,26 +124,30 @@ class MainApp:
             ("View List of Devices", "devices")
         ]
 
-        for text, page in buttons:
-            btn = tk.Button(
+        for i, (text, page) in enumerate(buttons):
+            
+            label = tk.Label (
                 search_box,
                 text=text,
-                bg="#ffd735",
-                fg="black",
-                width=25,
+                bg="#313338",
+                fg="#ffd735",
                 font=("Arial", 12, "bold"),
-                cursor="hand2",
-                command=lambda p=page: self.pages[p].tkraise()
+                anchor="w",
+                cursor="hand2"
             )
-            btn.pack(pady=15, padx=10, ipady=6, anchor="w")
+            label.pack(pady=10, padx=20, fill="x")
 
-            self.add_hover(
-                btn,
-                enter_bg="#232624",
-                leave_bg="#ffd735",
-                enter_fg="#ffd735",
-                leave_fg="black"
-            )
+            if i < len(buttons) - 1:
+                tk.Frame(search_box, height=2, bg="#ffd735").pack(fill="x", padx=10)
+
+            label.bind("<Button-1>", lambda e, p=page: self.pages[p].tkraise())
+
+            def on_enter(e, l=label): l.config(fg="white")
+            def on_leave(e, l=label): l.config(fg="#ffd735")
+
+            label.bind("<Enter>", on_enter)
+            label.bind("<Leave>", on_leave)
+
 
     def create_orders_page(self):
         create_orders(self.pages["orders"], self)
