@@ -1,9 +1,7 @@
-# (DRAFT TESTING ONLY)
-
 import sqlite3
 
 # Import all our database functions from the irent_db.py file
-from sqlite_crudop import (
+from SQLITE_DOCU_CODES.sqlite_crudop import (
     make_database, get_connection, add_customer, add_device, create_rental_transaction, get_all_available_devices, get_customer_rental_history, get_overdue_rentals, search_device_by_model, mark_rental_as_returned, remove_retired_device
 )
 
