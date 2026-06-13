@@ -196,137 +196,80 @@ class AuthApp:
         signup_window.configure(bg="#313338")
 
         form_frame = tk.Frame(signup_window, bg="#313338")
-        form_frame.place(relx=0.5, rely=0.5, anchor="center")
+        form_frame.place(relx=0.5, rely=0.5, anchor="center", width=400)
 
-        signup_label = tk.Label(
+        tk.Label(
             form_frame,
             text="Create an Account",
             font = ("Helvetica", 24, "bold"),
             fg= "#ffd735",
             bg = "#313338"
-            ).pack(pady = 20)
+            ).pack(pady =(0,20))
 
-        # Username
-        tk.Label(
-            form_frame,
-            text="Choose a Username",
-            font=("Arial", 10, "bold"),
-            bg="#313338",
-            fg="#FFFFFF",
-            anchor="w"
-        ).pack(fill="x", pady=(0, 5))
+        def user_fields (label_text, is_password=False):
+            tk.Label(form_frame, 
+                     text=label_text, 
+                     font=("Arial", 10, "bold"), 
+                     bg="#313338", 
+                     fg="#FFFFFF", anchor="w"
+            ).pack(fill="x", pady=(0, 5))
 
-        create_username = tk.Entry(
-            form_frame,
-            font=("Arial", 12),
-            bg="#313338",
-            fg="#FFFFFF",
-            relief="solid",
-            bd=0,
-            highlightbackground="#ffd735",
-            highlightcolor="#ffd735",
-            highlightthickness=2
-        )
-        create_username.pack(fill="x", pady=(0, 15), ipady=8)
-
-        # Password
-        tk.Label(
-            form_frame,
-            text="Create Password",
-            font=("Arial", 10, "bold"),
-            bg="#313338",
-            fg="#FFFFFF",
-            anchor="w"
-        ).pack(fill="x", pady=(0, 5))
-
-        create_password = tk.Entry(
-            form_frame,
-            font=("Arial", 12),
-            bg="#313338",
-            fg="#FFFFFF",
-            bd=0,
-            highlightbackground="#ffd735",
-            highlightcolor="#ffd735",
-            highlightthickness=2,
-            show="*"
-        )
-        create_password.pack(fill="x", pady=(0, 20), ipady=8)
+            entry = tk.Entry(
+                form_frame, 
+                font=("Arial", 12), 
+                bg="#313338", 
+                fg="#FFFFFF", 
+                relief="solid", bd=0, 
+                highlightbackground="#ffd735", 
+                highlightcolor="#ffd735", 
+                highlightthickness=2, show="*" if is_password else ""
+            )
+            entry.pack(fill="x", pady=(0, 15), ipady=8)
+            return entry
+        
+        create_username = user_fields("Choose a Username")
+        create_password = user_fields("Create Password", is_password=True)
+        confirm_password = user_fields("Confirm Password", is_password=True)
 
 
-        # Confirm Password
-        tk.Label(
-            form_frame,
-            text="Confirm Password",
-            font=("Arial", 10, "bold"),
-            bg="#313338",
-            fg="#FFFFFF",
-            anchor="w"
-        ).pack(fill="x", pady=(0, 5))
-
-        confirm_password = tk.Entry(
-            form_frame,
-            font=("Arial", 12),
-            bg="#313338",
-            fg="#FFFFFF",
-            bd=0,
-            highlightbackground="#ffd735",
-            highlightcolor="#ffd735",
-            highlightthickness=2,
-            show="*"
-        )
-        confirm_password.pack(fill="x", pady=(0, 20), ipady=8)
-
-        # Name frame para sa first and last name
+        # Namesssssss
         name_frame = tk.Frame(form_frame, bg="#313338")
         name_frame.pack(fill="x", pady=(0, 15))
 
-        #First Name
-        tk.Label(
-            name_frame,
-            text="First Name",
-            font=("Arial", 10, "bold"),
-            bg="#313338",
-            fg="#FFFFFF",
-            anchor="w"
-        ).grid(row=0, column=0, sticky="w", padx=(0, 10))
+        name_frame.columnconfigure(0, weight=3) 
+        name_frame.columnconfigure(1, weight=3) 
+        name_frame.columnconfigure(2, weight=3)  
+        name_frame.columnconfigure(3, weight=0)
 
-        create_firstname = tk.Entry(
-            name_frame,
-            font=("Arial", 12),
-            bg="#313338",
-            fg="#FFFFFF",
-            relief="solid",
-            bd=0,
-            highlightbackground="#ffd735",
-            highlightcolor="#ffd735",
-            highlightthickness=2
-        )
+        def name_fields(label_text, col, width=None):
+            tk.Label(
+                name_frame,
+                text=label_text,
+                font=("Arial", 10, "bold"),
+                bg="#313338",
+                fg="#FFFFFF",
+                anchor="w"
+            ).grid(row=0, column=col, sticky="w", padx=(2,2))
 
-        create_firstname.grid(row=1, column=0, padx=(0, 10), ipady=8)
-
-        # Last Name
-        tk.Label(
-            name_frame,
-            text="Last Name",
-            font=("Arial", 10, "bold"),
-            bg="#313338",
-            fg="#FFFFFF",
-            anchor="w"
-        ).grid(row=0, column=1, sticky="w")
-
-        create_lastname = tk.Entry(
-            name_frame,
-            font=("Arial", 12),
-            bg="#313338",
-            fg="#FFFFFF",
-            relief="solid",
-            bd=0,
-            highlightbackground="#ffd735",
-            highlightcolor="#ffd735",
-            highlightthickness=2
-        )
-
-        create_lastname.grid(row=1, column=1, ipady=8)
+            entry = tk.Entry(
+                name_frame,
+                font=("Arial", 12),
+                bg="#313338",
+                fg="#FFFFFF",
+                relief="solid",
+                bd=0,
+                highlightbackground="#ffd735",
+                highlightcolor="#ffd735",
+                highlightthickness=2,
+                width=width
+            )
+            entry.grid(row=1, column=col, padx=2, ipady=8, sticky="ew")
+            return entry
+        
+        create_firstname = name_fields("First Name", 0)
+        create_middlename = name_fields("Middle Name", 1)
+        create_lastname = name_fields("Last Name", 2)
+        create_suffix = name_fields("Suffix", 3, width=5)
 
 
          # Email
@@ -382,8 +325,9 @@ class AuthApp:
         def signup():
             result = logic.signup(
                 create_firstname.get(),     # first_name
-                "",                         # middle_name
-                create_lastname.get(),      # last_name
+                create_middlename.get(),    #middle name
+                create_lastname.get(),  #lastname
+                create_suffix.get(),      #suffix
                 create_contact.get(),       # contact_no
                 create_email.get(),         # email_add
                 create_username.get(),      # username
