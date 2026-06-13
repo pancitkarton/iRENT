@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS Staff (
     FirstName TEXT NOT NULL,
     MiddleName TEXT,
     LastName TEXT NOT NULL,
+    Suffix TEXT NOT NULL,
     ContactNo TEXT NOT NULL UNIQUE,
     EmailAdd TEXT NOT NULL UNIQUE,
     Username TEXT NOT NULL UNIQUE,
@@ -39,7 +40,7 @@ def login(username, password):
 
 
 #Sign-up function
-def signup(first_name, middle_name, last_name, contact_no, email_add, username, password, confirm):
+def signup(first_name, middle_name, last_name, suffix, contact_no, email_add, username, password, confirm):
 
     if not username or not password:
         return "empty"
@@ -80,18 +81,20 @@ def signup(first_name, middle_name, last_name, contact_no, email_add, username, 
             FirstName,
             MiddleName,
             LastName,
+            Suffix,
             ContactNo,
             EmailAdd,
             Username,
             Password
         )
 
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     """,
     (
         first_name,
         middle_name,
         last_name,
+        suffix,
         contact_no,
         email_add,
         username,
