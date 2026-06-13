@@ -149,3 +149,6 @@ def create_dataentry(container_frame,rental):
 
         rental.add_hover(create_btn, "#232624", "#ffd735", enter_fg="#ffd735", leave_fg="black")
         rental.add_hover(reset_btn, "#232624", "#eef2f7", "white", "black")
+    
+        
+    # Add the rental py logic below.
