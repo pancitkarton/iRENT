@@ -126,7 +126,6 @@ class MainApp:
         ]
 
         for i, (text, page) in enumerate(buttons):
-            
             label = tk.Label (
                 search_box,
                 text=text,
@@ -163,6 +162,41 @@ class MainApp:
 
             label.bind("<Enter>", on_enter)
             label.bind("<Leave>", on_leave)
+
+        bot_frame = tk.Frame(self.left, bg="#313338")
+        bot_frame.pack(side="bottom", fill="x", pady=20)
+
+        BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        logout_path = os.path.join(BASE_DIR, "assets", "logout.png")
+        logout_icon = ImageTk.PhotoImage(Image.open(logout_path).resize((30, 30)))
+
+        logout_btn = tk.Button(
+            bot_frame,
+            text="LOG OUT",
+            font=("Arial", 15, "bold"),
+            bg="#313338",
+            fg="#F44336",
+            relief="flat",
+            cursor="hand2",
+            image=logout_icon,
+            compound="left",
+            highlightthickness=0,
+            command=self.logout
+        )
+        logout_btn.image = logout_icon
+        logout_btn.pack(padx=10, ipady=5, side="left")
+
+        def on_enter(e):
+            logout_btn.config(fg="#cc0000")
+
+        def on_leave(e):
+            logout_btn.config(fg="#F44336")
+
+        logout_btn.bind("<Enter>", on_enter)
+        logout_btn.bind("<Leave>", on_leave)
+
+    def logout(self):
+        self.root.destroy()
 
 
     def create_orders_page(self):
