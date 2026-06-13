@@ -15,6 +15,7 @@ class MainApp:
         self.root = root
         self.root.title("iRENT")
         self.root.state("zoomed")
+        self.active_label = None
 
         self.create_layout()
         self.create_pages()
@@ -130,20 +131,35 @@ class MainApp:
                 search_box,
                 text=text,
                 bg="#313338",
-                fg="#ffd735",
+                fg="white",
                 font=("Arial", 12, "bold"),
                 anchor="w",
                 cursor="hand2"
             )
             label.pack(pady=10, padx=20, fill="x")
 
+
+
             if i < len(buttons) - 1:
                 tk.Frame(search_box, height=2, bg="#ffd735").pack(fill="x", padx=10)
 
-            label.bind("<Button-1>", lambda e, p=page: self.pages[p].tkraise())
+            def on_click(e, l=label, p=page):
+                self.pages[p].tkraise()
 
-            def on_enter(e, l=label): l.config(fg="white")
-            def on_leave(e, l=label): l.config(fg="#ffd735")
+                if self.active_label:
+                    self.active_label.config(bg="#313338", fg="white")
+                self.active_label = l
+                l.config(bg="#313338", fg="#ffd735")
+
+            label.bind("<Button-1>", on_click)
+
+            def on_enter(e, l=label):
+                if l != self.active_label:
+                    l.config(fg="#ffd735")
+            
+            def on_leave(e, l=label):
+                if l != self.active_label:
+                    l.config(fg="white")
 
             label.bind("<Enter>", on_enter)
             label.bind("<Leave>", on_leave)
