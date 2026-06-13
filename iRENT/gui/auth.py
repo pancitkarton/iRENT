@@ -263,7 +263,7 @@ class AuthApp:
                 highlightthickness=2,
                 width=width
             )
-            entry.grid(row=1, column=col, padx=2, ipady=8, sticky="ew")
+            entry.grid(row=1, column=col, padx=(2,7), ipady=8, sticky="ew")
             return entry
         
         create_firstname = name_fields("First Name", 0)
