@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 from PIL import Image, ImageTk
 from tkcalendar import DateEntry
 import os
@@ -181,6 +182,8 @@ class MainApp:
             image=logout_icon,
             compound="left",
             highlightthickness=0,
+            activebackground="#313338",
+            activeforeground="#ff4d4d",
             command=self.logout
         )
         logout_btn.image = logout_icon
@@ -196,7 +199,13 @@ class MainApp:
         logout_btn.bind("<Leave>", on_leave)
 
     def logout(self):
-        self.root.destroy()
+        confirm = messagebox.askyesno(
+            "Log Out",
+            "Are you sure you want to log out?"
+        )
+
+        if confirm:
+            self.root.destroy()
 
 
     def create_orders_page(self):
