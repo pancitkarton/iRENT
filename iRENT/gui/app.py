@@ -8,7 +8,11 @@ import os
 
 from gui.orders import create_orders
 from gui.overdue import create_overdue
-from gui.rental import create_dataentry
+from gui.rentals import rentals_page
+from gui.history import create_history_page
+from gui.add_rental import add_rental_page
+
+
 
 
 class MainApp:
@@ -23,9 +27,7 @@ class MainApp:
         self.create_sidebar()
 
         self.create_dashboard()
-        self.create_dataentry_page()
-        self.create_orders_page()
-        self.create_overdue_page()
+        self.create_rentals_page()
 
         self.pages["dashboard"].tkraise()
 
@@ -84,13 +86,16 @@ class MainApp:
     def create_pages(self):
         self.pages = {}
 
-        for name in ["dashboard","dataentry", "orders", "order_details", "history", "devices", "overdue"]:
+        for name in ["dashboard", "rentals", "order_details", "add_rental"]:
             frame = tk.Frame(self.right)
             frame.grid(row=0, column=0, sticky="nsew")
             self.pages[name] = frame
 
             frame.grid_rowconfigure(0, weight=1)
             frame.grid_columnconfigure(0, weight=1)
+
+        add_rental_page(self.pages["add_rental"], self)
+
 
     def create_sidebar(self):
         search_box = tk.LabelFrame(self.left, bg="#313338", bd=0)
@@ -105,7 +110,7 @@ class MainApp:
             anchor="w"
         ).pack(padx=10, fill="x")
 
-        tk.Entry(
+        search_entry = tk.Entry(
             search_box,
             font=("Arial", 12),
             width=28,
@@ -115,15 +120,33 @@ class MainApp:
             highlightcolor="#ffd735",
             highlightthickness=2,
             insertbackground="white"
-        ).pack(pady=(5, 40), padx=10, ipady=6, anchor="w")
+        )
+        search_entry.pack(pady=(5, 40), padx=10, ipady=6, anchor="w")
+
+
+        def on_focus_in(event):
+            if search_entry.get() == "Search...":
+                search_entry.delete(0, "end")
+                search_entry.config(fg="white")
+
+        def on_focus_out(event):
+                if search_entry.get() == "":
+                    search_entry.insert(0, "Search...")
+                    search_entry.config(fg="#ffffffc5")
+
+        search_entry.bind("<FocusIn>", on_focus_in)
+        search_entry.bind("<FocusOut>", on_focus_out)
+        search_entry.insert(0, "Search...")
+        search_entry.config(fg="gray")
+
+        self.sidebar_labels = []
+
 
         buttons = [
-            ("Dashboard", "dashboard"),
-            ("Create Rental", "dataentry"),
-            ("View Rental Orders", "orders"),
-            ("View Overdue Rentals", "overdue"),
-            ("View Rental History", "history"),
-            ("View List of Devices", "devices")
+            ("Home", "dashboard"),
+            ("Rentals", "rentals"),
+            ("Customers", ""),
+            ("Devices", ""),
         ]
 
         for i, (text, page) in enumerate(buttons):
@@ -132,26 +155,17 @@ class MainApp:
                 text=text,
                 bg="#313338",
                 fg="white",
-                font=("Arial", 12, "bold"),
+                font=("Arial", 15, "bold"),
                 anchor="w",
                 cursor="hand2"
             )
             label.pack(pady=10, padx=20, fill="x")
-
-
+            self.sidebar_labels.append(label)
 
             if i < len(buttons) - 1:
                 tk.Frame(search_box, height=2, bg="#ffd735").pack(fill="x", padx=10)
 
-            def on_click(e, l=label, p=page):
-                self.pages[p].tkraise()
-
-                if self.active_label:
-                    self.active_label.config(bg="#313338", fg="white")
-                self.active_label = l
-                l.config(bg="#313338", fg="#ffd735")
-
-            label.bind("<Button-1>", on_click)
+            label.bind("<Button-1>", lambda e, p=page, l=label: self.set_active_page(p,l))
 
             def on_enter(e, l=label):
                 if l != self.active_label:
@@ -198,6 +212,19 @@ class MainApp:
         logout_btn.bind("<Enter>", on_enter)
         logout_btn.bind("<Leave>", on_leave)
 
+    def set_active_page(self, page_name, label_widget=None):
+        self.pages[page_name].tkraise()
+
+        if self.active_label:
+            self.active_label.config(bg="#313338", fg="white")
+
+        if label_widget:
+            self.active_label = label_widget
+        else:
+            self.active_label = self.sidebar_labels[0]
+
+        self.active_label.config(bg="#313338", fg="#ffd735")
+
     def logout(self):
         confirm = messagebox.askyesno(
             "Log Out",
@@ -207,15 +234,8 @@ class MainApp:
         if confirm:
             self.root.destroy()
 
-
-    def create_orders_page(self):
-        create_orders(self.pages["orders"], self)
-
-    def create_overdue_page(self):
-        create_overdue(self.pages["overdue"], self)
-
-    def create_dataentry_page(self):
-        create_dataentry(self.pages["dataentry"], self)
+    def create_rentals_page(self):
+        rentals_page(self.pages["rentals"], self)
 
     def create_dashboard(self):
         frame = tk.LabelFrame(
@@ -250,8 +270,8 @@ class MainApp:
         self.create_card(frame, "#888E93", "employees.png", "5", "Total Employees", 3, row=2)
 
 
-
-
+    
+    
     def create_card(self, parent, color, icon_name, number, title, column, row=1):
 
         BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
