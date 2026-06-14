@@ -187,8 +187,8 @@ def add_rental_page(container_frame,rental):
             font=("Arial", 12, "bold")
         ).grid(row=2, column=2, sticky="w", padx=5, pady=5)
 
-        rental.return_by = ttk.Combobox(device_frame, values=["1 day", "3 days"])
-        rental.return_by.grid(row=2, column=3, sticky="w", padx=5, pady=5, ipady=6)
+        rental.rental_calendar = DateEntry(device_frame, width=12, date_pattern="mm-dd-yyyy")
+        rental.rental_calendar.grid(row=2, column=3, sticky="w", padx=5, pady=5, ipady=6)
 
         bottom_bar = tk.Frame(form_frame, padx=10, pady=20, bg="#eef2f7")
         bottom_bar.grid(row =4, column =0, columnspan=4, sticky="sew", padx=10, pady=20)
