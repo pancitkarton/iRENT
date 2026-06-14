@@ -122,13 +122,14 @@ def rentals_page(main_frame, app):
 
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     filter_path = os.path.join(BASE_DIR, "assets", "filter.png")
-    filter_icon = ImageTk.PhotoImage(Image.open(filter_path).resize((20, 20)))
+    filter_icon = ImageTk.PhotoImage(Image.open(filter_path).resize((25, 25)))
 
     filter_label = tk.Label(
         searchfilter, 
         text="Filter", 
         image=filter_icon, 
         compound="left", 
+        justify="center",
         font=("Arial", 12, "bold"), 
         bg="#eef2f7", 
         fg="#e6b800", 
@@ -138,6 +139,9 @@ def rentals_page(main_frame, app):
     filter_label.image = filter_icon
     filter_label.pack(side="right", padx=10)
     filter_label.bind("<Button-1>", filter_menu)
+
+    add_hover(filter_label, "#eef2f7", "#eef2f7", "black", "#e6b800")
+
 
     container = tk.Frame(main_frame, bg="#eef2f7", highlightthickness=0)
     container.pack(fill="both", expand=True, padx=20)
@@ -341,7 +345,8 @@ def show_details(app, order):
     back_btn = tk.Button(
         bottom_bar,
         text="Back",
-        font=("Arial", 17),
+        font=("Arial", 17, "bold"),
+        bg="gray",
         cursor="hand2",
         command=lambda: app.pages["rentals"].tkraise()
     )
@@ -356,7 +361,7 @@ def show_details(app, order):
     )
     complete_btn.pack(side="right", padx=5)
 
-    add_hover(back_btn, "#232624", "#eef2f7", "white", "black")
+    add_hover(back_btn, "#232624", "gray", "white", "black")
     add_hover(complete_btn, "#232624", "#ffd735", "#ffd735", "black")
 
     frame.tkraise()

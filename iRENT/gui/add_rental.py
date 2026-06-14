@@ -142,14 +142,16 @@ def add_rental_page(container_frame,rental):
             font=("Arial", 20, "bold")
         ).pack(side="left")
 
-        reset_btn = tk.Button(
+
+        back_btn = tk.Button(
             bottom_bar,
-            text="Reset",
+            text="Back",
             font=("Arial", 17, "bold"),
             bg="gray",
-            cursor="hand2"
+            cursor="hand2",
+            command=lambda: rental.pages["rentals"].tkraise()
         )
-        reset_btn.pack(side="right", padx=5)
+        back_btn.pack(side="right", padx=5)
 
         create_btn = tk.Button(
             bottom_bar,
@@ -160,9 +162,22 @@ def add_rental_page(container_frame,rental):
         )
         create_btn.pack(side="right", padx=5)
 
+        reset_btn = tk.Button(
+        bottom_bar,
+        text="Reset",
+        font=("Arial", 17, "bold"),
+        bg="#eef2f7",
+        cursor="hand2",
+        borderwidth=0,
+        highlightthickness=0,
+        relief="flat"
+        )
+        reset_btn.pack(side="right", padx=5)
 
         rental.add_hover(create_btn, "#232624", "#ffd735", enter_fg="#ffd735", leave_fg="black")
+        rental.add_hover(back_btn, "#232624", "gray", "white", "black")
         rental.add_hover(reset_btn, "#232624", "#eef2f7", "white", "black")
+
 
         # Add the rental py logic below.
         # Wire up DB and button handlers
