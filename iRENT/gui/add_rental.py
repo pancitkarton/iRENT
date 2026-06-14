@@ -18,6 +18,53 @@ except Exception:
         get_all_available_devices, update_device_availability
     )
 
+def select_customer(rental, name_entries, contact_entry, email_entry):
+    selector = tk.Toplevel()
+    selector.title("Select Customer")
+    selector.geometry("500x300")
+    selector.grab_set()
+
+    #hardcoded examples palang to
+    customers = [
+        (101, "FirstName LastName", "12312312312", "example@gmail.com"),
+        (102, "Jose Manalo", "12123123123", "hello@gmail.com"),
+        (103, "Skusta Clee", "123123123", "12312312@gmail.com")
+    ]
+
+    search_frame = tk.Frame(selector)
+    search_frame.pack(fill="x", padx=10, pady=5)
+
+    tk.Label(search_frame, text="Search:").pack(side="left", padx=(0, 5))
+
+    search_entry = tk.Entry(search_frame, width=35)
+    search_entry.pack(side="left")
+
+    def filter_tree(event=None):
+        query = search_entry.get().lower()
+        for item in tree.get_children():
+            tree.delete(item)
+        for cust in customers:
+            if query in cust[1].lower() or query in cust[2].lower():
+                tree.insert("", "end", values=cust)
+
+    search_entry.bind("<KeyRelease>", filter_tree)
+
+    columns = ("id", "name", "contact", "email")
+    tree = ttk.Treeview(selector, columns=columns, show="headings")
+    tree.heading("id", text="ID")
+    tree.heading("name", text="Name")
+    tree.heading("contact", text="Contact")
+    tree.heading("email", text="Email")
+
+    tree.column("id", width=50, anchor="center") 
+    tree.column("name", width=150)
+    tree.column("contact", width=100)
+    tree.column("email", width=150)
+    tree.pack(fill="both", expand=True, padx=10, pady=5)
+
+    for cust in customers:
+        tree.insert("", "end", values=cust)
+
 
 def add_rental_page(container_frame,rental):
         for widget in container_frame.winfo_children():
@@ -51,6 +98,16 @@ def add_rental_page(container_frame,rental):
             font=("Arial", 20, "bold")
         )
         rentee_title.grid(row=0, column=0, sticky="w", padx=5, pady=5, columnspan=4)
+
+        select_btn = tk.Button(
+            rentee_info_frame, 
+            text="Select Customer", 
+            bg="#ffd735", 
+            font=("Arial", 10, "bold"),
+            command=lambda: select_customer(rental, rental.entries, rental.contact_entry, rental.email_entry)
+        )
+        select_btn.grid(row=0, column=3, sticky="e", padx=5, pady=5)
+        rental.add_hover(select_btn, "#232624", "#ffd735", enter_fg="#ffd735", leave_fg="black")
 
         fields = ["First Name", "Middle Name", "Last Name", "Suffix"]
 
@@ -133,7 +190,7 @@ def add_rental_page(container_frame,rental):
         rental.return_by = ttk.Combobox(device_frame, values=["1 day", "3 days"])
         rental.return_by.grid(row=2, column=3, sticky="w", padx=5, pady=5, ipady=6)
 
-        bottom_bar = tk.Frame(form_frame, padx=40, pady=20, bg="#eef2f7")
+        bottom_bar = tk.Frame(form_frame, padx=10, pady=20, bg="#eef2f7")
         bottom_bar.grid(row =4, column =0, columnspan=4, sticky="sew", padx=10, pady=20)
 
         tk.Label(
@@ -167,6 +224,7 @@ def add_rental_page(container_frame,rental):
         text="Reset",
         font=("Arial", 17, "bold"),
         bg="#eef2f7",
+        fg="#ffd735",
         cursor="hand2",
         borderwidth=0,
         highlightthickness=0,
@@ -175,7 +233,7 @@ def add_rental_page(container_frame,rental):
         reset_btn.pack(side="right", padx=5)
 
         rental.add_hover(create_btn, "#232624", "#ffd735", enter_fg="#ffd735", leave_fg="black")
-        rental.add_hover(back_btn, "#232624", "gray", "white", "black")
+        rental.add_hover(back_btn, "#232624", "#eef2f7", "white", "black")
         rental.add_hover(reset_btn, "#232624", "#eef2f7", "white", "black")
 
 

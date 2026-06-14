@@ -6,8 +6,6 @@ from tkcalendar import DateEntry
 import os
 
 
-from gui.orders import create_orders
-from gui.overdue import create_overdue
 from gui.rentals import rentals_page
 from gui.history import create_history_page
 from gui.add_rental import add_rental_page
