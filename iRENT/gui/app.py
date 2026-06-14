@@ -31,6 +31,13 @@ class MainApp:
 
         self.pages["dashboard"].tkraise()
 
+        self.page_to_sidebar = {
+            "dashboard": self.sidebar_labels[0],
+            "rentals": self.sidebar_labels[1],
+            "add_rental": self.sidebar_labels[1],
+            "order_details": self.sidebar_labels[1]
+        }
+
     def add_hover(self, btn, enter_bg, leave_bg, enter_fg=None, leave_fg=None):
 
         def on_enter(e):
@@ -165,7 +172,7 @@ class MainApp:
             if i < len(buttons) - 1:
                 tk.Frame(search_box, height=2, bg="#ffd735").pack(fill="x", padx=10)
 
-            label.bind("<Button-1>", lambda e, p=page, l=label: self.set_active_page(p,l))
+            label.bind("<Button-1>", lambda e, p=page: self.set_active_page(p))
 
             def on_enter(e, l=label):
                 if l != self.active_label:
@@ -212,16 +219,13 @@ class MainApp:
         logout_btn.bind("<Enter>", on_enter)
         logout_btn.bind("<Leave>", on_leave)
 
-    def set_active_page(self, page_name, label_widget=None):
+    def set_active_page(self, page_name):
         self.pages[page_name].tkraise()
 
         if self.active_label:
             self.active_label.config(bg="#313338", fg="white")
 
-        if label_widget:
-            self.active_label = label_widget
-        else:
-            self.active_label = self.sidebar_labels[0]
+        self.active_label = self.page_to_sidebar.get(page_name, self.sidebar_labels[0])
 
         self.active_label.config(bg="#313338", fg="#ffd735")
 
