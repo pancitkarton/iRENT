@@ -183,7 +183,7 @@ def add_rental_page(container_frame,rental):
 
         tk.Label(
             device_frame,
-            text="Must Return By:",
+            text="Return By:",
             font=("Arial", 12, "bold")
         ).grid(row=2, column=2, sticky="w", padx=5, pady=5)
 
