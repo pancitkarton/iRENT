@@ -351,18 +351,18 @@ def show_details(app, order):
         command=lambda: app.pages["rentals"].tkraise()
     )
     back_btn.pack(side="right", padx=5)
-
-    complete_btn = tk.Button(
-        bottom_bar,
-        text="COMPLETE RENTAL",
-        font=("Arial", 17, "bold"),
-        bg="#ffd735",
-        cursor="hand2"
-    )
-    complete_btn.pack(side="right", padx=5)
-
     add_hover(back_btn, "#232624", "gray", "white", "black")
-    add_hover(complete_btn, "#232624", "#ffd735", "#ffd735", "black")
+
+    if order['status'] != "Completed":
+        complete_btn = tk.Button(
+            bottom_bar,
+            text="COMPLETE RENTAL",
+            font=("Arial", 17, "bold"),
+            bg="#ffd735",
+            cursor="hand2"
+        )
+        complete_btn.pack(side="right", padx=5)
+        add_hover(complete_btn, "#232624", "#ffd735", "#ffd735", "black")
 
     frame.tkraise()
 
