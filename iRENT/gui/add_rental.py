@@ -3,7 +3,7 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 from tkcalendar import DateEntry
 from tkinter import messagebox
-from db.add_rental_logic import getcreate_customer, create_rental, get_devices
+from db.add_rental_logic import getcreate_customer, create_rental, get_devices, get_customers
 
 
 def select_customer(rental, name_entries, contact_entry, email_entry):
@@ -13,11 +13,7 @@ def select_customer(rental, name_entries, contact_entry, email_entry):
     selector.grab_set()
 
     #hardcoded examples palang to
-    customers = [
-        (101, "FirstName LastName", "12312312312", "example@gmail.com"),
-        (102, "Jose Manalo", "12123123123", "hello@gmail.com"),
-        (103, "Skusta Clee", "123123123", "12312312@gmail.com")
-    ]
+    customers = get_customers()
 
     search_frame = tk.Frame(selector)
     search_frame.pack(fill="x", padx=10, pady=5)
@@ -37,7 +33,7 @@ def select_customer(rental, name_entries, contact_entry, email_entry):
 
     search_entry.bind("<KeyRelease>", filter_tree)
 
-    columns = ("id", "name", "contact", "email")
+    columns = ("id", "first", "middle", "last", "suffix", "contact", "email")
     tree = ttk.Treeview(selector, columns=columns, show="headings")
     tree.heading("id", text="ID")
     tree.heading("name", text="Name")
@@ -45,14 +41,44 @@ def select_customer(rental, name_entries, contact_entry, email_entry):
     tree.heading("email", text="Email")
 
     tree.column("id", width=50, anchor="center") 
-    tree.column("name", width=150)
-    tree.column("contact", width=100)
-    tree.column("email", width=150)
+    tree.heading("first", text="First Name")
+    tree.heading("middle", text="Middle Name")
+    tree.heading("last", text="Last Name")
+    tree.heading("suffix", text="Suffix")
+    tree.heading("contact", text="Contact")
+    tree.heading("email", text="Email")
     tree.pack(fill="both", expand=True, padx=10, pady=5)
 
-    for cust in customers:
-        tree.insert("", "end", values=cust)
+    def on_select(event):
+        selected = tree.focus()
+        if not selected:
+            return
 
+        values = tree.item(selected, "values")
+
+        customer_id, first, middle, last, suffix, contact, email = values
+
+        name_entries["First Name"].delete(0, tk.END)
+        name_entries["First Name"].insert(0, first)
+
+        name_entries["Middle Name"].delete(0, tk.END)
+        name_entries["Middle Name"].insert(0, middle)
+
+        name_entries["Last Name"].delete(0, tk.END)
+        name_entries["Last Name"].insert(0, last)
+
+        name_entries["Suffix"].delete(0, tk.END)
+        name_entries["Suffix"].insert(0, suffix)
+
+        contact_entry.delete(0, tk.END)
+        contact_entry.insert(0, contact)
+
+        email_entry.delete(0, tk.END)
+        email_entry.insert(0, email)
+
+        selector.destroy()
+
+    tree.bind("<Double-1>", on_select)
 
 def add_rental_page(container_frame,rental):
         for widget in container_frame.winfo_children():
@@ -72,6 +98,7 @@ def add_rental_page(container_frame,rental):
                     rental.entries["Middle Name"].get(),
                     rental.entries["Last Name"].get(),
                     rental.entries["Suffix"].get(),
+                    rental.entries["Birthday"].get(),
                     rental.contact_entry.get(),
                     rental.email_entry.get()
                 )

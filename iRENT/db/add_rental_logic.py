@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS Customer (
     MiddleName TEXT,
     LastName TEXT NOT NULL,
     Suffix TEXT,
+    Birthday TEXT,
     ContactNumber TEXT NOT NULL UNIQUE,
     EmailAddress TEXT NOT NULL UNIQUE
 )
@@ -117,6 +118,7 @@ def getcreate_customer(
         middle, 
         last, 
         suffix, 
+        birthday,
         contact, 
         email
     ):
@@ -132,12 +134,12 @@ def getcreate_customer(
         return row[0]
 
     cursor.execute("""
-        INSERT INTO Customer (
-            FirstName, MiddleName, LastName, Suffix,
-            ContactNumber, EmailAddress
-        )
-        VALUES (?, ?, ?, ?, ?, ?)
-    """, (first, middle, last, suffix, contact, email))
+    INSERT INTO Customer (
+        FirstName, MiddleName, LastName, Suffix,
+        Birthday, ContactNumber, EmailAddress
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+""", (first, middle, last, suffix, birthday, contact, email))
 
     conn.commit()
     return cursor.lastrowid
@@ -189,3 +191,10 @@ def create_rental(
     ))
 
     conn.commit()
+
+def get_customers():
+    cursor.execute("""
+        SELECT CustomerID, FirstName, MiddleName, LastName, Suffix, ContactNumber, EmailAddress
+        FROM Customer
+    """)
+    return cursor.fetchall()
