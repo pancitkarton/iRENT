@@ -38,7 +38,10 @@ def make_database():
             Barangay TEXT NOT NULL,
             City TEXT NOT NULL,
             Province TEXT NOT NULL,
-            ZIPCode TEXT NOT NULL
+            ZIPCode TEXT NOT NULL,
+            BirthMonth TEXT NOT NULL,
+            BirthDay TEXT NOT NULL,
+            BirthYear TEXT NOT NULL
         )
     ''')
 
@@ -166,8 +169,11 @@ def run_terminal_interface():
                 city = input("City: ")
                 province = input("Province: ")
                 zipcode = input("ZIP Code: ")
+                birthmonth = input("Birth Month (e.g., January): ")
+                birthday = input("Birth Day (e.g., 15): ")
+                birthyear = input("Birth Year (e.g., 1990): ")
 
-                cust_id = add_customer(conn, fname, mname, lname, suffix, contact, email, street, barangay, city, province, zipcode)
+                cust_id = add_customer(conn, fname, mname, lname, suffix, contact, email, street, barangay, city, province, zipcode, birthmonth, birthday, birthyear)
                 print(f"Success! Customer added with ID: {cust_id}")
 
             elif choice == '2':

@@ -45,7 +45,10 @@ def make_database():
             Barangay TEXT NOT NULL,
             City TEXT NOT NULL,
             Province TEXT NOT NULL,
-            ZIPCode TEXT NOT NULL
+            ZIPCode TEXT NOT NULL,
+            BirthMonth TEXT NOT NULL,
+            BirthDay TEXT NOT NULL,
+            BirthYear TEXT NOT NULL
         )
     ''')
 
@@ -139,13 +142,13 @@ def make_database():
 # Only add more if necessary
 
 # CREATE, ADD FUNCTION
-def add_customer(conn, first_name, middle_name, last_name, suffix, contact, email, street, barangay, city, province, zipcode):
+def add_customer(conn, first_name, middle_name, last_name, suffix, contact, email, street, barangay, city, province, zipcode, birthmonth, birthday, birthyear):
     """Registers a new customer into the system."""
     cursor = conn.cursor()
     cursor.execute('''
-        INSERT INTO Customer (FirstName, MiddleName, LastName, Suffix, ContactNumber, EmailAddress, Street, Barangay, City, Province, ZIPCode)
-        VALUES (?, ?, ?, ?, ?, ?)
-    ''', (first_name, middle_name, last_name, suffix, contact, email, street, barangay, city, province, zipcode))
+        INSERT INTO Customer (FirstName, MiddleName, LastName, Suffix, ContactNumber, EmailAddress, Street, Barangay, City, Province, ZIPCode, BirthMonth, BirthDay, BirthYear)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (first_name, middle_name, last_name, suffix, contact, email, street, barangay, city, province, zipcode, birthmonth, birthday, birthyear))
     conn.commit()
     return cursor.lastrowid
 
@@ -273,6 +276,9 @@ def get_rental_details(conn, rental_id):
             c.City,
             c.Province,
             c.ZIPCode,
+            c.BirthMonth,
+            c.BirthDay,
+            c.BirthYear,
             d.Model,
             r.SRentalMonth,
             r.SRentalDay,
