@@ -1,4 +1,4 @@
-# db and functions for log-in and sign-up
+# db and functions for add rental
 import sqlite3
 import os
 
@@ -34,9 +34,10 @@ def login(username, password):
         result = cursor.fetchone() #retrieves the username and password from the database, and checks if they match with the input
 
         if result:
-             return "success"
+            return {"status": "success", "staff_id": result[0]}
+        
         else:
-             return "fail"
+            return {"status": "fail"}
 
 
 #Sign-up function

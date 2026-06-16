@@ -15,11 +15,13 @@ from gui.customers import customers_page
 
 
 class MainApp:
-    def __init__(self, root):
+    def __init__(self, root, staff_id):
         self.root = root
         self.root.title("iRENT")
         self.root.state("zoomed")
         self.active_label = None
+
+        self.staff_id = staff_id
 
         self.create_layout()
         self.create_pages()

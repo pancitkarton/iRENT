@@ -1,6 +1,6 @@
 import tkinter as tk
 from PIL import Image, ImageTk
-from db import sqlite_crudop
+# from db import sqlite_crudop (comment ko muna to para gumana yung sa add rental)
 import os
 
 orders = [  #temporary only, will delete when create rental exists
