@@ -144,19 +144,19 @@ def make_database():
 
 
 
-# CRUD Operations (Backend Code for GUIs). 
-# Basis of GUIs. 
+# CRUD Operations (Backend Code for GUIs).
+# Basis of GUIs.
 # Only add more if necessary
 
 
 # For Create/Insert/Add
-def add_customer(conn, first_name, middle_name, last_name, suffix, contact, email):
+def add_customer(conn, first_name, middle_name, last_name, suffix, contact, email, street, barangay, city, province, zipcode):
     """Registers a new customer into the system."""
     cursor = conn.cursor()
     cursor.execute('''
-        INSERT INTO Customer (FirstName, MiddleName, LastName, Suffix, ContactNumber, EmailAddress)
+        INSERT INTO Customer (FirstName, MiddleName, LastName, Suffix, ContactNumber, EmailAddress, Street, Barangay, City, Province, ZIPCode)
         VALUES (?, ?, ?, ?, ?, ?)
-    ''', (first_name, middle_name, last_name, suffix, contact, email))
+    ''', (first_name, middle_name, last_name, suffix, contact, email, street, barangay, city, province, zipcode))
     conn.commit()
     return cursor.lastrowid
 
@@ -223,7 +223,7 @@ def get_overdue_rentals(conn, current_year, current_month, current_day):
 def get_rentals_by_status(conn, status):
     """Allows staff to filter status (Ongoing, Overdue, Completed)."""
     cursor = conn.cursor()
-    
+
     cursor.execute('''
         SELECT r.RentalID,
                c.FirstName || ' ' || c.LastName AS CustomerName,
@@ -339,7 +339,7 @@ def remove_customer(conn, customer_id):
 
 
 
-# The def main(). 
+# The def main().
 # Initial logic only. The main basis are the crudops above.
 
 def main():
@@ -387,6 +387,11 @@ def main():
                 suffix = input("Suffix: ")
                 contact = input("Contact Number: ")
                 email = input("Email Address: ")
+                street = input("Street: ")
+                barangay = input("Barangay: ")
+                city = input("City: ")
+                province = input("Province: ")
+                zipcode = input("ZIP Code: ")
 
                 customer_id = add_customer(
                     conn,

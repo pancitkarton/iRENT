@@ -168,6 +168,7 @@ def run_terminal_interface():
             elif choice == '2':
                 print("\n--- Add New Device ---")
                 model = input("Model Name: ")
+                address = input("Device Address (e.g., storage location): ")
                 serial = input("Serial Number: ")
                 price = float(input("Rental Price (e.g., 150.00): "))
                 func = input("Functional Status (Excellent/Good/Fair/Poor): ").capitalize()
@@ -176,7 +177,7 @@ def run_terminal_interface():
                 type_id = int(input("Device Type ID (integer): "))
                 brand_id = int(input("Brand ID (integer): "))
 
-                dev_id = add_device(conn, model, serial, price, func, appr, avail, type_id, brand_id)
+                dev_id = add_device(conn, model, address, serial, price, func, appr, avail, type_id, brand_id)
                 print(f"Success! Device added with ID: {dev_id}")
 
             elif choice == '3':
