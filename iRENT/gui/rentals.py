@@ -114,6 +114,8 @@ def rentals_page(main_frame, app):
     search.bind("<FocusOut>", on_focus_out)
     search.config(fg="gray")
 
+# SEARCH RENTALS FUNCTION HERE
+
     def filter_menu(event):
         menu = tk.Menu(main_frame, tearoff=0)
         menu.add_command(label="Show Active", command=lambda: print("Filtering Active..."))
@@ -143,6 +145,7 @@ def rentals_page(main_frame, app):
 
     add_hover(filter_label, "#eef2f7", "#eef2f7", "black", "#e6b800")
 
+# FILTER STATUS FUNCTION HERE
 
     container = tk.Frame(main_frame, bg="#eef2f7", highlightthickness=0)
     container.pack(fill="both", expand=True, padx=20)
@@ -343,6 +346,8 @@ def show_details(app, order):
         bg="#eef2f7"
     ).pack(side="left")
 
+# SEE MORE DETAILS FUNCTION HERE
+
     back_btn = tk.Button(
         bottom_bar,
         text="Back",
@@ -364,5 +369,7 @@ def show_details(app, order):
         )
         complete_btn.pack(side="right", padx=5)
         add_hover(complete_btn, "#232624", "#ffd735", "#ffd735", "black")
+
+# MARK RENTAL COMPLETE FUNCTION HERE
 
     frame.tkraise()
