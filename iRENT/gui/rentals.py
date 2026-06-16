@@ -366,19 +366,3 @@ def show_details(app, order):
         add_hover(complete_btn, "#232624", "#ffd735", "#ffd735", "black")
 
     frame.tkraise()
-
-
-
-# LOGICS (to be inserted at assigned tkinter parts here)
-
-# Filter-only status (ongoing, overdue, complete) logic
-
-
-
-# See details order (ongoing, overdue, complete) logic
-
-
-# Search (Name or ID) at search bar logic
-
-
-# Mark Complete rental logic

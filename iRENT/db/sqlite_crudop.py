@@ -218,7 +218,7 @@ def get_overdue_rentals(conn, current_year, current_month, current_day):
     ''', (current_year, current_year, current_month, current_year, current_month, current_day))
     return cursor.fetchall()
 
-# added def rentals status filter (aayusin pa)
+# added def rentals status filter
 def get_rentals_by_status(conn, status):
     """Allows staff to filter status (Ongoing, Overdue, Completed)."""
     cursor = conn.cursor()
@@ -238,7 +238,7 @@ def get_rentals_by_status(conn, status):
 
     return cursor.fetchall()
 
-# added def search rentals by name or id (aayusin pa)
+# added def search rentals by name or id
 def search_rentals(conn, search_term):
     """Search rentals by RentalID or Customer name."""
     cursor = conn.cursor()
@@ -270,7 +270,7 @@ def search_device_by_model(conn, search_term):
     cursor.execute("SELECT * FROM Device WHERE Model LIKE ?", (search_pattern,))
     return cursor.fetchall()
 
-# added def get rental details (aayusin pa)
+# added def get rental details
 def get_rental_details(conn, rental_id):
     """Returns full rental breakdown including customer, address, device, dates, and fee."""
     cursor = conn.cursor()
