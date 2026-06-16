@@ -36,6 +36,7 @@ def make_database():
     #To reference profiling ID. Paayos nalang, Quitollo.
 
     # Create Customer table
+    # Added customer address (5 composite values)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Customer (
             CustomerID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -44,7 +45,12 @@ def make_database():
             LastName TEXT NOT NULL,
             Suffix TEXT,
             ContactNumber TEXT NOT NULL UNIQUE,
-            EmailAddress TEXT NOT NULL UNIQUE
+            EmailAddress TEXT NOT NULL UNIQUE,
+            Street TEXT NOT NULL,
+            Barangay TEXT NOT NULL,
+            City TEXT NOT NULL,
+            Province TEXT NOT NULL,
+            ZIPCode TEXT NOT NULL
         )
     ''')
 
