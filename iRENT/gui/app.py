@@ -9,6 +9,7 @@ import os
 from gui.rentals import rentals_page
 from gui.history import create_history_page
 from gui.add_rental import add_rental_page
+from gui.customers import customers_page
 
 
 
@@ -26,6 +27,7 @@ class MainApp:
 
         self.create_dashboard()
         self.create_rentals_page()
+        self.create_customers_page()
 
         self.pages["dashboard"].tkraise()
 
@@ -33,7 +35,8 @@ class MainApp:
             "dashboard": self.sidebar_labels[0],
             "rentals": self.sidebar_labels[1],
             "add_rental": self.sidebar_labels[1],
-            "order_details": self.sidebar_labels[1]
+            "order_details": self.sidebar_labels[1],
+            "customers": self.sidebar_labels[2]
         }
 
     def add_hover(self, btn, enter_bg, leave_bg, enter_fg=None, leave_fg=None):
@@ -91,7 +94,7 @@ class MainApp:
     def create_pages(self):
         self.pages = {}
 
-        for name in ["dashboard", "rentals", "order_details", "add_rental"]:
+        for name in ["dashboard", "rentals", "order_details", "add_rental", "customers", "customer_details"]:
             frame = tk.Frame(self.right)
             frame.grid(row=0, column=0, sticky="nsew")
             self.pages[name] = frame
@@ -150,7 +153,7 @@ class MainApp:
         buttons = [
             ("Home", "dashboard"),
             ("Rentals", "rentals"),
-            ("Customers", ""),
+            ("Customers", "customers"),
             ("Devices", ""),
         ]
 
@@ -238,6 +241,10 @@ class MainApp:
 
     def create_rentals_page(self):
         rentals_page(self.pages["rentals"], self)
+
+    def create_customers_page(self):
+        customers_page(self.pages["customers"], self)
+
 
     def create_dashboard(self):
         frame = tk.LabelFrame(

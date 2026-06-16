@@ -271,7 +271,6 @@ def add_rental_page(container_frame,rental):
             rental.contact_entry.delete(0, 'end')
             rental.email_entry.delete(0, 'end')
             rental.device_combobox.set('')
-            rental.return_by.set('')
 
         def submit_rental():
             # Gather rentee info
