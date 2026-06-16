@@ -56,7 +56,7 @@ def select_customer(rental, name_entries, contact_entry, email_entry):
     tree.heading("contact", text="Contact")
     tree.heading("email", text="Email")
 
-    tree.column("id", width=50, anchor="center") 
+    tree.column("id", width=50, anchor="center")
     tree.column("name", width=150)
     tree.column("contact", width=100)
     tree.column("email", width=150)
@@ -104,9 +104,9 @@ def add_rental_page(container_frame,rental):
         rentee_title.grid(row=0, column=0, sticky="w", padx=(5,10), pady=5, columnspan=3)
 
         select_btn = tk.Button(
-            rentee_info_frame, 
-            text="Select Customer", 
-            bg="#ffd735", 
+            rentee_info_frame,
+            text="Select Customer",
+            bg="#ffd735",
             font=("Arial", 10, "bold"),
             command=lambda: select_customer(rental, rental.entries, rental.contact_entry, rental.email_entry)
         )
@@ -281,9 +281,11 @@ def add_rental_page(container_frame,rental):
             contact = rental.contact_entry.get().strip()
             email = rental.email_entry.get().strip()
             device_display = rental.device_combobox.get().strip()
-            return_by_text = rental.return_by.get().strip()
+            # UI uses a DateEntry named `return_calendar`
+            return_date = rental.return_calendar.get_date()
 
-            if not (first and last and contact and email and device_display and return_by_text):
+            if not (first and last and contact and email and device_display and return_date):
+
                 messagebox.showwarning("Missing Data", "Please fill in all required fields.")
                 return
 
@@ -298,20 +300,22 @@ def add_rental_page(container_frame,rental):
             s_date = rental.rental_calendar.get_date()
             s_month, s_day, s_year = s_date.month, s_date.day, s_date.year
 
-            # Compute expected return date from `return_by` (e.g. "1 day", "3 days")
-            days = 1
-            try:
-                days = int(return_by_text.split()[0])
-            except Exception:
-                days = 1
-            ex_date = s_date + datetime.timedelta(days=days)
-            ex_month, ex_day, ex_year = ex_date.month, ex_date.day, ex_date.year
+            # Expected return date comes directly from the DateEntry `return_calendar`
+            ex_month, ex_day, ex_year = return_date.month, return_date.day, return_date.year
+
 
             conn = get_connection()
             try:
-                # Try to add customer; if exists, find existing id
+                # Try to add customer; if exists, find existing id.
+                # NOTE: db.sqlite_crudop.add_customer requires address fields too.
                 try:
-                    customer_id = add_customer(conn, first, middle, last, suffix, contact, email)
+                    customer_id = add_customer(
+                        conn,
+                        first, middle, last, suffix,
+                        contact, email,
+                        "", "", "", "", ""  # Street, Barangay, City, Province, ZIPCode (not collected in this form yet)
+                    )
+
                 except Exception:
                     # likely unique constraint; lookup existing customer by contact or email
                     cur = conn.cursor()
