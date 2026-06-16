@@ -273,7 +273,7 @@ def search_device_by_model(conn, search_term):
 
 # added def get rental details (aayusin pa)
 def get_rental_details(conn, rental_id):
-    """Returns full rental breakdown including customer + dates + fee."""
+    """Returns full rental breakdown including customer, address, device, dates, and fee."""
     cursor = conn.cursor()
 
     cursor.execute('''
@@ -282,17 +282,29 @@ def get_rental_details(conn, rental_id):
             c.FirstName || ' ' || c.LastName AS CustomerName,
             c.ContactNumber,
             c.EmailAddress,
-
-            r.SRentalMonth, r.SRentalDay, r.SRentalYear,
-            r.ExReturnMonth, r.ExReturnDay, r.ExReturnYear,
-
-            r.RentalStatus,
+            c.Street,
+            c.Barangay,
+            c.City,
+            c.Province,
+            c.ZIPCode,
+            d.Model,
+            r.SRentalMonth,
+            r.SRentalDay,
+            r.SRentalYear,
+            r.ExReturnMonth,
+            r.ExReturnDay,
+            r.ExReturnYear,
             r.TotalRentalFee,
+            r.RentalStatus
 
-            s.FirstName || ' ' || s.LastName AS StaffName
         FROM Rental r
-        JOIN Customer c ON r.CustomerID = c.CustomerID
-        JOIN Staff s ON r.StaffID = s.StaffID
+        JOIN Customer c
+            ON r.CustomerID = c.CustomerID
+        JOIN RentalItem ri
+            ON r.RentalID = ri.RentalID
+        JOIN Device d
+            ON ri.DeviceID = d.DeviceID
+
         WHERE r.RentalID = ?
     ''', (rental_id,))
 
@@ -319,7 +331,7 @@ def mark_rental_as_completed(conn, rental_id):
         WHERE RentalID = ?
     ''', (rental_id,))
     conn.commit()
-    print(f"Rental {rental_id} successfully marked as Completed.")
+    return cursor.rowcount > 0  # Tells user if the row is updated after marking that row or rental as complete
     # Set rentalstatus to complete, for status change effectiveness
 
 
@@ -400,7 +412,12 @@ def main():
                     last,
                     suffix,
                     contact,
-                    email
+                    email,
+                    street,
+                    barangay,
+                    city,
+                    province,
+                    zipcode
                 )
 
                 print(f"Customer added successfully! ID = {customer_id}")
