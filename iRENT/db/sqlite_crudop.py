@@ -1,15 +1,14 @@
+# db functions for remaining needs
 import sqlite3
 import os
 
-# Database path setup
-# Gets the exact directory where this python file lives
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# Forces the database to be named iRENT.db inside that exact directory
-DB_PATH = os.path.join(BASE_DIR, 'iRENT.db')
+
+db_path = os.path.join(BASE_DIR, 'iRENT.db')
 
 def get_connection():
     """Helper function to return a connection with foreign keys enabled."""
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(db_path)
     conn.execute("PRAGMA foreign_keys = ON")
     return conn
 
@@ -32,10 +31,7 @@ def make_database():
         )
     ''')
 
-    #To reference profiling ID. Paayos nalang, Quitollo.
-
     # Create Customer table
-    # Added customer address (5 composite values)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Customer (
             CustomerID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,7 +50,6 @@ def make_database():
     ''')
 
     # Create Rental table
-    # Included CustomerID INTEGER NOT NULL, and StaffID INTEGER NOT NULL. They're foreign keys in this table.
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Rental (
             RentalID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -90,7 +85,6 @@ def make_database():
     ''')
 
     # Create Device table
-    # Included DeviceTypeID INTEGER NOT NULL, and BrandID INTEGER NOT NULL. They are foreign keys to this table.
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Device (
             DeviceID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -108,7 +102,6 @@ def make_database():
     ''')
 
     # Create table for multivalued attribute DeviceSpecs (under Device)
-    # Included DeviceID INTEGER NOT NULL. It is a foreign key to the table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS DeviceSpecs (
             SpecsID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -142,13 +135,10 @@ def make_database():
     conn.commit()
 
 
-
 # CRUD Operations (Backend Code for GUIs).
-# Basis of GUIs.
 # Only add more if necessary
 
-
-# For Create/Insert/Add
+# CREATE, ADD FUNCTION
 def add_customer(conn, first_name, middle_name, last_name, suffix, contact, email, street, barangay, city, province, zipcode):
     """Registers a new customer into the system."""
     cursor = conn.cursor()
@@ -180,7 +170,7 @@ def create_rental_transaction(conn, s_month, s_day, s_year, ex_month, ex_day, ex
     return cursor.lastrowid
 
 
-# For Read, Search, and Display
+# READ, DISPLAY FUNCTION
 def get_all_available_devices(conn):
     """Fetches all devices currently marked as 'Available'."""
     cursor = conn.cursor()
@@ -218,7 +208,6 @@ def get_overdue_rentals(conn, current_year, current_month, current_day):
     ''', (current_year, current_year, current_month, current_year, current_month, current_day))
     return cursor.fetchall()
 
-# added def rentals status filter
 def get_rentals_by_status(conn, status):
     """Allows staff to filter status (Ongoing, Overdue, Completed)."""
     cursor = conn.cursor()
@@ -238,7 +227,6 @@ def get_rentals_by_status(conn, status):
 
     return cursor.fetchall()
 
-# added def search rentals by name or id
 def search_rentals(conn, search_term):
     """Search rentals by RentalID or Customer name."""
     cursor = conn.cursor()
@@ -270,7 +258,6 @@ def search_device_by_model(conn, search_term):
     cursor.execute("SELECT * FROM Device WHERE Model LIKE ?", (search_pattern,))
     return cursor.fetchall()
 
-# added def get rental details
 def get_rental_details(conn, rental_id):
     """Returns full rental breakdown including customer, address, device, dates, and fee."""
     cursor = conn.cursor()
@@ -310,7 +297,7 @@ def get_rental_details(conn, rental_id):
     return cursor.fetchone()
 
 
-# For Update/Alter/Change
+# UPDATE FUNCTION
 def update_device_availability(conn, device_id, new_status):
     """Updates device status (e.g., changing 'Available' to 'Rented' or 'Maintenance')."""
     cursor = conn.cursor()
@@ -331,10 +318,9 @@ def mark_rental_as_completed(conn, rental_id):
     ''', (rental_id,))
     conn.commit()
     return cursor.rowcount > 0  # Tells user if the row is updated after marking that row or rental as complete
-    # Set rentalstatus to complete, for status change effectiveness
 
 
-# For Delete/Remove
+# DELETE FUNCTION
 def remove_retired_device(conn, device_id):
     """Removes damaged or retired equipment from the database entirely."""
     cursor = conn.cursor()
@@ -349,119 +335,9 @@ def remove_customer(conn, customer_id):
     conn.commit()
 
 
+# Initializes this database once when module is imported or explicitly called in GUI
+make_database()
 
-# The def main().
-# Initial logic only. The main basis are the crudops above.
-
-def main():
-    print(" iRENT Database Management System ")
-
-    # Create database and tables
-    make_database()
-
-    # Open connection
+def init_db():
     conn = get_connection()
-
-    try:
-        while True:
-            print("\n--- DATABASE TEST MENU ---")
-            print("1. Show Available Devices")
-            print("2. Search Device by Model")
-            print("3. Add Customer")
-            print("4. Exit")
-
-            choice = input("Enter choice: ")
-
-            if choice == "1":
-                devices = get_all_available_devices(conn)
-
-                if not devices:
-                    print("No available devices found.")
-                else:
-                    for device in devices:
-                        print(device)
-
-            elif choice == "2":
-                model = input("Enter model name: ")
-                results = search_device_by_model(conn, model)
-
-                if not results:
-                    print("No matching devices found.")
-                else:
-                    for device in results:
-                        print(device)
-
-            elif choice == "3":
-                first = input("First Name: ")
-                middle = input("Middle Name: ")
-                last = input("Last Name: ")
-                suffix = input("Suffix: ")
-                contact = input("Contact Number: ")
-                email = input("Email Address: ")
-                street = input("Street: ")
-                barangay = input("Barangay: ")
-                city = input("City: ")
-                province = input("Province: ")
-                zipcode = input("ZIP Code: ")
-
-                customer_id = add_customer(
-                    conn,
-                    first,
-                    middle,
-                    last,
-                    suffix,
-                    contact,
-                    email,
-                    street,
-                    barangay,
-                    city,
-                    province,
-                    zipcode
-                )
-
-                print(f"Customer added successfully! ID = {customer_id}")
-
-            elif choice == "4":
-                print("Exiting iRENT Database System...")
-                break
-
-            else:
-                print("Invalid choice. Try again.")
-
-    except sqlite3.Error as e:
-        print(f"Database Error: {e}")
-
-    except Exception as e:
-        print(f"Unexpected Error: {e}")
-
-    finally:
-        conn.close()
-
-
-if __name__ == "__main__":
-    main()
-
-
-
-# Alternate version of def main, if it is to be connected to GUI Tkinter
-# Just change the def main.
-
-# def main():
-#   make_database()
-
-#   conn = get_connection()
-
-#   try:
-#       print("Database initialized successfully.")
-#       print("Connection established.")
-
-        # Connect to Tkinter code place here
-
-#   except sqlite3.Error as e:
-#       print(f"Database Error: {e}")
-
-#   finally:
-#       conn.close()
-
-# if __name__ == "__main__":
-#   main()
+    return conn
