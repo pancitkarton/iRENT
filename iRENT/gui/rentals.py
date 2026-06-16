@@ -1,5 +1,6 @@
 import tkinter as tk
 from PIL import Image, ImageTk
+from db import sqlite_crudop
 import os
 
 orders = [  #temporary only, will delete when create rental exists
@@ -369,17 +370,15 @@ def show_details(app, order):
 
 
 # LOGICS (to be inserted at assigned tkinter parts here)
-    
-    # Filter-only status (ongoing, overdue, complete) logic
-    
-    
-    
-    # See details order (ongoing, overdue, complete) logic
-    
-    
-    
-    # Search (Name or ID) at search bar logic
-    
-    
-    # Mark Complete rental logic
-    
+
+# Filter-only status (ongoing, overdue, complete) logic
+
+
+
+# See details order (ongoing, overdue, complete) logic
+
+
+# Search (Name or ID) at search bar logic
+
+
+# Mark Complete rental logic

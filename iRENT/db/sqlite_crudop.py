@@ -1,4 +1,3 @@
-# Database code only. All to be compiled by Quitollo and Frianeza for tkinter.
 import sqlite3
 import os
 
