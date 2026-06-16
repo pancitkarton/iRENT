@@ -137,7 +137,12 @@ def make_database():
     conn.commit()
 
 
-# CRUD Ops Done by Garcia, Piamonte
+
+# CRUD Operations (Backend Code for GUIs). 
+# Basis of GUIs. 
+# Only add more if necessary
+
+
 # For Create/Insert/Add
 def add_customer(conn, first_name, middle_name, last_name, suffix, contact, email):
     """Registers a new customer into the system."""
@@ -168,6 +173,7 @@ def create_rental_transaction(conn, s_month, s_day, s_year, ex_month, ex_day, ex
     ''', (s_month, s_day, s_year, ex_month, ex_day, ex_year, status, fee, customer_id, staff_id))
     conn.commit()
     return cursor.lastrowid
+
 
 # For Read, Search, and Display
 def get_all_available_devices(conn):
@@ -207,12 +213,85 @@ def get_overdue_rentals(conn, current_year, current_month, current_day):
     ''', (current_year, current_year, current_month, current_year, current_month, current_day))
     return cursor.fetchall()
 
+# added def rentals status filter (aayusin pa)
+def get_rentals_by_status(conn, status):
+    """Allows staff to filter status (Ongoing, Overdue, Completed)."""
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+        SELECT r.RentalID,
+               c.FirstName || ' ' || c.LastName AS CustomerName,
+               r.RentalStatus,
+               r.TotalRentalFee,
+               r.SRentalMonth, r.SRentalDay, r.SRentalYear,
+               r.ExReturnMonth, r.ExReturnDay, r.ExReturnYear
+        FROM Rental r
+        JOIN Customer c ON r.CustomerID = c.CustomerID
+        WHERE r.RentalStatus = ?
+        ORDER BY r.RentalID DESC
+    ''', (status,))
+
+    return cursor.fetchall()
+
+# added def search rentals by name or id (aayusin pa)
+def search_rentals(conn, search_term):
+    """Search rentals by RentalID or Customer name."""
+    cursor = conn.cursor()
+
+    # finds matching character at any position
+    search_pattern = f"%{search_term}%"
+
+    cursor.execute('''
+        SELECT r.RentalID,
+               c.FirstName || ' ' || c.LastName AS CustomerName,
+               c.ContactNumber,
+               r.RentalStatus,
+               r.TotalRentalFee
+        FROM Rental r
+        JOIN Customer c ON r.CustomerID = c.CustomerID
+        WHERE CAST(r.RentalID AS TEXT) LIKE ?
+           OR c.FirstName LIKE ?
+           OR c.LastName LIKE ?
+           OR (c.FirstName || ' ' || c.LastName) LIKE ?
+        ORDER BY r.RentalID DESC
+    ''', (search_pattern, search_pattern, search_pattern, search_pattern))
+
+    return cursor.fetchall()
+
 def search_device_by_model(conn, search_term):
     """Allows staff to search devices by model string."""
     cursor = conn.cursor()
     search_pattern = f"%{search_term}%"
     cursor.execute("SELECT * FROM Device WHERE Model LIKE ?", (search_pattern,))
     return cursor.fetchall()
+
+# added def get rental details (aayusin pa)
+def get_rental_details(conn, rental_id):
+    """Returns full rental breakdown including customer + dates + fee."""
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        SELECT
+            r.RentalID,
+            c.FirstName || ' ' || c.LastName AS CustomerName,
+            c.ContactNumber,
+            c.EmailAddress,
+
+            r.SRentalMonth, r.SRentalDay, r.SRentalYear,
+            r.ExReturnMonth, r.ExReturnDay, r.ExReturnYear,
+
+            r.RentalStatus,
+            r.TotalRentalFee,
+
+            s.FirstName || ' ' || s.LastName AS StaffName
+        FROM Rental r
+        JOIN Customer c ON r.CustomerID = c.CustomerID
+        JOIN Staff s ON r.StaffID = s.StaffID
+        WHERE r.RentalID = ?
+    ''', (rental_id,))
+
+    return cursor.fetchone()
+
 
 # For Update/Alter/Change
 def update_device_availability(conn, device_id, new_status):
@@ -225,16 +304,18 @@ def update_device_availability(conn, device_id, new_status):
     ''', (new_status, device_id))
     conn.commit()
 
-def mark_rental_as_returned(conn, rental_id):
+def mark_rental_as_completed(conn, rental_id):
     """Updates a rental record when equipment is successfully returned."""
     cursor = conn.cursor()
     cursor.execute('''
         UPDATE Rental
-        SET RentalStatus = 'Returned'
+        SET RentalStatus = 'Completed'
         WHERE RentalID = ?
     ''', (rental_id,))
     conn.commit()
-    print(f"Rental {rental_id} successfully marked as Returned.")
+    print(f"Rental {rental_id} successfully marked as Completed.")
+    # Set rentalstatus to complete, for status change effectiveness
+
 
 # For Delete/Remove
 def remove_retired_device(conn, device_id):
@@ -251,8 +332,9 @@ def remove_customer(conn, customer_id):
     conn.commit()
 
 
-#def main() by Alonzo. With initial logic only.
-# To be fixed by Garcia
+
+# The def main(). 
+# Initial logic only. The main basis are the crudops above.
 
 def main():
     print(" iRENT Database Management System ")
@@ -331,8 +413,12 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
-# Alternate version of def main, if it is to be connected to GUI Tkinter:
+
+
+
+# Alternate version of def main, if it is to be connected to GUI Tkinter
+# Just change the def main.
+
 # def main():
 #   make_database()
 

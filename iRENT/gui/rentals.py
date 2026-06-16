@@ -2,7 +2,7 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import os
 
-orders = [
+orders = [  #temporary only, will delete when create rental exists
         {"id": "001", "rentee": "Daniel Padilla", "status": "Ongoing"},
         {"id": "002", "rentee": "Hughie Campbell", "status": "Overdue"},
         {"id": "003", "rentee": "Hev Abi", "status": "Completed"},
@@ -365,3 +365,92 @@ def show_details(app, order):
     add_hover(complete_btn, "#232624", "#ffd735", "#ffd735", "black")
 
     frame.tkraise()
+
+
+
+    # LOGICS (aayusin pa; to be inserted at assigned tkinter parts here)
+    
+    # Filter-only status (ongoing, overdue, complete) logic
+    # Includes view overdue rentals, ongoing rental orders, completed rental orders
+    def get_rentals_by_status(conn, status):
+        cursor=conn.cursor()
+    
+        cursor.execute("""
+            SELECT
+                r.RentalID,
+                c.FirstName || ' ' || c.LastName,
+                r.RentalStatus
+            FROM Rental r
+            JOIN Customer c
+                ON r.CustomerID = c.CustomerID
+            WHERE r.RentalStatus = ?
+        """, (status,))
+
+        return cursor.fetchall()
+    
+        get_rentals_by_status(conn, "Ongoing")
+        get_rentals_by_status(conn, "Overdue")
+        get_rentals_by_status(conn, "Completed")
+    
+    
+    # See details order (ongoing, overdue, complete) logic
+    def get_rental_details(conn, rental_id):
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT
+                r.RentalID,
+                c.FirstName || ' ' || c.LastName,
+                c.ContactNumber,
+                c.EmailAddress,
+                d.Model,
+                r.SRentalMonth,
+                r.SRentalDay,
+                r.SRentalYear,
+                r.ExReturnMonth,
+                r.ExReturnDay,
+                r.ExReturnYear,
+                r.TotalRentalFee,
+                r.RentalStatus
+            FROM Rental r
+            JOIN Customer c
+                ON r.CustomerID = c.CustomerID
+            JOIN RentalItem ri
+                ON r.RentalID = ri.RentalID
+            JOIN Device d
+                ON ri.DeviceID = d.DeviceID
+            WHERE r.RentalID = ?
+        """, (rental_id,))
+
+        return cursor.fetchone()
+    
+    
+    # Search (Name or ID) at search bar logic
+    def search_rentals(conn, search_term):
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT
+                r.RentalID,
+                c.FirstName || ' ' || c.LastName,
+                r.RentalStatus
+            FROM Rental r
+            JOIN Customer c
+                ON r.CustomerID = c.CustomerID
+            WHERE CAST(r.RentalID AS TEXT) LIKE ?
+                OR c.FirstName LIKE ?
+                OR c.LastName LIKE ?
+        """, (
+            f"%{search_term}%",
+            f"%{search_term}%",
+            f"%{search_term}%"
+        ))
+
+        return cursor.fetchall()
+    
+    # Mark Complete rental logic
+        mark_rental_as_completed(conn, rental_id)
+        
+    # Mark Complete rental: receipt-type with penalty price (only applicable if date returned exceeded the due)
+    # soon
+    
