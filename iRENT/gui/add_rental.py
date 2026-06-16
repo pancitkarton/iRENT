@@ -12,7 +12,6 @@ def select_customer(rental, name_entries, contact_entry, email_entry):
     selector.geometry("500x300")
     selector.grab_set()
 
-    #hardcoded examples palang to
     customers = get_customers()
 
     search_frame = tk.Frame(selector)
@@ -100,7 +99,12 @@ def add_rental_page(container_frame,rental):
                     rental.entries["Suffix"].get(),
                     rental.entries["Birthday"].get(),
                     rental.contact_entry.get(),
-                    rental.email_entry.get()
+                    rental.email_entry.get(),
+                    rental.region_cb.get(),
+                    rental.city_cb.get(),
+                    rental.brgy_cb.get(),
+                    rental.postal_entry.get(),
+                    rental.street_entry.get()
                 )
                 
 
@@ -116,12 +120,6 @@ def add_rental_page(container_frame,rental):
 
                     rental.rental_calendar.get(),
                     rental.return_calendar.get(),
-
-                    rental.region_cb.get(),
-                    rental.city_cb.get(),
-                    rental.brgy_cb.get(),
-                    rental.postal_entry.get(),
-                    rental.street_entry.get()
                 )
 
                 messagebox.showinfo("Success", "Rental saved successfully!")

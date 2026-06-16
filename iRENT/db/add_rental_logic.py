@@ -35,7 +35,12 @@ CREATE TABLE IF NOT EXISTS Customer (
     Suffix TEXT,
     Birthday TEXT,
     ContactNumber TEXT NOT NULL UNIQUE,
-    EmailAddress TEXT NOT NULL UNIQUE
+    EmailAddress TEXT NOT NULL UNIQUE,
+    Region TEXT,
+    City TEXT,
+    Barangay TEXT,
+    Postal TEXT,
+    Street TEXT
 )
 """)
 
@@ -68,12 +73,6 @@ CREATE TABLE IF NOT EXISTS Rental (
 
     RentalDate TEXT NOT NULL,
     ReturnDate TEXT NOT NULL,
-
-    Region TEXT,
-    City TEXT,
-    Barangay TEXT,
-    Postal TEXT,
-    Street TEXT,
 
     RentalStatus TEXT NOT NULL DEFAULT 'Ongoing',
     TotalRentalFee REAL DEFAULT 0,
@@ -120,7 +119,12 @@ def getcreate_customer(
         suffix, 
         birthday,
         contact, 
-        email
+        email,
+        region,
+        city,
+        barangay,
+        postal,
+        street
     ):
 
     cursor.execute("""
@@ -135,11 +139,25 @@ def getcreate_customer(
 
     cursor.execute("""
     INSERT INTO Customer (
-        FirstName, MiddleName, LastName, Suffix,
-        Birthday, ContactNumber, EmailAddress
+        FirstName, 
+        MiddleName, 
+        LastName, 
+        Suffix,
+        Birthday, 
+        ContactNumber, 
+        EmailAddress,
+        Region,
+        City,
+        Barangay,
+        Postal,
+        Street
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-""", (first, middle, last, suffix, birthday, contact, email))
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+""", (
+    first, middle, last, suffix,
+    birthday, contact, email,
+    region, city, barangay, postal, street
+))
 
     conn.commit()
     return cursor.lastrowid
@@ -157,8 +175,7 @@ def create_rental(
         staff_id, 
         device_id,
         rental_date, 
-        return_date,
-        region, city, barangay, postal, street
+        return_date
     ):
 
 
@@ -169,25 +186,15 @@ def create_rental(
             StaffID, 
             DeviceID,
             RentalDate, 
-            ReturnDate,
-            Region, 
-            City, 
-            Barangay, 
-            Postal, 
-            Street
+            ReturnDate
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?)
     """, (
         customer_id,
         staff_id,
         device_id,
         rental_date,
-        return_date,
-        region,
-        city,
-        barangay,
-        postal,
-        street
+        return_date
     ))
 
     conn.commit()
