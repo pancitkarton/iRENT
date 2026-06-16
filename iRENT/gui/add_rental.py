@@ -70,17 +70,21 @@ def add_rental_page(container_frame,rental):
         for widget in container_frame.winfo_children():
             widget.destroy()
 
+        container_frame.grid_rowconfigure(0, weight=1)
+        container_frame.grid_columnconfigure(0, weight=1)
+
         form_frame = tk.LabelFrame(
             container_frame,
             relief="flat",
             labelanchor="n",
             bd=0
         )
-        form_frame.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+        form_frame.grid(row=0, column=0, sticky="nsew", padx=10, pady=(10,0))
         form_frame.grid_rowconfigure(0, weight=0) #rentee info
         form_frame.grid_rowconfigure(1, weight=0) #contact infp
         form_frame.grid_rowconfigure(2, weight=0) #device rental
-        form_frame.grid_rowconfigure(3, weight=1) #buttons/bottom bar
+        form_frame.grid_rowconfigure(3, weight=1)
+        form_frame.grid_rowconfigure(4, weight=0) #buttons/bottom bar
         form_frame.grid_columnconfigure(0, weight=1) #stretch horizontally
 
         rentee_info_frame = tk.LabelFrame(
@@ -88,7 +92,7 @@ def add_rental_page(container_frame,rental):
             bd=0,
             relief="flat"
         )
-        rentee_info_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=(10, 0))
+        rentee_info_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=(25, 25))
         for col in range(4):
             rentee_info_frame.grid_columnconfigure(col, weight=0)
 
@@ -97,7 +101,7 @@ def add_rental_page(container_frame,rental):
             text="RENTEE INFO",
             font=("Arial", 20, "bold")
         )
-        rentee_title.grid(row=0, column=0, sticky="w", padx=5, pady=5, columnspan=4)
+        rentee_title.grid(row=0, column=0, sticky="w", padx=(5,10), pady=5, columnspan=3)
 
         select_btn = tk.Button(
             rentee_info_frame, 
@@ -106,24 +110,26 @@ def add_rental_page(container_frame,rental):
             font=("Arial", 10, "bold"),
             command=lambda: select_customer(rental, rental.entries, rental.contact_entry, rental.email_entry)
         )
-        select_btn.grid(row=0, column=3, sticky="e", padx=5, pady=5)
+        select_btn.grid(row=0, column=2, sticky="w", padx=0, pady=5)
         rental.add_hover(select_btn, "#232624", "#ffd735", enter_fg="#ffd735", leave_fg="black")
 
         fields = ["First Name", "Middle Name", "Last Name", "Suffix"]
 
+        field_configs = [
+            ("First Name", 20),
+            ("Middle Name", 20),
+            ("Last Name", 20),
+            ("Suffix", 5),
+        ]
+
         rental.entries = {}
 
-        for index, field_name in enumerate(fields):
-            label = tk.Label(
-                rentee_info_frame,
-                text=field_name,
-                fg="black",
-                font=("Arial", 12)
-            )
-            label.grid(row=1, column=index, padx=5, pady=(5, 0))
+        for index, (field_name, width) in enumerate(field_configs):
+            label = tk.Label(rentee_info_frame, text=field_name + ":", font=("Arial", 12))
+            label.grid(row=1, column=index * 2, padx=(10, 2), pady=5, sticky="w")
 
-            entry = tk.Entry(rentee_info_frame, width=20)
-            entry.grid(row=2, column=index, padx=10, pady=(10, 20), ipady=6, sticky="ew")
+            entry = tk.Entry(rentee_info_frame, width=width)
+            entry.grid(row=1, column=index * 2 + 1, padx=(0, 5), pady=5, ipady=4, sticky="ew")
 
             rental.entries[field_name] = entry
 
@@ -133,7 +139,7 @@ def add_rental_page(container_frame,rental):
             font=("Arial", 20, "bold"),
             bd=0
         )
-        contact_frame.grid(row=1, column=0, sticky="ew", padx=10, pady=(40, 30))
+        contact_frame.grid(row=1, column=0, sticky="ew", padx=10, pady=(25, 25))
 
         tk.Label(
             contact_frame,
@@ -155,7 +161,7 @@ def add_rental_page(container_frame,rental):
 
 
         device_frame = tk.Frame(form_frame)
-        device_frame.grid(row=2, column=0, sticky="ew", padx=10, pady=(40, 30))
+        device_frame.grid(row=2, column=0, sticky="ew", padx=10, pady=(25, 25))
 
         tk.Label(
             device_frame,
@@ -166,20 +172,20 @@ def add_rental_page(container_frame,rental):
         tk.Label(
             device_frame,
             text="Device to Rent:",
-            font=("Arial", 12, "bold")
+            font=("Arial", 12)
         ).grid(row=1, column=0, sticky="w", padx=5, pady=5)
 
         rental.device_combobox = ttk.Combobox(device_frame, values=["Device 1", "Device 2"])
-        rental.device_combobox.grid(row=1, column=1, sticky="w", padx=5, pady=5, ipady=6)
+        rental.device_combobox.grid(row=1, column=1, sticky="w", padx=5, ipady=6)
 
         tk.Label(
             device_frame,
             text="Rental Date:",
-            font=("Arial", 12, "bold")
+            font=("Arial", 12)
         ).grid(row=2, column=0, sticky="w", padx=5, pady=5)
 
-        rental.rental_calendar = DateEntry(device_frame, width=12, date_pattern="mm-dd-yyyy")
-        rental.rental_calendar.grid(row=2, column=1, sticky="w", padx=5, pady=5, ipady=6)
+        rental.rental_calendar = DateEntry(device_frame, width=10, date_pattern="mm-dd-yyyy", font=("Arial", 9))
+        rental.rental_calendar.grid(row=2, column=1, sticky="w", padx=5, ipady=6)
 
         tk.Label(
             device_frame,
@@ -187,11 +193,13 @@ def add_rental_page(container_frame,rental):
             font=("Arial", 12, "bold")
         ).grid(row=2, column=2, sticky="w", padx=5, pady=5)
 
-        rental.rental_calendar = DateEntry(device_frame, width=12, date_pattern="mm-dd-yyyy")
-        rental.rental_calendar.grid(row=2, column=3, sticky="w", padx=5, pady=5, ipady=6)
+        rental.return_calendar = DateEntry(device_frame, width=10, date_pattern="mm-dd-yyyy", font=("Arial", 9))
+        rental.return_calendar.grid(row=2, column=3, sticky="w", padx=5, pady=5, ipady=6)
 
+
+        #bottom
         bottom_bar = tk.Frame(form_frame, padx=10, pady=20, bg="#eef2f7")
-        bottom_bar.grid(row =4, column =0, columnspan=4, sticky="sew", padx=10, pady=20)
+        bottom_bar.grid(row =4, column =0, columnspan=4, sticky="ew", padx=10, pady=(0,10))
 
         tk.Label(
             bottom_bar,
