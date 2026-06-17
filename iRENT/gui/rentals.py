@@ -1,6 +1,6 @@
 import tkinter as tk
 from PIL import Image, ImageTk
-# from db import sqlite_crudop (comment ko muna to para gumana yung sa add rental)
+from db.sqlite_crudop import get_connection, search_rentals, get_rentals_by_status, get_rental_details, mark_rental_as_completed
 import os
 
 # Penalty fee suggestion = Fix 300 php
@@ -135,19 +135,23 @@ def rentals_page(main_frame, app):
                 OR (c.FirstName || ' ' || c.LastName) LIKE ?
             ORDER BY r.RentalID DESC
             ''', 
-            (f"%{search_term}%")
+            (f"%{search_term}%",)*4
         ).fetchall()
 
 
 
 
+    # Changing filtering active to actual functions
     def filter_menu(event):
         menu = tk.Menu(main_frame, tearoff=0)
-        menu.add_command(label="Show Active", command=lambda: print("Filtering Active..."))
-        menu.add_command(label="Show Overdue", command=lambda: print("Filtering Active..."))
-        menu.add_command(label="Show Completed", command=lambda: print("Filtering Active..."))
+        menu.add_command(label="Show Active", command=lambda: apply_filter("Ongoing"))
+        menu.add_command(label="Show Overdue", command=lambda: apply_filter("Overdue"))
+        menu.add_command(label="Show Completed", command=lambda: apply_filter("Completed"))
         menu.post(event.x_root, event.y_root)
 
+    def apply_filter(status, conn): #To apply ongoing, overdue, completed filtering
+        filtered_data = get_rentals_by_status(conn, status)
+        
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     filter_path = os.path.join(BASE_DIR, "assets", "filter.png")
     filter_icon = ImageTk.PhotoImage(Image.open(filter_path).resize((25, 25)))
@@ -181,7 +185,6 @@ def rentals_page(main_frame, app):
             WHERE RentalStatus = ?
             ORDER BY RentalID DESC
         """, (status,))
-
         return cursor.fetchall()
 
 

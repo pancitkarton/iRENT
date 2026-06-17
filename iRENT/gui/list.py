@@ -1,5 +1,5 @@
 import tkinter as tk
-
+from gui.add_rental import add_rental_page
 
 DATA = {
     "CAMERA": {
@@ -342,7 +342,7 @@ def show_device_brands(app, device):
             bg="white", 
             highlightthickness=1, 
             borderwidth=5,
-            relief="ridge"
+            relief="solid"
         )
         brand_frame.grid(row=row, column=col, sticky="nsew", padx=10, pady=10)
         
@@ -528,7 +528,8 @@ def show_brand_details(app, device, brand):
             text="Rent Me",
             bg="#ffd735",
             font=("Arial", 12, "bold"),
-            cursor="hand2"
+            cursor="hand2",
+            command=lambda : app.set_active_page("add_rental") #calls add_rental_page; becomes add_rental_page(card_frame, "SONY A7 IV") // 
         )
         rent_btn.grid(row=6, column=0, pady=(0, 15))
         add_hover(rent_btn, "#232624", "#ffd735", "#ffd735", "black")
@@ -612,39 +613,39 @@ def add_device(app, device, brand):
     form.grid_columnconfigure(1, weight=1)  # entries (enter id, enter price, etc) EXPANDS
     
     # row 0: model name
-    tk.Label(form, text="Model Name:", font=("Arial", 12, "bold"), bg="white"
+    tk.Label(form, text="Model Name:", font=("Arial", 12, "bold"), bg="white", bd=3, relief="solid"
     ).grid(row=0, column=0, sticky="w", pady=10, padx=(0, 20))
     
     model_entry = tk.Entry(form, font=("Arial", 12), width=35)
-    model_entry.grid(row=0, column=1, sticky="ew", pady=10, bd=3, relief="solid")
+    model_entry.grid(row=0, column=1, sticky="ew", pady=10)
     
     # row 1 form: id
-    tk.Label(form, text="ID:", font=("Arial", 12, "bold"), bg="white"
+    tk.Label(form, text="ID:", font=("Arial", 12, "bold"), bg="white", bd=3, relief="solid"
     ).grid(row=1, column=0, sticky="w", pady=10, padx=(0, 20))
     
     id_entry = tk.Entry(form, font=("Arial", 12), width=35)
-    id_entry.grid(row=1, column=1, sticky="ew", pady=10, bd=3, relief="solid")
+    id_entry.grid(row=1, column=1, sticky="ew", pady=10)
     
     # row 2 form: price
-    tk.Label(form, text="Price (₱):", font=("Arial", 12, "bold"), bg="white"
+    tk.Label(form, text="Price (₱):", font=("Arial", 12, "bold"), bg="white", bd=3, relief="solid"
     ).grid(row=2, column=0, sticky="w", pady=10, padx=(0, 20))
     
     price_entry = tk.Entry(form, font=("Arial", 12), width=35)
-    price_entry.grid(row=2, column=1, sticky="ew", pady=10, bd=3, relief="solid")
+    price_entry.grid(row=2, column=1, sticky="ew", pady=10)
     
     # row 3 form: stock
-    tk.Label(form, text="Stock:", font=("Arial", 12, "bold"), bg="white"
+    tk.Label(form, text="Stock:", font=("Arial", 12, "bold"), bg="white", bd=3, relief="solid"
     ).grid(row=3, column=0, sticky="w", pady=10, padx=(0, 20))
     
     stock_entry = tk.Entry(form, font=("Arial", 12), width=35)
-    stock_entry.grid(row=3, column=1, sticky="ew", pady=10, bd=3, relief="solid")
+    stock_entry.grid(row=3, column=1, sticky="ew", pady=10)
     
     # row 4 form: specs
-    tk.Label(form, text="Specs (separate with commas):", font=("Arial", 12, "bold"), bg="white"
+    tk.Label(form, text="Specs (separate with commas):", font=("Arial", 12, "bold"), bg="white", bd=3, relief="solid"
     ).grid(row=4, column=0, sticky="w", pady=10, padx=(0, 20))
     
-    specs_entry = tk.Entry(form, font=("Arial", 12), width=35)
-    specs_entry.grid(row=4, column=1, sticky="ew", pady=10, bd=3, relief="solid")
+    specs_entry = tk.Entry(form, font=("Arial", 12), width=35, bd=3, relief="solid")
+    specs_entry.grid(row=4, column=1, sticky="ew", pady=10)
     
     #suggestion label, below specs entry box
     tk.Label(
