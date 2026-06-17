@@ -10,6 +10,7 @@ from gui.rentals import rentals_page
 from gui.history import create_history_page
 from gui.add_rental import add_rental_page
 from gui.customers import customers_page
+from gui.list import create_list
 
 
 
@@ -30,6 +31,7 @@ class MainApp:
         self.create_dashboard()
         self.create_rentals_page()
         self.create_customers_page()
+        self.create_list_page()
 
         self.pages["dashboard"].tkraise()
 
@@ -38,7 +40,8 @@ class MainApp:
             "rentals": self.sidebar_labels[1],
             "add_rental": self.sidebar_labels[1],
             "order_details": self.sidebar_labels[1],
-            "customers": self.sidebar_labels[2]
+            "customers": self.sidebar_labels[2],
+            "devices": self.sidebar_labels[3]
         }
 
     def add_hover(self, btn, enter_bg, leave_bg, enter_fg=None, leave_fg=None):
@@ -96,7 +99,12 @@ class MainApp:
     def create_pages(self):
         self.pages = {}
 
-        for name in ["dashboard", "rentals", "order_details", "add_rental", "customers", "customer_details"]:
+        for name in ["dashboard", 
+                     "rentals", 
+                     "order_details", 
+                     "add_rental", 
+                     "customers", "customer_details", 
+                     "devices", "brand_devices", "brand_details", "add_device"]:
             frame = tk.Frame(self.right)
             frame.grid(row=0, column=0, sticky="nsew")
             self.pages[name] = frame
@@ -156,7 +164,7 @@ class MainApp:
             ("Home", "dashboard"),
             ("Rentals", "rentals"),
             ("Customers", "customers"),
-            ("Devices", ""),
+            ("Devices", "devices"),
         ]
 
         for i, (text, page) in enumerate(buttons):
@@ -247,6 +255,9 @@ class MainApp:
     def create_customers_page(self):
         customers_page(self.pages["customers"], self)
 
+    def create_list_page(self):
+        create_list(self.pages["devices"], self)
+
 
     def create_dashboard(self):
         frame = tk.LabelFrame(
@@ -281,7 +292,6 @@ class MainApp:
         self.create_card(frame, "#888E93", "employees.png", "5", "Total Employees", 3, row=2)
 
 
-    
     
     def create_card(self, parent, color, icon_name, number, title, column, row=1):
 
