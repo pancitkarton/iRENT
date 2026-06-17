@@ -1,6 +1,7 @@
 import tkinter as tk
 from PIL import Image, ImageTk
 # from db import sqlite_crudop (comment ko muna to para gumana yung sa add rental)
+from db.sqlite_crudop import get_connection, search_rentals, get_rentals_by_status, get_rental_details, mark_rental_as_completed
 import os
 
 # Penalty fee suggestion = Fix 300 php
@@ -135,7 +136,7 @@ def rentals_page(main_frame, app):
                 OR (c.FirstName || ' ' || c.LastName) LIKE ?
             ORDER BY r.RentalID DESC
             ''', 
-            (f"%{search_term}%")
+            (f"%{search_term}%",)*4
         ).fetchall()
 
 
