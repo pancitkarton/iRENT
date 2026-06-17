@@ -32,21 +32,29 @@ def select_customer(rental, name_entries, contact_entry, email_entry):
 
     search_entry.bind("<KeyRelease>", filter_tree)
 
-    columns = ("id", "first", "middle", "last", "suffix", "contact", "email")
+    columns = ("id", "first", "middle", "last", "suffix", "contact", "email", "region", "city", "brgy", "postal", "street")
+    
     tree = ttk.Treeview(selector, columns=columns, show="headings")
-    tree.heading("id", text="ID")
-    tree.heading("name", text="Name")
-    tree.heading("contact", text="Contact")
-    tree.heading("email", text="Email")
 
-    tree.column("id", width=50, anchor="center") 
-    tree.heading("first", text="First Name")
-    tree.heading("middle", text="Middle Name")
-    tree.heading("last", text="Last Name")
+    tree.heading("id", text="ID")
+    tree.heading("first", text="First")
+    tree.heading("middle", text="Middle")
+    tree.heading("last", text="Last")
     tree.heading("suffix", text="Suffix")
     tree.heading("contact", text="Contact")
     tree.heading("email", text="Email")
+    tree.heading("region", text="Region")
+    tree.heading("city", text="City")
+    tree.heading("brgy", text="Brgy")
+    tree.heading("postal", text="Postal")
+    tree.heading("street", text="Street")
+
     tree.pack(fill="both", expand=True, padx=10, pady=5)
+
+    for cust in customers:
+        tree.insert("", "end", values=cust)
+
+        
 
     def on_select(event):
         selected = tree.focus()
@@ -54,26 +62,29 @@ def select_customer(rental, name_entries, contact_entry, email_entry):
             return
 
         values = tree.item(selected, "values")
+        (cust_id, first, middle, last, suffix, contact, email, region, city, brgy, postal, street) = values
 
-        customer_id, first, middle, last, suffix, contact, email = values
+        rental.entries["First Name"].delete(0, tk.END)
+        rental.entries["First Name"].insert(0, first)
+        rental.entries["Middle Name"].delete(0, tk.END)
+        rental.entries["Middle Name"].insert(0, middle)
+        rental.entries["Last Name"].delete(0, tk.END)
+        rental.entries["Last Name"].insert(0, last)
+        rental.entries["Suffix"].delete(0, tk.END)
+        rental.entries["Suffix"].insert(0, suffix)
+        
+        rental.contact_entry.delete(0, tk.END)
+        rental.contact_entry.insert(0, contact)
+        rental.email_entry.delete(0, tk.END)
+        rental.email_entry.insert(0, email)
 
-        name_entries["First Name"].delete(0, tk.END)
-        name_entries["First Name"].insert(0, first)
-
-        name_entries["Middle Name"].delete(0, tk.END)
-        name_entries["Middle Name"].insert(0, middle)
-
-        name_entries["Last Name"].delete(0, tk.END)
-        name_entries["Last Name"].insert(0, last)
-
-        name_entries["Suffix"].delete(0, tk.END)
-        name_entries["Suffix"].insert(0, suffix)
-
-        contact_entry.delete(0, tk.END)
-        contact_entry.insert(0, contact)
-
-        email_entry.delete(0, tk.END)
-        email_entry.insert(0, email)
+        rental.region_cb.set(region)
+        rental.city_cb.set(city)
+        rental.brgy_cb.set(brgy)
+        rental.postal_entry.delete(0, tk.END)
+        rental.postal_entry.insert(0, postal)
+        rental.street_entry.delete(0, tk.END)
+        rental.street_entry.insert(0, street)
 
         selector.destroy()
 
