@@ -201,7 +201,7 @@ def create_rental(
 
 def get_customers():
     cursor.execute("""
-        SELECT CustomerID, FirstName, MiddleName, LastName, Suffix, ContactNumber, EmailAddress
+        SELECT CustomerID, FirstName, MiddleName, LastName, Suffix, ContactNumber, EmailAddress, Region, City, Barangay, Postal, Street
         FROM Customer
     """)
     return cursor.fetchall()
