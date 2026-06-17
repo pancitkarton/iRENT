@@ -529,7 +529,7 @@ def show_brand_details(app, device, brand):
             bg="#ffd735",
             font=("Arial", 12, "bold"),
             cursor="hand2",
-            command=lambda c=card, m=model: add_rental_page (c, m) #calls add_rental_page -- becomes add_rental_page(card_frame, "SONY A7 IV") // 
+            command=lambda : app.set_active_page("add_rental") #calls add_rental_page; becomes add_rental_page(card_frame, "SONY A7 IV") // 
         )
         rent_btn.grid(row=6, column=0, pady=(0, 15))
         add_hover(rent_btn, "#232624", "#ffd735", "#ffd735", "black")
