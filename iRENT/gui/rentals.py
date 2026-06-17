@@ -3,6 +3,8 @@ from PIL import Image, ImageTk
 # from db import sqlite_crudop (comment ko muna to para gumana yung sa add rental)
 import os
 
+# Penalty fee suggestion = Fix 300 php
+
 orders = [  #temporary only, will delete when create rental exists
         {"id": "001", "rentee": "Daniel Padilla", "status": "Ongoing"},
         {"id": "002", "rentee": "Hughie Campbell", "status": "Overdue"},
