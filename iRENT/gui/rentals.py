@@ -10,6 +10,15 @@ orders = [  #temporary only, will delete when create rental exists
         {"id": "002", "rentee": "Hughie Campbell", "status": "Overdue"},
         {"id": "003", "rentee": "Hev Abi", "status": "Completed"},
     ]
+
+device_data = {
+        "DeviceID": "D-999",
+        "Model": "Asus Vivobook",
+        "Serial Number": "123456789",
+        "Appearance": "Slight Scratches",
+        "Brand": "ASUS",
+        "Device Type": "Laptop"
+    }
         
 
 status_colors = {
@@ -29,6 +38,72 @@ def add_hover(btn, enter_bg, leave_bg, enter_fg=None, leave_fg=None):
             btn.config(fg=leave_fg)
     btn.bind("<Enter>", on_enter)
     btn.bind("<Leave>", on_leave)
+
+
+#example receipt
+#turn into completed status when done
+def open_receipt(order):
+    receipt_win = tk.Toplevel()
+    receipt_win.title("Rental Receipt")
+    receipt_win.configure(bg="white")
+
+    tk.Label(
+        receipt_win, 
+        text="OFFICIAL RECEIPT", 
+        font=("Arial", 20, "bold", "italic"), 
+        bg="white"
+    ).pack(pady=20)
+
+    details_frame = tk.Frame(receipt_win, bg="white")
+    details_frame.pack(fill="x", padx=40)
+
+
+    base_fee = 1000.00 
+    is_overdue = (order['status'] == "Overdue")
+    penalty = 300.00 if is_overdue else 0.00
+    total = base_fee + penalty
+
+
+    items = [
+        ("Rental ID:", order['id']),
+        ("Rentee:", order['rentee']),
+        ("------------------------------------------------------", ""),
+        ("Rental Fee:", f"{base_fee:.2f} PHP"),
+        ("Overdue Penalty Fee:", f"{penalty:.2f} PHP"),
+        ("------------------------------------------------------", ""),
+        ("TOTAL DUE:", f"{total:.2f} PHP")
+    ]
+
+    for label, val in items:
+        row = tk.Frame(details_frame, bg="white")
+        row.pack(fill="x", pady=2)
+        
+        tk.Label(
+            row, 
+            text=label, 
+            font=("Arial", 12), 
+            bg="white"
+        ).pack(side="left")
+
+        tk.Label(
+            row, 
+            text=val, 
+            font=("Arial", 12, "bold"), 
+            bg="white"
+        ).pack(side="right")
+
+    close_btn = tk.Button(
+        receipt_win, 
+        text="CLOSE",
+        font=("Arial", 10, "bold"),
+        command=receipt_win.destroy,
+        bg="#ffd735"
+    )
+    close_btn.pack(pady=30)
+    add_hover(close_btn, "#232624", "#ffd735", "#ffd735", "black")
+
+
+
 
 def rental_customers(app, order):
     cframe = app.pages["show_details"]
@@ -292,85 +367,7 @@ def show_details(app, order):
     for w in frame.winfo_children():
         w.destroy()
 
-    container = tk.Frame(
-        frame,
-        padx=40,
-        pady=40,
-        bg="#eef2f7"
-    )
-    container.pack(fill="both", expand=True)
-
-    container.grid_columnconfigure(0, weight=1, minsize=300)
-    container.grid_columnconfigure(1, weight=1, minsize=300)
-
-    tk.Label(
-        container,
-        text=f"Rental ID: {order['id']}",
-        font=("Arial", 14, "bold"),
-        bg="#eef2f7"
-    ).grid(row=0, column=0, sticky="w", pady=10)
-
-    tk.Label(
-        container,
-        text=f"Rentee Name: {order['rentee']}",
-        font=("Arial", 14, "bold"),
-        bg="#eef2f7"
-    ).grid(row=0, column=1, sticky="w", pady=10)
-
-    tk.Label(
-        container,
-        text="Contact Number: 123456789",
-        font=("Arial", 14, "bold"),
-        bg="#eef2f7"
-    ).grid(row=1, column=0, sticky="w", pady=10)
-
-    tk.Label(
-        container,
-        text="Email Address: testcase@gmail.com",
-        font=("Arial", 14, "bold"),
-        bg="#eef2f7"
-    ).grid(row=1, column=1, sticky="w", pady=10)
-
-    tk.Frame(
-        container,
-        height=2,
-        bg="black"
-    ).grid(row=2, column=0, columnspan=2, sticky="ew", pady=20)
-
-    tk.Label(
-        container,
-        text="Device Rented: Device 1",
-        font=("Arial", 14, "bold"),
-        bg="#eef2f7"
-    ).grid(row=3, column=0, columnspan=2, sticky="w", pady=10)
-
-    tk.Frame(
-        container,
-        height=2,
-        bg="black"
-    ).grid(row=4, column=0, columnspan=2, sticky="ew", pady=20)
-
-    tk.Label(
-        container,
-        text="Rental Date: 06/11/2026",
-        font=("Arial", 14, "bold"),
-        bg="#eef2f7"
-    ).grid(row=5, column=0, sticky="w", pady=10)
-
-    tk.Label(
-        container,
-        text="Must Return By: 06/12/2026",
-        font=("Arial", 14, "bold"),
-        bg="#eef2f7"
-    ).grid(row=5, column=1, sticky="w", pady=10)
-
-    tk.Label(
-        container,
-        text="Rental Total: 0.00 PHP",
-        font=("Arial", 14, "bold"),
-        bg="#eef2f7"
-    ).grid(row=6, column=0, sticky="w", pady=20)
-
+    #bottom
     bottom_bar = tk.Frame(
         frame,
         padx=40,
@@ -388,6 +385,134 @@ def show_details(app, order):
         fg=scolor,
         bg="#eef2f7"
     ).pack(side="left")
+
+
+    back_btn = tk.Button(
+        bottom_bar,
+        text="Back",
+        font=("Arial", 17, "bold"),
+        bg="gray",
+        cursor="hand2",
+        command=lambda: app.pages["rentals"].tkraise()
+    )
+    back_btn.pack(side="right", padx=5)
+    add_hover(back_btn, "#232624", "gray", "white", "black")
+
+    if order['status'] != "Completed":
+        complete_btn = tk.Button(
+            bottom_bar,
+            text="COMPLETE RENTAL",
+            font=("Arial", 17, "bold"),
+            bg="#ffd735",
+            cursor="hand2",
+            command=lambda: [mark_rental_as_completed(get_connection(), order['id']), open_receipt(order), app.pages["rentals"].tkraise()]
+        )
+        complete_btn.pack(side="right", padx=5)
+        add_hover(complete_btn, "#232624", "#ffd735", "#ffd735", "black")
+
+
+
+    container = tk.Frame(
+        frame,
+        padx=40,
+        pady=40,
+        bg="#eef2f7"
+    )
+    container.pack(fill="both", expand=True)
+
+    container.grid_columnconfigure(0, weight=1, minsize=300)
+    container.grid_columnconfigure(1, weight=1, minsize=300)
+
+    tk.Label(
+        container, 
+        text="RENTEE INFO", 
+        font=("Arial", 20, "bold"), 
+        bg="#eef2f7"
+    ).grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 10))
+
+    tk.Label(
+        container,
+        text=f"Rental ID: {order['id']}",
+        font=("Arial", 12, "bold"),
+        bg="#eef2f7"
+    ).grid(row=1, column=0, sticky="w", pady=10)
+
+    tk.Label(
+        container,
+        text=f"Rentee Name: {order['rentee']}",
+        font=("Arial", 12, "bold"),
+        bg="#eef2f7"
+    ).grid(row=1, column=1, sticky="w", pady=10)
+
+    tk.Label(
+        container,
+        text="Contact Number: 123456789",
+        font=("Arial", 12, "bold"),
+        bg="#eef2f7"
+    ).grid(row=2, column=0, sticky="w", pady=10)
+
+    tk.Label(
+        container,
+        text="Email Address: testcase@gmail.com",
+        font=("Arial", 12, "bold"),
+        bg="#eef2f7"
+    ).grid(row=2, column=1, sticky="w", pady=10)
+
+    tk.Frame(
+        container,
+        height=2,
+        bg="black"
+    ).grid(row=3, column=0, columnspan=2, sticky="ew", pady=20)
+
+    #for showing the dummy device info lng
+    tk.Label(
+        container, 
+        text="DEVICE INFORMATION", 
+        font=("Arial", 20, "bold"), 
+        bg="#eef2f7"
+    ).grid(row=4, column=0, columnspan=2, sticky="w", pady=(0, 10))
+
+    for i, (key, value) in enumerate(device_data.items()):
+            row_idx = 5 + (i // 2) + 1
+            col_idx = i % 2
+
+            tk.Label(
+                container, 
+                text=f"{key}: {value}", 
+                font=("Arial", 12, "bold"), 
+                bg="#eef2f7"
+            ).grid(row=row_idx, column=col_idx, sticky="w", padx=5, pady=5)
+        
+    next_row = 5 + (len(device_data) // 2) + 1
+
+    tk.Frame(
+        container, 
+        height=2, 
+        bg="black"
+    ).grid(row=next_row, column=0, columnspan=2, sticky="ew", pady=20)
+    
+    tk.Label(
+        container, 
+        text="Rental Date: 06/11/2026", 
+        font=("Arial", 14, "bold"), 
+        bg="#eef2f7"
+    ).grid(row=next_row + 1, column=0, sticky="w", pady=10)
+
+    tk.Label(
+        container, 
+        text="Must Return By: 06/12/2026", 
+        font=("Arial", 14, "bold"), 
+        bg="#eef2f7"
+    ).grid(row=next_row + 1, column=1, sticky="w", pady=10)
+
+    tk.Label(
+        container, 
+        text="Rental Total: 0.00 PHP", 
+        font=("Arial", 14, "bold"), 
+        bg="#eef2f7"
+    ).grid(row=next_row + 2, column=0, sticky="w", pady=20)
+
+    
 
 
     # SEE MORE DETAILS FUNCTION HERE
@@ -450,27 +575,7 @@ def show_details(app, order):
 
 
 
-    back_btn = tk.Button(
-        bottom_bar,
-        text="Back",
-        font=("Arial", 17, "bold"),
-        bg="gray",
-        cursor="hand2",
-        command=lambda: app.pages["rentals"].tkraise()
-    )
-    back_btn.pack(side="right", padx=5)
-    add_hover(back_btn, "#232624", "gray", "white", "black")
-
-    if order['status'] != "Completed":
-        complete_btn = tk.Button(
-            bottom_bar,
-            text="COMPLETE RENTAL",
-            font=("Arial", 17, "bold"),
-            bg="#ffd735",
-            cursor="hand2"
-        )
-        complete_btn.pack(side="right", padx=5)
-        add_hover(complete_btn, "#232624", "#ffd735", "#ffd735", "black")
+  
 
 
     # MARK RENTAL COMPLETE FUNCTION HERE
