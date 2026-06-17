@@ -119,16 +119,22 @@ def rentals_page(main_frame, app):
     def search_rentals(conn, search_term):
         return conn.cursor().execute(
             '''
-        SELECT r.RentalID, c.FirstName || ' ' || c.LastName AS CustomerName, c.ContactNumber, r.RentalStatus, r.TotalRentalFee
-        FROM Rental r
-        JOIN Customer c ON r.CustomerID = c.CustomerID
-        WHERE CAST(r.RentalID AS TEXT) LIKE ?
-            OR c.FirstName LIKE ?
-            OR c.LastName LIKE ?
-            OR (c.FirstName || ' ' || c.LastName) LIKE ?
-        ORDER BY r.RentalID DESC
-        ''', (f"%{search_term}%",)*4
-    ).fetchall()
+            SELECT 
+                r.RentalID, 
+                c.FirstName || ' ' || c.LastName AS CustomerName, 
+                c.ContactNumber, 
+                r.RentalStatus, 
+                r.TotalRentalFee
+            FROM Rental r
+            JOIN Customer c ON r.CustomerID = c.CustomerID
+            WHERE CAST(r.RentalID AS TEXT) LIKE ?
+                OR c.FirstName LIKE ?
+                OR c.LastName LIKE ?
+                OR (c.FirstName || ' ' || c.LastName) LIKE ?
+            ORDER BY r.RentalID DESC
+            ''', 
+            (f"%{search_term}%")
+        ).fetchall()
 
 
 
@@ -145,7 +151,7 @@ def rentals_page(main_frame, app):
     filter_icon = ImageTk.PhotoImage(Image.open(filter_path).resize((25, 25)))
 
     filter_label = tk.Label(
-        searchfilter, 
+        searchfilter,
         text="Filter", 
         image=filter_icon, 
         compound="left", 
