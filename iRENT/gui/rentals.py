@@ -192,40 +192,15 @@ def rentals_page(main_frame, app):
     search.config(fg="gray")
 
 
-    # SEARCH RENTALS FUNCTION HERE
-    def search_rentals(conn, search_term):
-        return conn.cursor().execute(
-            '''
-            SELECT 
-                r.RentalID, 
-                c.FirstName || ' ' || c.LastName AS CustomerName, 
-                c.ContactNumber, 
-                r.RentalStatus, 
-                r.TotalRentalFee
-            FROM Rental r
-            JOIN Customer c ON r.CustomerID = c.CustomerID
-            WHERE CAST(r.RentalID AS TEXT) LIKE ?
-                OR c.FirstName LIKE ?
-                OR c.LastName LIKE ?
-                OR (c.FirstName || ' ' || c.LastName) LIKE ?
-            ORDER BY r.RentalID DESC
-            ''', 
-            (f"%{search_term}%",)*4
-        ).fetchall()
+    # SEARCH RENTALS BY NAME/ID FUNCTION
+    
 
-
-
-
-    # Changing filtering active to actual functions
     def filter_menu(event):
         menu = tk.Menu(main_frame, tearoff=0)
-        menu.add_command(label="Show Active", command=lambda: apply_filter("Ongoing"))
-        menu.add_command(label="Show Overdue", command=lambda: apply_filter("Overdue"))
-        menu.add_command(label="Show Completed", command=lambda: apply_filter("Completed"))
+        menu.add_command(label="Show Active", command=lambda: print("Filtering active.."))
+        menu.add_command(label="Show Overdue", command=lambda: print("Filtering active.."))
+        menu.add_command(label="Show Completed", command=lambda: print("Filtering active.."))
         menu.post(event.x_root, event.y_root)
-
-    def apply_filter(status, conn): #To apply ongoing, overdue, completed filtering
-        filtered_data = get_rentals_by_status(conn, status)
         
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     filter_path = os.path.join(BASE_DIR, "assets", "filter.png")
@@ -250,20 +225,8 @@ def rentals_page(main_frame, app):
     add_hover(filter_label, "#eef2f7", "#eef2f7", "black", "#e6b800")
 
 
-    # FILTER STATUS FUNCTION HERE
-    def get_rentals_by_status(conn, status):
-        cursor = conn.cursor()
-
-        cursor.execute("""
-            SELECT *
-            FROM Rental
-            WHERE RentalStatus = ?
-            ORDER BY RentalID DESC
-        """, (status,))
-        return cursor.fetchall()
-
-
-
+    # FILTER RENTAL BY STATUS FUNCTION
+    
 
     container = tk.Frame(main_frame, bg="#eef2f7", highlightthickness=0)
     container.pack(fill="both", expand=True, padx=20)
@@ -366,6 +329,9 @@ def show_details(app, order):
 
     for w in frame.winfo_children():
         w.destroy()
+        
+    # SHOW RENTAL DETAILS FUNCTION
+    
 
     #bottom
     bottom_bar = tk.Frame(
@@ -410,6 +376,8 @@ def show_details(app, order):
         complete_btn.pack(side="right", padx=5)
         add_hover(complete_btn, "#232624", "#ffd735", "#ffd735", "black")
 
+    # MARK RENTAL AS COMPLETE FUNCTION
+    
 
 
     container = tk.Frame(
@@ -511,85 +479,5 @@ def show_details(app, order):
         font=("Arial", 14, "bold"), 
         bg="#eef2f7"
     ).grid(row=next_row + 2, column=0, sticky="w", pady=20)
-
-    
-
-
-    # SEE MORE DETAILS FUNCTION HERE
-    def get_rental_details(conn, rental_id):
-        cursor = conn.cursor()
-
-        cursor.execute("""
-            SELECT
-                r.RentalID,
-                c.FirstName || ' ' || c.LastName,
-                c.ContactNumber,
-                c.EmailAddress,
-                c.Street,
-                c.Barangay,
-                c.City,
-                c.Province,
-                c.ZIPCode,
-                d.Model,
-                r.SRentalMonth,
-                r.SRentalDay,
-                r.SRentalYear,
-                r.ExReturnMonth,
-                r.ExReturnDay,
-                r.ExReturnYear,
-                r.TotalRentalFee,
-                r.RentalStatus
-            FROM Rental r
-            JOIN Customer c ON r.CustomerID = c.CustomerID
-            JOIN RentalItem ri ON r.RentalID = ri.RentalID
-            JOIN Device d ON ri.DeviceID = d.DeviceID
-            WHERE r.RentalID = ?
-        """, (rental_id,))
-
-        row = cursor.fetchone()
-
-        if not row:
-            return None
-
-        return {
-            "id": row[0],
-            "rentee": row[1],
-            "contact": row[2],
-            "email": row[3],
-            "street": row[4],
-            "barangay": row[5],
-            "city": row[6],
-            "province": row[7],
-            "zipcode": row[8],
-            "device": row[9],
-            "rental_month": row[10],
-            "rental_day": row[11],
-            "rental_year": row[12],
-            "return_month": row[13],
-            "return_day": row[14],
-            "return_year": row[15],
-            "total_fee": row[16],
-            "status": row[17]
-        }
-
-
-
-
-  
-
-
-    # MARK RENTAL COMPLETE FUNCTION HERE
-    def mark_rental_as_completed(conn, rental_id):
-        cursor = conn.cursor()
-        
-        cursor.execute(
-            "UPDATE Rental SET RentalStatus = 'Completed' WHERE RentalID = ?",
-            (rental_id,)
-        )
-        conn.commit()
-        return cursor.rowcount > 0
-
-
-
 
     frame.tkraise()
