@@ -1,9 +1,15 @@
 import tkinter as tk
 from PIL import Image, ImageTk
-from db.sqlite_crudop import get_connection, search_rentals, get_rentals_by_status, get_rental_details, mark_rental_as_completed
+from db.view_rentals_logic import ( 
+    get_connection, 
+    get_rentals_by_status, 
+    search_rentals, 
+    get_rental_details, 
+    mark_rental_as_completed
+)
+
 import os
 
-# Penalty fee suggestion = Fix 300 php
 
 orders = [  #temporary only, will delete when create rental exists
         {"id": "001", "rentee": "Daniel Padilla", "status": "Ongoing"},
@@ -193,13 +199,54 @@ def rentals_page(main_frame, app):
 
 
     # SEARCH RENTALS BY NAME/ID FUNCTION
-    
+    # To be checked/revised by Garcia or Quitollo
+    def search_rentals():
+        search_term = search.get().strip()
+        if search_term == "" or search_term == "Search...":
+            return
+        
+        conn = None
+        try:
+            conn = get_connection()
+            cursor = conn.cursor()
+            # Match by numeric id or by name (partial match)
+            try:
+                # if search_term is numeric, search by id
+                int_term = int(search_term)
+                cursor.execute("SELECT * FROM rentals WHERE id = ?", (int_term,))
+            except ValueError:
+                like_term = f"%{search_term}%"
+                cursor.execute("SELECT * FROM rentals WHERE name LIKE ?", (like_term,))
+            result = cursor.fetchone()
 
-    def filter_menu(event):
+        except Exception as e:
+            print(f"Search error: {e}")
+            return []
+        finally:
+            if conn:
+                conn.close()
+ 
+        
+
+
+    def filter_menu(event): # To be checked/revised by Garcia or Quitollo
+        # added simple handler to apply a status filter
+        def filter_status(status):
+            try:
+                # call the db helper if available, otherwise no-op
+                try:
+                    results = get_rentals_by_status(status)
+                except TypeError:
+                    # fallback if imported function signature differs
+                    results = None
+
+            except Exception:
+                pass
+
         menu = tk.Menu(main_frame, tearoff=0)
-        menu.add_command(label="Show Active", command=lambda: print("Filtering active.."))
-        menu.add_command(label="Show Overdue", command=lambda: print("Filtering active.."))
-        menu.add_command(label="Show Completed", command=lambda: print("Filtering active.."))
+        menu.add_command(label="Show Active", command=lambda: filter_status("Ongoing"))
+        menu.add_command(label="Show Overdue", command=lambda: filter_status("Overdue"))
+        menu.add_command(label="Show Completed", command=lambda: filter_status("Completed"))
         menu.post(event.x_root, event.y_root)
         
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -226,7 +273,31 @@ def rentals_page(main_frame, app):
 
 
     # FILTER RENTAL BY STATUS FUNCTION
-    
+    # To be checked/revised by Garcia or Quitollo
+    def get_rentals_by_status():
+        try:
+            filter_status = filter.get()
+        except Exception:
+            return None
+
+        if not filter_status:
+            return None
+
+        try:
+            conn = get_connection()
+            cursor = conn.cursor()
+            
+            cursor.execute("SELECT * FROM rentals WHERE status = ?", (filter_status,))
+            result = cursor.fetchall()
+            cursor.close()
+            conn.close()
+            return result
+
+        except Exception:
+            return None
+
+
+
 
     container = tk.Frame(main_frame, bg="#eef2f7", highlightthickness=0)
     container.pack(fill="both", expand=True, padx=20)
@@ -331,7 +402,47 @@ def show_details(app, order):
         w.destroy()
         
     # SHOW RENTAL DETAILS FUNCTION
-    
+    # To be checked/revised by Garcia or Quitollo
+    def get_rentals_details():
+        # Fetch rental details from the database
+        conn = None
+        cursor = None
+        try:
+            conn = get_connection()
+            cursor = conn.cursor()
+
+            cursor.execute("SELECT id, rentee, contact, email, region, city, barangay, postal, street, device, rental_month, rental_day, rental_year, return_month, return_day, return_year, total_fee, status FROM rentals WHERE id = ?", (order.get('id'),))
+            row = cursor.fetchone()
+            if not row:
+                return None
+            return {
+                "id": row[0],
+                "rentee": row[1],
+                "contact": row[2],
+                "email": row[3],
+                "region": row[4],
+                "city": row[5],
+                "barangay": row[6],
+                "postal": row[7],
+                "street": row[8],
+                "device": row[9],
+                "rental_month": row[10],
+                "rental_day": row[11],
+                "rental_year": row[12],
+                "return_month": row[13],
+                "return_day": row[14],
+                "return_year": row[15],
+                "total_fee": row[16],
+                "status": row[17]
+            }
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+
+
+
 
     #bottom
     bottom_bar = tk.Frame(
@@ -377,7 +488,27 @@ def show_details(app, order):
         add_hover(complete_btn, "#232624", "#ffd735", "#ffd735", "black")
 
     # MARK RENTAL AS COMPLETE FUNCTION
-    
+    # To be checked/revised by Garcia or Quitollo
+    def mark_rental_as_completed(conn, rental_id):
+        try:
+            cursor = conn.cursor()
+            cursor.execute("UPDATE rentals SET status = ? WHERE id = ?", ("Completed", rental_id))
+            conn.commit()
+            return True
+        except Exception as e:
+            print("Error marking rental as completed:", e)
+            return False
+        finally:
+            try:
+                cursor.close()
+            except:
+                pass
+            try:
+                conn.close()
+            except:
+                pass
+
+
 
 
     container = tk.Frame(
