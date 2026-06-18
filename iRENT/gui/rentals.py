@@ -1,15 +1,15 @@
 import tkinter as tk
 from PIL import Image, ImageTk
 import os
-
-from db.view_rentals_logic import (
-    get_all_rentals,
-    display_rentals, 
-    get_rentals_by_status, 
-    search_rentals, 
-    get_rental_details, 
-    mark_rental_as_completed
-)
+#pacomment lang ulit para matest ko ung add rental page
+#from db.view_rentals_logic import (
+#    get_all_rentals,
+ #   display_rentals, 
+ #   get_rentals_by_status, 
+#    search_rentals, 
+#    get_rental_details, 
+ #   mark_rental_as_completed
+#)
 
 
 
