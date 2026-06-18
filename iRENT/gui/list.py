@@ -635,7 +635,7 @@ def show_brand_details(app, device, brand):
         fg="white",
         cursor="hand2",
         relief="raised",
-        command=lambda d=device, b=brand: add_device(app, device, brand)
+        command=lambda d=device, b=brand: add_device_page(app, d, b)
     )
     add_btn.grid(row=0, column=0, sticky="w", padx=40) 
     add_hover(add_btn, "#45a049", "#4CAF50", "white", "white")
