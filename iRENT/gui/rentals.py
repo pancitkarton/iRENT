@@ -1,9 +1,17 @@
 import tkinter as tk
 from PIL import Image, ImageTk
-from db.sqlite_crudop import get_connection, search_rentals, get_rentals_by_status, get_rental_details, mark_rental_as_completed
 import os
 
-# Penalty fee suggestion = Fix 300 php
+from db.view_rentals_logic import (
+    get_all_rentals,
+    display_rentals, 
+    get_rentals_by_status, 
+    search_rentals, 
+    get_rental_details, 
+    mark_rental_as_completed
+)
+
+
 
 orders = [  #temporary only, will delete when create rental exists
         {"id": "001", "rentee": "Daniel Padilla", "status": "Ongoing"},
@@ -58,7 +66,7 @@ def open_receipt(order):
     details_frame.pack(fill="x", padx=40)
 
 
-    base_fee = 1000.00 
+    base_fee = order['total_fee'] if order['total_fee'] else 1000.00 
     is_overdue = (order['status'] == "Overdue")
     penalty = 300.00 if is_overdue else 0.00
     total = base_fee + penalty
@@ -169,13 +177,19 @@ def rentals_page(main_frame, app):
     icon_label.image=search_icon
     icon_label.pack(side="right")
 
-    search = tk.Entry(
-        searchfilter, 
-        font=("Arial", 12), 
-        width=15
-    )
+    search = tk.Entry(searchfilter, font=("Arial", 12), width=15)
     search.insert(0, "Search...")
     search.pack(side="right")
+    
+    # SEARCH RENTALS BY NAME/ID FUNCTION
+    def trigger_search(event=None):
+        term = search.get().strip()
+        if term == "" or term == "Search...":
+            display_rentals(get_all_rentals())
+        else:
+            display_rentals(search_rentals(term))
+
+    search.bind("<KeyRelease>", trigger_search)
 
     def on_focus_in(event):
         if search.get() == "Search...":
@@ -192,14 +206,13 @@ def rentals_page(main_frame, app):
     search.config(fg="gray")
 
 
-    # SEARCH RENTALS BY NAME/ID FUNCTION
-    
-
+    # FILTER RENTAL BY STATUS FUNCTION
     def filter_menu(event):
         menu = tk.Menu(main_frame, tearoff=0)
-        menu.add_command(label="Show Active", command=lambda: print("Filtering active.."))
-        menu.add_command(label="Show Overdue", command=lambda: print("Filtering active.."))
-        menu.add_command(label="Show Completed", command=lambda: print("Filtering active.."))
+        menu.add_command(label="Show All", command=lambda: display_rentals(get_all_rentals()))
+        menu.add_command(label="Show Active", command=lambda: display_rentals(get_rentals_by_status("Ongoing")))
+        menu.add_command(label="Show Overdue", command=lambda: display_rentals(get_rentals_by_status("Overdue")))
+        menu.add_command(label="Show Completed", command=lambda: display_rentals(get_rentals_by_status("Completed")))
         menu.post(event.x_root, event.y_root)
         
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -223,10 +236,6 @@ def rentals_page(main_frame, app):
     filter_label.bind("<Button-1>", filter_menu)
 
     add_hover(filter_label, "#eef2f7", "#eef2f7", "black", "#e6b800")
-
-
-    # FILTER RENTAL BY STATUS FUNCTION
-    
 
     container = tk.Frame(main_frame, bg="#eef2f7", highlightthickness=0)
     container.pack(fill="both", expand=True, padx=20)
@@ -308,9 +317,14 @@ def rentals_page(main_frame, app):
     add_hover(add_btn, "#232624", "#ffd735", "#ffd735", "black")
 
 
-def show_details(app, order):
+# SHOW RENTAL DETAILS FUNCTION
+def show_details(app, order_id):
     frame = app.pages["order_details"]
     frame.configure(bg="#eef2f7")
+    
+    order = get_rental_details(order_id)
+    if not order:
+        return
 
     def add_hover(btn, enter_bg, leave_bg, enter_fg=None, leave_fg=None):
 
@@ -329,9 +343,6 @@ def show_details(app, order):
 
     for w in frame.winfo_children():
         w.destroy()
-        
-    # SHOW RENTAL DETAILS FUNCTION
-    
 
     #bottom
     bottom_bar = tk.Frame(
@@ -364,21 +375,22 @@ def show_details(app, order):
     back_btn.pack(side="right", padx=5)
     add_hover(back_btn, "#232624", "gray", "white", "black")
 
+    # MARK RENTAL AS COMPLETE FUNCTION
     if order['status'] != "Completed":
+        def complete_action():
+            mark_rental_as_completed(order['id'])
+            open_receipt(order['id'])
+            
         complete_btn = tk.Button(
             bottom_bar,
             text="COMPLETE RENTAL",
             font=("Arial", 17, "bold"),
             bg="#ffd735",
             cursor="hand2",
-            command=lambda: [mark_rental_as_completed(get_connection(), order['id']), open_receipt(order), app.pages["rentals"].tkraise()]
+            command=lambda: [mark_rental_as_completed(complete_action(), order['id']), open_receipt(order), app.pages["rentals"].tkraise()]
         )
         complete_btn.pack(side="right", padx=5)
         add_hover(complete_btn, "#232624", "#ffd735", "#ffd735", "black")
-
-    # MARK RENTAL AS COMPLETE FUNCTION
-    
-
 
     container = tk.Frame(
         frame,
@@ -432,26 +444,13 @@ def show_details(app, order):
         bg="black"
     ).grid(row=3, column=0, columnspan=2, sticky="ew", pady=20)
 
-    #for showing the dummy device info lng
+    #for showing dummy device info
     tk.Label(
         container, 
         text="DEVICE INFORMATION", 
         font=("Arial", 20, "bold"), 
         bg="#eef2f7"
     ).grid(row=4, column=0, columnspan=2, sticky="w", pady=(0, 10))
-
-    for i, (key, value) in enumerate(device_data.items()):
-            row_idx = 5 + (i // 2) + 1
-            col_idx = i % 2
-
-            tk.Label(
-                container, 
-                text=f"{key}: {value}", 
-                font=("Arial", 12, "bold"), 
-                bg="#eef2f7"
-            ).grid(row=row_idx, column=col_idx, sticky="w", padx=5, pady=5)
-        
-    next_row = 5 + (len(device_data) // 2) + 1
 
     tk.Frame(
         container, 

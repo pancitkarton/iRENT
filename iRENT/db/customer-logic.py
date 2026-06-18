@@ -9,7 +9,7 @@ import sqlite3
 from typing import Any, Dict, List, Optional
 
 # Reuse the shared schema + connection helper.
-from .sqlite_crudop import get_connection, make_database
+from sqlite_crudop import get_connection, make_database
 
 
 def init_db() -> sqlite3.Connection:

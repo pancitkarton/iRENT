@@ -1,9 +1,7 @@
-# db functions for remaining needs
 import sqlite3
 import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
 db_path = os.path.join(BASE_DIR, 'iRENT.db')
 
 def get_connection():
@@ -375,6 +373,47 @@ def get_overdue_rentals(conn, current_year, current_month, current_day):
                 OR (r.ExReturnYear = ? AND r.ExReturnMonth < ?)
                 OR (r.ExReturnYear = ? AND r.ExReturnMonth = ? AND r.ExReturnDay   < ?))
     ''', (current_year, current_year, current_month, current_year, current_month, current_day))
+    return cursor.fetchall()
+
+# Get all rentals
+def get_all_rentals(conn):
+    """Fetches all rentals joined with the customer's full name."""
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT r.RentalID,
+               c.FirstName || ' ' || c.LastName AS CustomerName,
+               r.RentalStatus,
+               r.TotalRentalFee,
+               r.SRentalMonth || '/' || r.SRentalDay || '/' || r.SRentalYear AS StartDate,
+               r.ExReturnMonth || '/' || r.ExReturnDay || '/' || r.ExReturnYear AS ExpectedReturn
+        FROM Rental r
+        JOIN Customer c ON r.CustomerID = c.CustomerID
+        ORDER BY r.RentalID DESC
+    ''')
+    return cursor.fetchall()
+
+# Display rentals based on status
+def display_rentals(conn):
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        SELECT r.RentalID,
+               c.FirstName || ' ' || c.LastName AS CustomerName,
+               c.ContactNumber,
+               r.RentalStatus,
+               r.TotalRentalFee,
+               r.SRentalMonth,
+               r.SRentalDay,
+               r.SRentalYear,
+               r.ExReturnMonth,
+               r.ExReturnDay,
+               r.ExReturnYear
+        FROM Rental r
+        JOIN Customer c
+            ON r.CustomerID = c.CustomerID
+        ORDER BY r.RentalID DESC
+    ''')
+
     return cursor.fetchall()
 
 def get_rentals_by_status(conn, status):
