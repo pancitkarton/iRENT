@@ -1,7 +1,9 @@
+# db functions for remaining needs
 import sqlite3
 import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 db_path = os.path.join(BASE_DIR, 'iRENT.db')
 
 def get_connection():
@@ -160,42 +162,6 @@ def add_device(conn, model, serial_number, price, func_status, appearance, avail
     conn.commit()
     return cursor.lastrowid
 
-def add_device_specs(conn, device_id, processor, ram, storage, os, screen_size, battery_life):
-    """Adds specifications for a device."""
-    cursor = conn.cursor()
-    cursor.execute('''
-        INSERT INTO DeviceSpecs (Processor, RAM, Storage, OS, ScreenSize, BatteryLife, DeviceID)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    ''', (processor, ram, storage, os, screen_size, battery_life, device_id))
-    conn.commit()
-    return cursor.lastrowid
-
-def add_device_type(conn, type_name):
-    """Adds a new device type (e.g., CAMERA, CELLPHONE, CONSOLE)."""
-    cursor = conn.cursor()
-    try:
-        cursor.execute('''
-            INSERT INTO DeviceType (TypeName)
-            VALUES (?)
-        ''', (type_name,))
-        conn.commit()
-        return cursor.lastrowid
-    except sqlite3.IntegrityError:
-        return None  # Type already exists
-
-def add_brand(conn, brand_name):
-    """Adds a new brand (e.g., SONY, CANON, IPHONE)."""
-    cursor = conn.cursor()
-    try:
-        cursor.execute('''
-            INSERT INTO Brand (BrandName)
-            VALUES (?)
-        ''', (brand_name,))
-        conn.commit()
-        return cursor.lastrowid
-    except sqlite3.IntegrityError:
-        return None  # Brand already exists
-
 def create_rental_transaction(conn, s_month, s_day, s_year, ex_month, ex_day, ex_year, status, fee, customer_id, staff_id):
     """Creates a new rental record."""
     cursor = conn.cursor()
@@ -206,138 +172,8 @@ def create_rental_transaction(conn, s_month, s_day, s_year, ex_month, ex_day, ex
     conn.commit()
     return cursor.lastrowid
 
-def add_rental_item(conn, rental_id, device_id, price_at_rental, dr_month, dr_day, dr_year, penalty_fee):
-    """Adds a device to a rental transaction."""
-    cursor = conn.cursor()
-    cursor.execute('''
-        INSERT INTO RentalItem (RentalID, DeviceID, PriceAtRental, DRMonth, DRDay, DRYear, PenaltyFee)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    ''', (rental_id, device_id, price_at_rental, dr_month, dr_day, dr_year, penalty_fee))
-    conn.commit()
-    return cursor.lastrowid
 
 # READ, DISPLAY FUNCTION
-def get_all_device_types(conn):
-    """Fetches all device types for the main device list page (e.g., CAMERA, CELLPHONE, CONSOLE)."""
-    cursor = conn.cursor()
-    cursor.execute('''
-        SELECT DeviceTypeID, TypeName
-        FROM DeviceType
-        ORDER BY TypeName ASC
-    ''')
-    return cursor.fetchall()
-
-def get_brands_by_device_type(conn, device_type_id):
-    """Fetches all brands for a specific device type."""
-    cursor = conn.cursor()
-    cursor.execute('''
-        SELECT DISTINCT b.BrandID, b.BrandName
-        FROM Brand b
-        JOIN Device d ON b.BrandID = d.BrandID
-        WHERE d.DeviceTypeID = ?
-        ORDER BY b.BrandName ASC
-    ''', (device_type_id,))
-    return cursor.fetchall()
-
-def get_brands_by_device_type_name(conn, device_type_name):
-    """Fetches all brands for a specific device type by name."""
-    cursor = conn.cursor()
-    cursor.execute('''
-        SELECT DISTINCT b.BrandID, b.BrandName
-        FROM Brand b
-        JOIN Device d ON b.BrandID = d.BrandID
-        JOIN DeviceType dt ON d.DeviceTypeID = dt.DeviceTypeID
-        WHERE dt.TypeName = ?
-        ORDER BY b.BrandName ASC
-    ''', (device_type_name,))
-    return cursor.fetchall()
-
-def get_device_type_id_by_name(conn, device_type_name):
-    """Gets the DeviceTypeID from the device type name."""
-    cursor = conn.cursor()
-    cursor.execute('''
-        SELECT DeviceTypeID
-        FROM DeviceType
-        WHERE TypeName = ?
-    ''', (device_type_name,))
-    result = cursor.fetchone()
-    return result[0] if result else None
-
-def get_brand_id_by_name(conn, brand_name):
-    """Gets the BrandID from the brand name."""
-    cursor = conn.cursor()
-    cursor.execute('''
-        SELECT BrandID
-        FROM Brand
-        WHERE BrandName = ?
-    ''', (brand_name,))
-    result = cursor.fetchone()
-    return result[0] if result else None
-
-def get_models_by_brand_and_type(conn, device_type_id, brand_id):
-    """Fetches all device models for a specific brand and device type."""
-    cursor = conn.cursor()
-    cursor.execute('''
-        SELECT d.DeviceID, d.Model, d.RentalPrice, d.SerialNumber, 
-               d.FunctionalStatus, d.Appearance, d.AvailabilityStatus
-        FROM Device d
-        WHERE d.DeviceTypeID = ? AND d.BrandID = ?
-        ORDER BY d.Model ASC
-    ''', (device_type_id, brand_id))
-    return cursor.fetchall()
-
-def get_models_by_brand_and_type_names(conn, device_type_name, brand_name):
-    """Fetches all device models for a specific brand and device type using names."""
-    cursor = conn.cursor()
-    cursor.execute('''
-        SELECT d.DeviceID, d.Model, d.RentalPrice, d.SerialNumber, 
-               d.FunctionalStatus, d.Appearance, d.AvailabilityStatus
-        FROM Device d
-        JOIN DeviceType dt ON d.DeviceTypeID = dt.DeviceTypeID
-        JOIN Brand b ON d.BrandID = b.BrandID
-        WHERE dt.TypeName = ? AND b.BrandName = ?
-        ORDER BY d.Model ASC
-    ''', (device_type_name, brand_name))
-    return cursor.fetchall()
-
-def get_device_details(conn, device_id):
-    """Fetches complete details of a single device including specs."""
-    cursor = conn.cursor()
-    cursor.execute('''
-        SELECT d.DeviceID, d.Model, d.SerialNumber, d.RentalPrice,
-               d.FunctionalStatus, d.Appearance, d.AvailabilityStatus,
-               dt.TypeName, b.BrandName
-        FROM Device d
-        JOIN DeviceType dt ON d.DeviceTypeID = dt.DeviceTypeID
-        JOIN Brand b ON d.BrandID = b.BrandID
-        WHERE d.DeviceID = ?
-    ''', (device_id,))
-    return cursor.fetchone()
-
-def get_device_specs(conn, device_id):
-    """Fetches specifications for a specific device."""
-    cursor = conn.cursor()
-    cursor.execute('''
-        SELECT SpecsID, Processor, RAM, Storage, OS, ScreenSize, BatteryLife
-        FROM DeviceSpecs
-        WHERE DeviceID = ?
-    ''', (device_id,))
-    return cursor.fetchall()
-
-def get_available_devices_count(conn):
-    """Gets count of available devices by type and brand for inventory overview."""
-    cursor = conn.cursor()
-    cursor.execute('''
-        SELECT dt.TypeName, b.BrandName, COUNT(d.DeviceID) as Count
-        FROM Device d
-        JOIN DeviceType dt ON d.DeviceTypeID = dt.DeviceTypeID
-        JOIN Brand b ON d.BrandID = b.BrandID
-        WHERE d.AvailabilityStatus = 'Available'
-        GROUP BY dt.TypeName, b.BrandName
-        ORDER BY dt.TypeName, b.BrandName
-    ''')
-    return cursor.fetchall()
-
 def get_all_available_devices(conn):
     """Fetches all devices currently marked as 'Available'."""
     cursor = conn.cursor()
@@ -373,47 +209,6 @@ def get_overdue_rentals(conn, current_year, current_month, current_day):
                 OR (r.ExReturnYear = ? AND r.ExReturnMonth < ?)
                 OR (r.ExReturnYear = ? AND r.ExReturnMonth = ? AND r.ExReturnDay   < ?))
     ''', (current_year, current_year, current_month, current_year, current_month, current_day))
-    return cursor.fetchall()
-
-# Get all rentals
-def get_all_rentals(conn):
-    """Fetches all rentals joined with the customer's full name."""
-    cursor = conn.cursor()
-    cursor.execute('''
-        SELECT r.RentalID,
-               c.FirstName || ' ' || c.LastName AS CustomerName,
-               r.RentalStatus,
-               r.TotalRentalFee,
-               r.SRentalMonth || '/' || r.SRentalDay || '/' || r.SRentalYear AS StartDate,
-               r.ExReturnMonth || '/' || r.ExReturnDay || '/' || r.ExReturnYear AS ExpectedReturn
-        FROM Rental r
-        JOIN Customer c ON r.CustomerID = c.CustomerID
-        ORDER BY r.RentalID DESC
-    ''')
-    return cursor.fetchall()
-
-# Display rentals based on status
-def display_rentals(conn):
-    cursor = conn.cursor()
-
-    cursor.execute('''
-        SELECT r.RentalID,
-               c.FirstName || ' ' || c.LastName AS CustomerName,
-               c.ContactNumber,
-               r.RentalStatus,
-               r.TotalRentalFee,
-               r.SRentalMonth,
-               r.SRentalDay,
-               r.SRentalYear,
-               r.ExReturnMonth,
-               r.ExReturnDay,
-               r.ExReturnYear
-        FROM Rental r
-        JOIN Customer c
-            ON r.CustomerID = c.CustomerID
-        ORDER BY r.RentalID DESC
-    ''')
-
     return cursor.fetchall()
 
 def get_rentals_by_status(conn, status):
@@ -519,72 +314,6 @@ def update_device_availability(conn, device_id, new_status):
     ''', (new_status, device_id))
     conn.commit()
 
-def update_device_details(conn, device_id, model=None, price=None, func_status=None, appearance=None):
-    """Updates device information."""
-    cursor = conn.cursor()
-    
-    updates = []
-    params = []
-    
-    if model is not None:
-        updates.append("Model = ?")
-        params.append(model)
-    if price is not None:
-        updates.append("RentalPrice = ?")
-        params.append(price)
-    if func_status is not None:
-        updates.append("FunctionalStatus = ?")
-        params.append(func_status)
-    if appearance is not None:
-        updates.append("Appearance = ?")
-        params.append(appearance)
-    
-    if not updates:
-        return False
-    
-    params.append(device_id)
-    query = f"UPDATE Device SET {', '.join(updates)} WHERE DeviceID = ?"
-    
-    cursor.execute(query, params)
-    conn.commit()
-    return cursor.rowcount > 0
-
-def update_device_specs(conn, device_id, processor=None, ram=None, storage=None, os=None, screen_size=None, battery_life=None):
-    """Updates device specifications."""
-    cursor = conn.cursor()
-    
-    updates = []
-    params = []
-    
-    if processor is not None:
-        updates.append("Processor = ?")
-        params.append(processor)
-    if ram is not None:
-        updates.append("RAM = ?")
-        params.append(ram)
-    if storage is not None:
-        updates.append("Storage = ?")
-        params.append(storage)
-    if os is not None:
-        updates.append("OS = ?")
-        params.append(os)
-    if screen_size is not None:
-        updates.append("ScreenSize = ?")
-        params.append(screen_size)
-    if battery_life is not None:
-        updates.append("BatteryLife = ?")
-        params.append(battery_life)
-    
-    if not updates:
-        return False
-    
-    params.append(device_id)
-    query = f"UPDATE DeviceSpecs SET {', '.join(updates)} WHERE DeviceID = ?"
-    
-    cursor.execute(query, params)
-    conn.commit()
-    return cursor.rowcount > 0
-
 def mark_rental_as_completed(conn, rental_id):
     """Updates a rental record when equipment is successfully returned."""
     cursor = conn.cursor()
@@ -605,18 +334,12 @@ def remove_retired_device(conn, device_id):
     conn.commit()
     print(f"Device {device_id} removed from system.")
 
-def remove_device_specs(conn, device_id):
-    """Removes specifications for a device."""
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM DeviceSpecs WHERE DeviceID = ?", (device_id,))
-    conn.commit()
-    return cursor.rowcount > 0   
-
 def remove_customer(conn, customer_id):
     """Deletes a customer profile (Warning: cascades to delete their rentals if ON DELETE CASCADE is set properly)."""
     cursor = conn.cursor()
     cursor.execute("DELETE FROM Customer WHERE CustomerID = ?", (customer_id,))
     conn.commit()
+
 
 # Initializes this database once when module is imported or explicitly called in GUI
 make_database()
