@@ -1,8 +1,10 @@
+import email
 import tkinter as tk
 from tkinter import messagebox
 from db import logic
 from gui.app import MainApp
 import os
+import re
 
 #TKINTER GUI
 class AuthApp:
@@ -198,6 +200,10 @@ class AuthApp:
         signup_window.state("zoomed")
         signup_window.configure(bg="#313338")
 
+        vcmd_num = (signup_window.register(lambda P: self.validate_input(P, "numbers")), '%P')
+        vcmd_alpha = (signup_window.register(lambda P: self.validate_input(P, "alpha")), '%P')
+        vcmd_user = (signup_window.register(lambda P: self.validate_input(P, "username")), '%P')
+
         form_frame = tk.Frame(signup_window, bg="#313338")
         form_frame.place(relx=0.5, rely=0.5, anchor="center", width=400)
 
@@ -231,6 +237,7 @@ class AuthApp:
             return entry
         
         create_username = user_fields("Choose a Username")
+        create_username.config(validate="key", validatecommand=vcmd_user)
         create_password = user_fields("Create Password", is_password=True)
         confirm_password = user_fields("Confirm Password", is_password=True)
 
@@ -269,10 +276,22 @@ class AuthApp:
             entry.grid(row=1, column=col, padx=(2,7), ipady=8, sticky="ew")
             return entry
         
+        def validate_input(P, mode):
+            if P == "": return True
+            if mode == "numbers": return P.isdigit()
+            if mode == "alpha": return all(x.isalpha() or x.isspace() for x in P)
+            if mode == "length": return len(P) <= 20
+            return True
+
+        
         create_firstname = name_fields("First Name", 0)
+        create_firstname.config(validate="key", validatecommand=vcmd_alpha)
         create_middlename = name_fields("Middle Name", 1)
+        create_middlename.config(validate="key", validatecommand=vcmd_alpha)
         create_lastname = name_fields("Last Name", 2)
+        create_lastname.config(validate="key", validatecommand=vcmd_alpha)
         create_suffix = name_fields("Suffix", 3, width=5)
+        create_suffix.config(validate="key", validatecommand=vcmd_alpha)
 
 
          # Email
@@ -320,6 +339,8 @@ class AuthApp:
             highlightthickness=2
         )
         create_contact.pack(fill="x", pady=(0, 15), ipady=8)
+        create_contact.config(validate="key", validatecommand=vcmd_num)
+
 
 
 
@@ -337,6 +358,7 @@ class AuthApp:
                 create_password.get(),      # password
                 confirm_password.get(),      # confirm
             )
+
 
             if result == "empty":
                 messagebox.showwarning(
@@ -376,6 +398,12 @@ class AuthApp:
                     "Sign-up successful! You may now login to your new account."
                 )
 
+            email = create_email.get()
+
+            if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
+                messagebox.showerror("Error", "Please enter a valid email address.")
+                return
+
                 signup_window.destroy()
 
 
@@ -400,3 +428,26 @@ class AuthApp:
 
         signup_btn.bind("<Enter>", on_enter)
         signup_btn.bind("<Leave>", on_leave)
+
+    def setup_validation(self, entry, mode):
+        vcmd = (self.root.register(lambda P: self.validate_input(P, mode)), '%P')
+        entry.config(validate="key", validatecommand=vcmd)
+
+    def validate_input(self, P, mode):
+        if P == "": return True
+        
+        if mode == "numbers":
+            return P.isdigit()
+        
+        if mode == "alpha":
+            return P.replace(" ", "").isalpha()
+        
+        if mode == "length":
+            return len(P) <= 20
+        
+        if mode == "username":
+            if " " in P: return False
+            if any(x.isupper() for x in P): return False
+            return len(P) <= 20
+            
+        return True

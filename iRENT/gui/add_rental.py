@@ -9,52 +9,48 @@ from db.add_rental_logic import getcreate_customer, create_rental, get_devices, 
 def select_customer(rental, name_entries, contact_entry, email_entry):
     selector = tk.Toplevel()
     selector.title("Select Customer")
-    selector.geometry("500x300")
     selector.grab_set()
+    selector.configure(bg="#ffd735")
 
     customers = get_customers()
 
-    search_frame = tk.Frame(selector)
+    search_frame = tk.Frame(selector, bg="#ffd735")
     search_frame.pack(fill="x", padx=10, pady=5)
-    tk.Label(search_frame, text="Search:").pack(side="left", padx=(0, 5))
+
+    tk.Label(search_frame, text="Search:", bg="#ffd735").pack(side="left", padx=(0, 5))
     search_entry = tk.Entry(search_frame, width=35)
     search_entry.pack(side="left")
 
-    # Treeview Columns
     columns = ("id", "first", "middle", "last", "suffix", "contact", "email", "region", "city", "brgy", "postal", "street")
     
-    # Configure Heading Style to be Bold
     style = ttk.Style()
     style.configure("Treeview.Heading", font=("Arial", 10, "bold"))
 
     tree = ttk.Treeview(selector, columns=columns, show="headings")
 
-    # Column Formatting (Setting specific widths, hiding non-essential ones)
     tree.column("id", width=40, anchor="center")
     tree.column("first", width=100)
+    tree.column("middle", width=100)
     tree.column("last", width=100)
+    tree.column("suffix", width=100)
     tree.column("contact", width=100)
+    tree.column("email", width=100)
     
-    # Hide extra columns by setting width to 0
-    for col in ("middle", "suffix", "email", "region", "city", "brgy", "postal", "street"):
+    for col in ("region", "city", "brgy", "postal", "street"):
         tree.column(col, width=0, stretch=False)
 
-    # Set Headings
     for col in columns:
         tree.heading(col, text=col.capitalize())
 
-    # Add Horizontal Scrollbar
     h_scroll = ttk.Scrollbar(selector, orient="horizontal", command=tree.xview)
     tree.configure(xscrollcommand=h_scroll.set)
     
     tree.pack(fill="both", expand=True, padx=10, pady=5)
     h_scroll.pack(fill="x", padx=10, pady=(0, 10))
 
-    # Populate Data
     for cust in customers:
         tree.insert("", "end", values=cust)
 
-    # Filter Logic
     def filter_tree(event=None):
         query = search_entry.get().lower()
         for item in tree.get_children():
