@@ -16,45 +16,54 @@ def select_customer(rental, name_entries, contact_entry, email_entry):
 
     search_frame = tk.Frame(selector)
     search_frame.pack(fill="x", padx=10, pady=5)
-
     tk.Label(search_frame, text="Search:").pack(side="left", padx=(0, 5))
-
     search_entry = tk.Entry(search_frame, width=35)
     search_entry.pack(side="left")
 
+    # Treeview Columns
+    columns = ("id", "first", "middle", "last", "suffix", "contact", "email", "region", "city", "brgy", "postal", "street")
+    
+    # Configure Heading Style to be Bold
+    style = ttk.Style()
+    style.configure("Treeview.Heading", font=("Arial", 10, "bold"))
+
+    tree = ttk.Treeview(selector, columns=columns, show="headings")
+
+    # Column Formatting (Setting specific widths, hiding non-essential ones)
+    tree.column("id", width=40, anchor="center")
+    tree.column("first", width=100)
+    tree.column("last", width=100)
+    tree.column("contact", width=100)
+    
+    # Hide extra columns by setting width to 0
+    for col in ("middle", "suffix", "email", "region", "city", "brgy", "postal", "street"):
+        tree.column(col, width=0, stretch=False)
+
+    # Set Headings
+    for col in columns:
+        tree.heading(col, text=col.capitalize())
+
+    # Add Horizontal Scrollbar
+    h_scroll = ttk.Scrollbar(selector, orient="horizontal", command=tree.xview)
+    tree.configure(xscrollcommand=h_scroll.set)
+    
+    tree.pack(fill="both", expand=True, padx=10, pady=5)
+    h_scroll.pack(fill="x", padx=10, pady=(0, 10))
+
+    # Populate Data
+    for cust in customers:
+        tree.insert("", "end", values=cust)
+
+    # Filter Logic
     def filter_tree(event=None):
         query = search_entry.get().lower()
         for item in tree.get_children():
             tree.delete(item)
         for cust in customers:
-            if query in cust[1].lower() or query in cust[2].lower():
+            if query in str(cust[1]).lower() or query in str(cust[3]).lower():
                 tree.insert("", "end", values=cust)
 
     search_entry.bind("<KeyRelease>", filter_tree)
-
-    columns = ("id", "first", "middle", "last", "suffix", "contact", "email", "region", "city", "brgy", "postal", "street")
-    
-    tree = ttk.Treeview(selector, columns=columns, show="headings")
-
-    tree.heading("id", text="ID")
-    tree.heading("first", text="First")
-    tree.heading("middle", text="Middle")
-    tree.heading("last", text="Last")
-    tree.heading("suffix", text="Suffix")
-    tree.heading("contact", text="Contact")
-    tree.heading("email", text="Email")
-    tree.heading("region", text="Region")
-    tree.heading("city", text="City")
-    tree.heading("brgy", text="Brgy")
-    tree.heading("postal", text="Postal")
-    tree.heading("street", text="Street")
-
-    tree.pack(fill="both", expand=True, padx=10, pady=5)
-
-    for cust in customers:
-        tree.insert("", "end", values=cust)
-
-        
 
     def on_select(event):
         selected = tree.focus()

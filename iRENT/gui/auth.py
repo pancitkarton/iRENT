@@ -172,17 +172,20 @@ class AuthApp:
 
         if result == "empty":
             messagebox.showwarning("Error", "Please fill all fields.")
-        elif result["status"] == "fail":
+        
+        elif result.get("status") == "fail":
             messagebox.showwarning("Error", "Invalid username or password. Try again!")
-        elif result["status"] == "success":
+            return
+        
+        elif result.get("status") == "success":
             messagebox.showinfo("Login successful.", f"Welcome {username}!")
+            
+            logged_in_staff_id = result["staff_id"]
 
-        logged_in_staff_id = result["staff_id"]
-
-        self.root.destroy()
-        new_root = tk.Tk()
-        app = MainApp(new_root, logged_in_staff_id)
-        new_root.mainloop()
+            self.root.destroy()
+            new_root = tk.Tk()
+            app = MainApp(new_root, logged_in_staff_id)
+            new_root.mainloop()
 
 
 
