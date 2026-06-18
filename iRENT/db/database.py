@@ -86,7 +86,6 @@ def initialize_db():
     )
     """)
 
-
     #rental
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Rental (
@@ -107,6 +106,22 @@ def initialize_db():
         FOREIGN KEY(CustomerID) REFERENCES Customer(CustomerID) ON DELETE CASCADE,
         FOREIGN KEY(StaffID) REFERENCES Staff(StaffID) ON DELETE RESTRICT,
         FOREIGN KEY(DeviceID) REFERENCES Device(DeviceID) ON DELETE RESTRICT
+    )
+    """)
+    
+    #rental item
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS RentalItem (
+        RentalItemID INTEGER PRIMARY KEY AUTOINCREMENT,
+        PriceAtRental DECIMAL (10, 2) NOT NULL,
+        DRMonth INTEGER NOT NULL,
+        DRDay INTEGER NOT NULL,
+        DRYear INTEGER NOT NULL,
+        PenaltyFee DECIMAL (10, 2) NOT NULL,
+        RentalID INTEGER NOT NULL,
+        DeviceID INTEGER NOT NULL,
+        FOREIGN KEY (RentalID) REFERENCES Rental(RentalID) ON DELETE CASCADE,
+        FOREIGN KEY (DeviceID) REFERENCES Device(DeviceID) ON DELETE RESTRICT
     )
     """)
 
