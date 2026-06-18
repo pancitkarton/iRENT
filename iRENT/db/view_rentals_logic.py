@@ -1,8 +1,10 @@
 from db.database import get_connection
 
+conn = get_connection()
+cursor = conn.cursor()
+
 
 def get_all_rentals(conn):
-    """Fetches all rentals joined with the customer's full name."""
     cursor = conn.cursor()
     cursor.execute('''
         SELECT r.RentalID,
@@ -20,7 +22,6 @@ def get_all_rentals(conn):
 
 def display_rentals(conn):
     cursor = conn.cursor()
-
     cursor.execute('''
         SELECT r.RentalID,
                c.FirstName || ' ' || c.LastName AS CustomerName,
@@ -44,7 +45,6 @@ def display_rentals(conn):
 
 def get_rentals_by_status(conn, status):
     cursor = conn.cursor()
-
     cursor.execute('''
         SELECT r.RentalID,
                c.FirstName || ' ' || c.LastName AS CustomerName,
@@ -68,7 +68,6 @@ def get_rentals_by_status(conn, status):
 
 def search_rentals(conn, search_term):
     cursor = conn.cursor()
-
     search_pattern = f"%{search_term}%"
 
     cursor.execute('''
@@ -91,9 +90,7 @@ def search_rentals(conn, search_term):
 
 
 def get_rental_details(conn, rental_id):
-    """Returns full rental breakdown including customer, address, device, dates, and fee."""
     cursor = conn.cursor()
-
     cursor.execute('''
         SELECT
             r.RentalID,
@@ -126,12 +123,12 @@ def get_rental_details(conn, rental_id):
 
         WHERE r.RentalID = ?
     ''', (rental_id,))
+    
+    return cursor.fetchall()
 
 
 def mark_rental_as_completed(conn, rental_id):
-    """Updates a rental record when equipment is successfully returned."""
     cursor = conn.cursor()
-    
     cursor.execute('''
         UPDATE Rental
         SET RentalStatus = 'Completed'
