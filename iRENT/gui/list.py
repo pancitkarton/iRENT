@@ -1,20 +1,22 @@
 import tkinter as tk
-from iRENT.gui.add_rental import add_rental_page
-from db.sqlite_crudop import (
-    get_connection,
-    get_all_device_types,
-    get_brands_by_device_type_name,
-    get_device_type_id_by_name,
-    get_brand_id_by_name,
-    get_models_by_brand_and_type_names,
-    get_device_specs,
-    add_device_type,
-    add_brand,
-    add_device,
-    add_device_specs,
-)
+#from iRENT.gui.add_rental import add_rental_page
+#from db.sqlite_crudop import (
+    #get_connection,
+   # get_all_device_types,
+    #get_brands_by_device_type_name,
+    #get_device_type_id_by_name,
+   # get_brand_id_by_name,
+   # get_models_by_brand_and_type_names,
+    #get_device_specs,
+   # add_device_type,
+    #add_brand,
+    #add_device,
+   # add_device_specs,
+#)
 
-from gui.add_rental import add_rental_page
+#from gui.add_rental import add_rental_page
+
+#pacomment muna kasi d  ko marun yung main tanggalin mo nalnag mamaya yung mga #
 
 DATA = {
     "CAMERA": {

@@ -91,6 +91,9 @@ class AuthApp:
             highlightthickness=2
         )
         self.username_entry.pack(fill="x", pady=(0, 15), ipady=8)
+        
+        vcmd_user = (self.root.register(lambda P: self.validate_input(P, "username")), '%P')
+        self.username_entry.config(validate="key", validatecommand=vcmd_user)
 
         # Password
         tk.Label(
