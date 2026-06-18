@@ -1,5 +1,5 @@
 import tkinter as tk
-from gui.add_rental import add_rental_page
+from iRENT.gui.add_rental import add_rental_page
 from db.sqlite_crudop import (
     get_connection,
     get_all_device_types,
