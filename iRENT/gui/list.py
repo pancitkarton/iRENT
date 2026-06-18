@@ -1,18 +1,5 @@
 import tkinter as tk
 from gui.add_rental import add_rental_page
-from db.sqlite_crudop import (
-    get_connection,
-    get_all_device_types,
-    get_brands_by_device_type_name,
-    get_device_type_id_by_name,
-    get_brand_id_by_name,
-    get_models_by_brand_and_type_names,
-    get_device_specs,
-    add_device_type,
-    add_brand,
-    add_device,
-    add_device_specs,
-)
 
 DATA = {
     "CAMERA": {
@@ -266,20 +253,8 @@ def create_list(main_frame, app):
     for i in range(2):
         container.grid_columnconfigure(i, weight=1, uniform="col")
 
-    try:
-        conn = get_connection()
-        db_device_types = get_all_device_types(conn)
-        conn.close()
-        
-        # Convert database results to list of type names
-        devices = [device_type[1] for device_type in db_device_types]  # Get TypeName column
-
-        if not devices:
-            # Fallback to DATA if database is empty
-            devices = [device for device in DATA.keys()]
-    except Exception as e:
-        print(f"Database error: {e}. Using fallback data.")
-        devices = [device for device in DATA.keys()]
+    # viewing list of devices
+    devices = [device for device in DATA.keys()]
 
     rows = (len(devices) + 1) // 2
 
@@ -322,22 +297,8 @@ def show_device_brands(app, device):
     
     container.grid_columnconfigure(0, weight=1)
     
-     # FETCH BRANDS FROM DATABASE
-    try:
-        conn = get_connection()
-        db_brands = get_brands_by_device_type_name(conn, device)
-        conn.close()
-        
-        # Convert database results to list of brand names
-        brands = [brand[1] for brand in db_brands]  # Get BrandName column
-        
-        if not brands:
-            # Fallback to DATA if no brands found
-            brands = list(DATA.get(device, {}).keys())
-    except Exception as e:
-        print(f"Database error: {e}. Using fallback data.")
-        brands = list(DATA.get(device, {}).keys())
-    
+    # get brands
+    brands = list(DATA[device].keys())
     num_brands = len(brands) 
     
     # set number of columns 
@@ -456,47 +417,9 @@ def show_brand_details(app, device, brand):
     # 3 columns for grid layout
     for i in range(3):
         container.grid_columnconfigure(i, weight=1, uniform="col")
-
-        # FETCH MODELS FROM DATABASE
-    try:
-        conn = get_connection()
-        db_models = get_models_by_brand_and_type_names(conn, device, brand)
-        
-        if db_models:
-            # Use database models
-            models_data = {}
-            for model_row in db_models:
-                device_id = model_row[0]
-                model_name = model_row[1]
-                price = model_row[2]
-                serial_number = model_row[3]
-                avail_status = model_row[6]
-                
-                # Get availability count from database (for now, simplified as 1 if available, 0 if not)
-                available = 1 if avail_status == 'Available' else 0
-                
-                # Get specs from database
-                specs = get_device_specs(conn, device_id)
-                specs_list = [f"{spec[1]}, {spec[2]}, {spec[3]}" for spec in specs] if specs else ["No specs available"]
-                
-                models_data[model_name] = {
-                    "id": serial_number,
-                    "specs": specs_list,
-                    "price": price,
-                    "available": available,
-                    "device_id": device_id
-                }
-            models = list(models_data.keys())
-        else:
-            # Fallback to DATA
-            models = list(DATA.get(device, {}).get(brand, {}).keys())
-            models_data = DATA.get(device, {}).get(brand, {})
-        
-        conn.close()
-    except Exception as e:
-        print(f"Database error: {e}. Using fallback data.")
-        models = list(DATA.get(device, {}).get(brand, {}).keys())
-        models_data = DATA.get(device, {}).get(brand, {})
+    
+    # gets models
+    models = list(DATA[device][brand].keys())
     
     # finds model with most specs listed (used for equal height cards)
     max_specs = 0
@@ -606,7 +529,7 @@ def show_brand_details(app, device, brand):
             bg="#ffd735",
             font=("Arial", 12, "bold"),
             cursor="hand2",
-            command=lambda : app.set_active_page("add_rental") #calls add_rental_page; becomes add_rental_page(card_frame, "SONY A7 IV") // 
+            command=lambda : app.set_active_page("add_rental") #calls add_rental_page
         )
         rent_btn.grid(row=6, column=0, pady=(0, 15))
         add_hover(rent_btn, "#232624", "#ffd735", "#ffd735", "black")
@@ -635,7 +558,7 @@ def show_brand_details(app, device, brand):
         fg="white",
         cursor="hand2",
         relief="raised",
-        command=lambda d=device, b=brand: add_device_page(app, d, b)
+        command=lambda d=device, b=brand: add_device(app, device, brand)
     )
     add_btn.grid(row=0, column=0, sticky="w", padx=40) 
     add_hover(add_btn, "#45a049", "#4CAF50", "white", "white")
@@ -655,7 +578,7 @@ def show_brand_details(app, device, brand):
             
     app.pages["brand_details"].tkraise()
 
-def add_device_page(app, device, brand):
+def add_device(app, device, brand):    
     frame = app.pages["add_device"]
 
     for widget in frame.winfo_children():
@@ -682,7 +605,7 @@ def add_device_page(app, device, brand):
     ).grid(row=1, column=0)
     
     # used for everything below inside form
-    form = tk.Frame(frame, bg="white", borderwidth=5, relief="solid", highlightthickness=4, highlightbackground="#ffd735", padx=30, pady=30)
+    form = tk.Frame(frame, bg="white", borderwidth=2, relief="solid", padx=30, pady=30)
     form.grid(row=2, column=0, sticky="nsew", padx=50, pady=20)
     
     # Make 2 columns in the form (labels on left, entries on right)
@@ -690,72 +613,39 @@ def add_device_page(app, device, brand):
     form.grid_columnconfigure(1, weight=1)  # entries (enter id, enter price, etc) EXPANDS
     
     # row 0: model name
-    tk.Label(form, text="Model Name:", font=("Arial", 12, "bold"), bg="white", bd=3, relief="solid"
+    tk.Label(form, text="Model Name:", font=("Arial", 12, "bold"), bg="white"
     ).grid(row=0, column=0, sticky="w", pady=10, padx=(0, 20))
     
-    model_entry = tk.Entry(form, font=("Arial", 12), width=35)
+    model_entry = tk.Entry(form, font=("Arial", 12), width=35,  bd=1, relief="solid")
     model_entry.grid(row=0, column=1, sticky="ew", pady=10)
     
     # row 1 form: id
-    tk.Label(form, text="ID:", font=("Arial", 12, "bold"), bg="white", bd=3, relief="solid"
+    tk.Label(form, text="ID:", font=("Arial", 12, "bold"), bg="white"
     ).grid(row=1, column=0, sticky="w", pady=10, padx=(0, 20))
     
-    id_entry = tk.Entry(form, font=("Arial", 12), width=35)
+    id_entry = tk.Entry(form, font=("Arial", 12), width=35, bd=1, relief="solid")
     id_entry.grid(row=1, column=1, sticky="ew", pady=10)
-
-    tk.Label(form, text="Serial Number:", font=("Arial", 12, "bold"), bg="white", bd=3, relief="solid"
-    ).grid(row=1, column=0, sticky="w", pady=10, padx=(0, 20))
-    
-    serial_entry = tk.Entry(form, font=("Arial", 12), width=35)
-    serial_entry.grid(row=1, column=1, sticky="ew", pady=10)
     
     # row 2 form: price
-    tk.Label(form, text="Price (₱):", font=("Arial", 12, "bold"), bg="white", bd=3, relief="solid"
+    tk.Label(form, text="Price (₱):", font=("Arial", 12, "bold"), bg="white"
     ).grid(row=2, column=0, sticky="w", pady=10, padx=(0, 20))
     
-    price_entry = tk.Entry(form, font=("Arial", 12), width=35)
+    price_entry = tk.Entry(form, font=("Arial", 12), width=35, bd=1, relief="solid")
     price_entry.grid(row=2, column=1, sticky="ew", pady=10)
     
     # row 3 form: stock
-    tk.Label(form, text="Stock:", font=("Arial", 12, "bold"), bg="white", bd=3, relief="solid"
+    tk.Label(form, text="Stock:", font=("Arial", 12, "bold"), bg="white"
     ).grid(row=3, column=0, sticky="w", pady=10, padx=(0, 20))
     
-    stock_entry = tk.Entry(form, font=("Arial", 12), width=35)
+    stock_entry = tk.Entry(form, font=("Arial", 12), width=35, bd=1, relief="solid")
     stock_entry.grid(row=3, column=1, sticky="ew", pady=10)
     
     # row 4 form: specs
-    tk.Label(form, text="Specs (separate with commas):", font=("Arial", 12, "bold"), bg="white", bd=3, relief="solid"
+    tk.Label(form, text="Specs (separate with commas):", font=("Arial", 12, "bold"), bg="white"
     ).grid(row=4, column=0, sticky="w", pady=10, padx=(0, 20))
     
-    specs_entry = tk.Entry(form, font=("Arial", 12), width=35, bd=3, relief="solid")
+    specs_entry = tk.Entry(form, font=("Arial", 12), width=35, bd=1, relief="solid")
     specs_entry.grid(row=4, column=1, sticky="ew", pady=10)
-
-    # row 5 form: functional status
-    tk.Label(form, text="Functional Status:", font=("Arial", 12, "bold"), bg="white", bd=3, relief="solid"
-    ).grid(row=3, column=0, sticky="w", pady=10, padx=(0, 20))
-    
-    status_var = tk.StringVar(value="Excellent")
-    status_menu = tk.OptionMenu(form, status_var, "Excellent", "Good", "Fair", "Poor")
-    status_menu.config(font=("Arial", 12), width=33)
-    status_menu.grid(row=3, column=1, sticky="ew", pady=10)
-
-    # row 6 form: appearance
-    tk.Label(form, text="Appearance:", font=("Arial", 12, "bold"), bg="white", bd=3, relief="solid"
-    ).grid(row=4, column=0, sticky="w", pady=10, padx=(0, 20))
-    
-    appearance_var = tk.StringVar(value="New")
-    appearance_menu = tk.OptionMenu(form, appearance_var, "New", "Good", "Scratched", "Damaged")
-    appearance_menu.config(font=("Arial", 12), width=33)
-    appearance_menu.grid(row=4, column=1, sticky="ew", pady=10)
-
-    # row 7 form: availability status
-    tk.Label(form, text="Availability Status:", font=("Arial", 12, "bold"), bg="white", bd=3, relief="solid"
-    ).grid(row=5, column=0, sticky="w", pady=10, padx=(0, 20))
-    
-    avail_var = tk.StringVar(value="Available")
-    avail_menu = tk.OptionMenu(form, avail_var, "Available", "Rented", "Maintenance", "Retired")
-    avail_menu.config(font=("Arial", 12), width=33)
-    avail_menu.grid(row=5, column=1, sticky="ew", pady=10)
     
     #suggestion label, below specs entry box
     tk.Label(
@@ -778,11 +668,7 @@ def add_device_page(app, device, brand):
         #gets what user typed
         name = model_entry.get().strip().upper()
         pid = id_entry.get().strip().upper()
-        serial = serial_entry.get().strip()
         price = price_entry.get().strip()
-        func_status = status_var.get()
-        appearance = appearance_var.get()
-        avail_status = avail_var.get()
         stock = stock_entry.get().strip()
         specs_text = specs_entry.get().strip()
         
@@ -792,9 +678,6 @@ def add_device_page(app, device, brand):
             return
         if not pid:
             message.config(text="Enter ID!", fg="red")
-            return
-        if not serial:
-            message.config(text="Enter serial number!", fg="red")
             return
         if not price or not price.isdigit():
             message.config(text="Enter valid price!", fg="red")
@@ -806,57 +689,27 @@ def add_device_page(app, device, brand):
             message.config(text="Enter specs!", fg="red")
             return
         
-        try:
-            conn = get_connection()
-            
-            # Get or create device type and brand
-            device_type_id = get_device_type_id_by_name(conn, device)
-            if not device_type_id:
-                device_type_id = add_device_type(conn, device)
-            
-            brand_id = get_brand_id_by_name(conn, brand)
-            if not brand_id:
-                brand_id = add_brand(conn, brand)
-            
-            # Add device to database
-            device_id = add_device(
-                conn, 
-                name, 
-                serial, 
-                float(price), 
-                func_status, 
-                appearance, 
-                avail_status, 
-                device_type_id, 
-                brand_id
-            )
-            
-            # Add specs
-            specs_list = [s.strip() for s in specs_text.split(",")]
-            if specs_list and device_id:
-                add_device_specs(
-                    conn,
-                    device_id,
-                    specs_list[0] if len(specs_list) > 0 else "",
-                    specs_list[1] if len(specs_list) > 1 else "",
-                    specs_list[2] if len(specs_list) > 2 else "",
-                    specs_list[3] if len(specs_list) > 3 else "",
-                    specs_list[4] if len(specs_list) > 4 else "",
-                    specs_list[5] if len(specs_list) > 5 else ""
-                )
-            
-            conn.close()
-            
-            #shows success text
-            message.config(text=f"✅ {name} added successfully!", fg="green")
-            
-            #automatically goes back to brand_details after saving. shows the added device during run
-            frame.after(1000, lambda: app.pages["brand_details"].tkraise())
-            frame.after(1000, lambda: show_brand_details(app, device, brand))
-            
-        except Exception as e:
-            message.config(text=f"❌ Error saving device: {str(e)}", fg="red")
-            print(f"Error: {e}")
+        #checks if model exists
+        if name in DATA[device][brand]:
+            message.config(text=f"❌ {name} already exists!", fg="red")
+            return
+        
+        #converts specs into list
+        specs_list = [s.strip() for s in specs_text.split(",")]
+        
+        #saves to data (temp)
+        DATA[device][brand][name] = {
+            "id": pid,
+            "specs": specs_list,
+            "price": int(price),
+            "available": int(stock)
+        }
+        #shows success text
+        message.config(text=f"✅ {name} added!", fg="green")
+        
+        #automatically goes back to brand_details after saving. shows the added device during run
+        frame.after(1000, lambda: app.pages["brand_details"].tkraise())
+        frame.after(1000, lambda: show_brand_details(app, device, brand))
 
     tk.Button(
         btn_frame, 
