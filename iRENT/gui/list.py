@@ -1,5 +1,4 @@
 import tkinter as tk
-<<<<<<< HEAD
 from iRENT.gui.add_rental import add_rental_page
 from db.sqlite_crudop import (
     get_connection,
@@ -14,9 +13,8 @@ from db.sqlite_crudop import (
     add_device,
     add_device_specs,
 )
-=======
+
 from gui.add_rental import add_rental_page
->>>>>>> 7187a1627c322f6ead4a02dd489afcfe758cff25
 
 DATA = {
     "CAMERA": {
