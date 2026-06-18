@@ -5,7 +5,7 @@ from PIL import Image, ImageTk
 from tkcalendar import DateEntry
 import os
 
-
+from db.dashboard_logic import get_dashboard_summary
 from gui.rentals import rentals_page
 from gui.history import create_history_page
 from gui.add_rental import add_rental_page
@@ -260,6 +260,9 @@ class MainApp:
 
 
     def create_dashboard(self):
+
+        stats = get_dashboard_summary()
+
         frame = tk.LabelFrame(
             self.pages["dashboard"],
             relief="flat",
@@ -284,12 +287,12 @@ class MainApp:
             fg="black"
         ).grid(row=0, column=0, columnspan=4, pady=(0, 20), sticky="w")
 
-        self.create_card(frame, "#5CB85C", "active.png", "5", "Active Rentals", 1, row=1)
-        self.create_card(frame, "#D9534F", "overdue.png", "5", "Overdue Rentals", 2, row=1)
-        self.create_card(frame, "#ebc427", "available.png", "5", "Available for Rent", 3, row=1)
-        self.create_card(frame, "#675DB7", "device.png", "5", "Total Devices", 1, row=2)
-        self.create_card(frame, "#337AB7", "customers.png", "5", "Total Rentees", 2, row=2)
-        self.create_card(frame, "#888E93", "employees.png", "5", "Total Employees", 3, row=2)
+        self.create_card(frame, "#5CB85C", "active.png", str(stats["active"]), "Active Rentals", 1, row=1)
+        self.create_card(frame, "#D9534F", "overdue.png", str(stats["overdue"]), "Overdue Rentals", 2, row=1)
+        self.create_card(frame, "#ebc427", "available.png", str(stats["available"]), "Available for Rent", 3, row=1)
+        self.create_card(frame, "#675DB7", "device.png", str(stats["total_devices"]), "Total Devices", 1, row=2)
+        self.create_card(frame, "#337AB7", "customers.png", str(stats["total_rentees"]), "Total Rentees", 2, row=2)
+        self.create_card(frame, "#888E93", "employees.png", str(stats["total_employees"]), "Total Employees", 3, row=2)
 
 
     
