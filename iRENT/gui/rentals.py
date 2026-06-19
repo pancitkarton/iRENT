@@ -70,7 +70,7 @@ def refresh_rental_list(app, container, rentals_data):
             actions_frame, text="See More", bg="#ffd735", fg="black",
             font=("Arial", 11, "bold"), relief="flat", padx=15, pady=2,
             cursor="hand2", 
-            command=lambda a= app, o=order: show_details(a, o, container)  
+            command=lambda a=app, oid=order['id']: show_details(a, oid, container)  
         )
         btn.pack(side="left", padx=10)
         add_hover(btn, "#232624", "#ffd735", "#ffd735", "black")
