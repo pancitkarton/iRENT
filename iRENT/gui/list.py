@@ -1,267 +1,18 @@
 import tkinter as tk
+from tkinter import messagebox
 from gui.add_rental import add_rental_page
-from db.view_device_list_logic import _ensure_specs_column, get_categories, get_brands, get_models, add_model, delete_model, update_model
 
-
-DATA = {
-    "CAMERA": {
-        "SONY": {
-            "SONY A7 IV": {
-                "id": "CAM-001",
-                "functionality": "Excellent",
-                "serial_num": "123 XD-SS",
-                "specs":["33MP Full Frame", "4K 60fps", "IBIS Stabilization"],
-                "price": 500,
-                "available": 3
-            },
-            "SONY FX3": {
-                "id": "CAM-002",
-                "functionality": "Good",
-                "serial_num": "551 XD-S2",
-                "specs": ["Cinema Camera", "4K 120fps", "Low Light Performance"],
-                "price": 600,
-                "available": 2
-            },
-            "SONY ZV-E10 II": {
-                "id": "CAM-003",
-                "functionality": "Fair",
-                "serial_num": "012 XD-01",
-                "specs": ["APS-C Sensor", "4K Video", "Vlogging Focus"],
-                "price": 450,
-                "available": 4
-            }
-        },
-
-        "CANON": {
-            "CANON EOS R5 II": {
-                "id": "CAM-004",
-                "functionality": "Excellent",
-                "serial_num": "123 FS-12",
-                "specs": ["45MP", "8K Video", "Dual Pixel AF"],
-                "price": 650,
-                "available": 2
-            },
-            "CANON EOS R6 III": {
-                "id": "CAM-005",
-                "functionality": "Good",
-                "serial_num": "254 XD-11",
-                "specs": ["24MP", "4K 60fps", "Low Light Master"],
-                "price": 550,
-                "available": 3
-            }
-        },
-
-        "INSTAX": {
-            "INSTAX MINI 12": {
-                "id": "CAM-006",
-                "functionality": "Excellent",
-                "serial_num": "221 12-SS",
-                "specs": ["Instant Print", "Auto Exposure", "Compact"],
-                "price": 200,
-                "available": 10
-            },
-            "INSTAX MINI EVO": {
-                "id": "CAM-007",
-                "functionality": "Good",
-                "serial_num": "544 AS-SS",
-                "specs": ["Hybrid Instant Camera", "Filters", "Bluetooth"],
-                "price": 250,
-                "available": 6
-            }
-        }
-    },
-
-    "CELLPHONE": {
-        "IPHONE": {
-            "IPHONE 15 PRO MAX": {
-                "id": "PHN-001",
-                "functionality": "Excellent",
-                "serial_num": "265 AA-15",
-                "specs": ["A17 Pro Chip", "48MP Camera", "Titanium Build"],
-                "price": 800,
-                "available": 5
-            },
-            "IPHONE 16 PRO MAX": {
-                "id": "PHN-002",
-                "functionality": "Fair",
-                "serial_num": "251 XD-14",
-                "specs": ["Next Gen Chip", "Improved Battery", "Pro Camera System"],
-                "price": 900,
-                "available": 4
-            }
-        },
-
-        "SAMSUNG": {
-            "GALAXY S24 ULTRA": {
-                "id": "PHN-003",
-                "functionality": "Excellent",
-                "serial_num": "127 HY-45",
-                "specs": ["200MP Camera", "Snapdragon 8 Gen 3", "S-Pen"],
-                "price": 750,
-                "available": 6
-            },
-            "GALAXY S25 ULTRA": {
-                "id": "PHN-004",
-                "functionality": "Good",
-                "serial_num": "424 FX-00",
-                "specs": ["AI Camera", "Ultra Bright Display", "Long Battery"],
-                "price": 850,
-                "available": 5
-            }
-        },
-
-        "XIAOMI": {
-            "XIAOMI 14T PRO": {
-                "id": "PHN-005",
-                "functionality": "Excellent",
-                "serial_num": "454 GI-09",
-                "specs": ["Leica Camera", "Fast Charging", "AMOLED Display"],
-                "price": 500,
-                "available": 7
-            }
-        }
-    },
-
-    "CONSOLE": {
-        "SONY": {
-            "PLAYSTATION 5 SLIM": {
-                "id": "CON-001",
-                "functionality": "Excellent",
-                "serial_num": "422 OK-65",
-                "specs": ["4K Gaming", "SSD Speed", "Ray Tracing"],
-                "price": 600,
-                "available": 4
-            }
-        },
-
-        "MICROSOFT": {
-            "XBOX SERIES X": {
-                "id": "CON-002",
-                "functionality": "Excellent",
-                "serial_num": "459 KH-20",
-                "specs": ["4K 120fps", "Quick Resume", "1TB SSD"],
-                "price": 620,
-                "available": 3
-            }
-        },
-
-        "NINTENDO": {
-            "SWITCH OLED": {
-                "id": "CON-003",
-                "functionality": "Excellent",
-                "serial_num": "001 GU-SS",
-                "specs": ["Portable", "OLED Screen", "Handheld Mode"],
-                "price": 400,
-                "available": 8
-            }
-        }
-    },
-
-    "PORTABLE DVD PLAYER": {
-        "SONY": {
-            "DVP-FX980": {
-                "id": "DVD-001",
-                "functionality": "Excellent",
-                "serial_num": "777 SS-22",
-                "specs": ["9-inch Screen", "Portable", "Rechargeable Battery"],
-                "price": 150,
-                "available": 5
-            }
-        },
-
-        "PHILIPS": {
-            "PD9012": {
-                "id": "DVD-002",
-                "functionality": "Excellent",
-                "serial_num": "787 XD-04",
-                "specs": ["10-inch Screen", "USB Support", "Compact Design"],
-                "price": 140,
-                "available": 4
-            }
-        },
-
-        "DBPOWER": {
-            "MK101": {
-                "id": "DVD-003",
-                "functionality": "Excellent",
-                "serial_num": "012 XD-32",
-                "specs": ["12-inch Screen", "Swivel Display", "Remote Control"],
-                "price": 130,
-                "available": 6
-            }
-        }
-    },
-
-    "LAPTOP": {
-        "DELL": {
-            "XPS 13": {
-                "id": "LAP-001",
-                "functionality": "Excellent",
-                "serial_num": "123 DE-X13",
-                "specs": ["i7", "16GB RAM", "512GB SSD"],
-                "price": 700,
-                "available": 5
-            }
-        },
-
-        "HP": {
-            "SPECTRE X360": {
-                "id": "LAP-002",
-                "functionality": "Excellent",
-                "serial_num": "110 SP-X3",
-                "specs": ["2-in-1", "Touchscreen", "i7 Processor"],
-                "price": 750,
-                "available": 4
-            }
-        },
-
-        "LENOVO": {
-            "THINKPAD X1 CARBON": {
-                "id": "LAP-003",
-                "functionality": "Excellent",
-                "serial_num": "455 TP-X1",
-                "specs": ["Business Laptop", "Lightweight", "i7 CPU"],
-                "price": 800,
-                "available": 3
-            }
-        }
-    },
-
-    "SOUND SYSTEM": {
-        "JBL": {
-            "PARTYBOX 110": {
-                "id": "AUD-001",
-                "functionality": "Excellent",
-                "serial_num": "954 PB-JBL",
-                "specs": ["Bass Boost", "Portable", "LED Lights"],
-                "price": 300,
-                "available": 6
-            }
-        },
-
-        "SAMSUNG": {
-            "HW-Q990D": {
-                "id": "AUD-002",
-                "functionality": "Excellent",
-                "serial_num": "990 HW-SM",
-                "specs": ["Dolby Atmos", "11.1.4 Channel", "Wireless Subwoofer"],
-                "price": 400,
-                "available": 4
-            }
-        },
-
-        "SVS": {
-            "PRIME TOWER": {
-                "id": "AUD-003",
-                "functionality": "Excellent",
-                "serial_num": "721 PT-AU",
-                "specs": ["Hi-Fi Sound", "Home Theater", "Deep Bass"],
-                "price": 500,
-                "available": 3
-            }
-        }
-    }
-}
+# Import database connection and logic
+from db.database import get_connection
+from db.view_device_list_logic import (
+    _ensure_specs_column,
+    get_categories,
+    get_brands,
+    get_models,
+    add_model as db_add_model,
+    delete_model as db_delete_model,
+    update_model as db_update_model
+)
 
 # global func to use anywhere in the code
 def add_hover(btn, enter_bg, leave_bg, enter_fg=None, leave_fg=None):
@@ -278,6 +29,11 @@ def add_hover(btn, enter_bg, leave_bg, enter_fg=None, leave_fg=None):
 
 
 def create_list(main_frame, app):
+    # Ensure database columns are up to date on load
+    try:
+        _ensure_specs_column(get_connection())
+    except Exception as e:
+        print("DB Check Error:", e)
 
     for widget in main_frame.winfo_children():
         widget.destroy()
@@ -303,8 +59,8 @@ def create_list(main_frame, app):
     for i in range(2):
         container.grid_columnconfigure(i, weight=1, uniform="col")
 
-    # viewing list of devices
-    devices = [device for device in DATA.keys()]
+    # Fetch categories from database
+    devices = get_categories()
 
     rows = (len(devices) + 1) // 2
 
@@ -325,7 +81,7 @@ def create_list(main_frame, app):
             command=lambda d=device: open_brands(app, d)
         )
         btn.grid(row=row, column=col, padx=15, pady=15, sticky="nsew")
-        add_hover(btn, "#232624", "#ffd735", "#ffd735", "black")  # Use global
+        add_hover(btn, "#232624", "#ffd735", "#ffd735", "black")
 
 
 def open_brands(app, device):
@@ -347,15 +103,15 @@ def show_device_brands(app, device):
 
     container.grid_columnconfigure(0, weight=1)
 
-    # get brands
-    brands = list(DATA[device].keys())
+    # Fetch brands from database
+    brands = get_brands(device)
     num_brands = len(brands)
 
     # set number of columns
     num_columns = 3
 
     # calcu number of rows needed
-    num_rows = (num_brands + num_columns - 1) // num_columns
+    num_rows = (num_brands + num_columns - 1) // num_columns if num_brands > 0 else 1
 
     # title - centered (sticky = "ew" - stretches it left n right)
     title_frame = tk.Frame(container, bg="#eef2f7")
@@ -381,6 +137,9 @@ def show_device_brands(app, device):
     for row in range(num_rows):
         brands_container.grid_rowconfigure(row, weight=1)
 
+    if not brands:
+        tk.Label(brands_container, text="No brands found for this category.", bg="#eef2f7", font=("Arial", 14)).grid(row=0, column=0, columnspan=3)
+
     # create brand cards in grid layout
     for i, brand in enumerate(brands):
         row = i // num_columns
@@ -396,7 +155,6 @@ def show_device_brands(app, device):
         )
         brand_frame.grid(row=row, column=col, sticky="nsew", padx=10, pady=10)
 
-        # config brand_frame for internal layout
         brand_frame.grid_rowconfigure(0, weight=1)  # Top spacer
         brand_frame.grid_rowconfigure(2, weight=1)  # Bottom spacer
         brand_frame.grid_columnconfigure(0, weight=1)
@@ -442,33 +200,27 @@ def show_device_brands(app, device):
 
 
 def delete_model(app, device, brand, model_name):
-    """Delete a model from the DATA dictionary"""
+    """Delete a model from the Database"""
 
     # confirm deletion
-    confirm = tk.messagebox.askyesno(
+    confirm = messagebox.askyesno(
         "Confirm Delete",
         f"Are you sure you want to delete '{model_name}' from {brand}?\n\nThis action cannot be undone!",
         icon="warning"
     )
 
     if confirm:
-        try:
-            # Remove the model from DATA
-            del DATA[device][brand][model_name]
+        # Call backend delete logic
+        success, msg = db_delete_model(device, brand, model_name)
 
-            # Show success message
-            tk.messagebox.showinfo("Success", f"'{model_name}' has been deleted successfully!")
-
-            # Refresh the brand details page
+        if success:
+            messagebox.showinfo("Success", msg)
             show_brand_details(app, device, brand)
-
-        except KeyError:
-            tk.messagebox.showerror("Error", "Model not found!")
-        except Exception as e:
-            tk.messagebox.showerror("Error", f"An error occurred: {str(e)}")
+        else:
+            messagebox.showerror("Error", msg)
 
 
-def open_edit_details(app, device, brand, model_name):
+def open_edit_details(app, device, brand, model_name, current_details):
     """Open the edit details page for a specific model"""
 
     frame = app.pages["edit_details"]
@@ -476,9 +228,6 @@ def open_edit_details(app, device, brand, model_name):
     # Clear existing widgets
     for widget in frame.winfo_children():
         widget.destroy()
-
-    # Get current details
-    current_details = DATA[device][brand][model_name]
 
     # Configure frame grid
     frame.grid_rowconfigure(0, weight=0)  # title row
@@ -670,44 +419,39 @@ def open_edit_details(app, device, brand, model_name):
             new_specs_text = entries['specs'].get("1.0", tk.END).strip()
             new_specs = [spec.strip() for spec in new_specs_text.split('\n') if spec.strip()]
             new_price = int(entries['price'].get().strip())
-            new_available = int(entries['available'].get().strip())
 
             # Validate
-            if not new_id:
-                tk.messagebox.showerror("Error", "ID cannot be empty!")
-                return
-            if not new_serial:
-                tk.messagebox.showerror("Error", "Serial Number cannot be empty!")
-                return
-            if not new_specs:
-                tk.messagebox.showerror("Error", "Specs cannot be empty!")
+            if not new_id or not new_serial or not new_specs:
+                messagebox.showerror("Error", "Fields cannot be empty!")
                 return
             if new_price < 0:
-                tk.messagebox.showerror("Error", "Price cannot be negative!")
-                return
-            if new_available < 0:
-                tk.messagebox.showerror("Error", "Stock cannot be negative!")
+                messagebox.showerror("Error", "Price cannot be negative!")
                 return
 
-            # Update DATA
-            DATA[device][brand][model_name]['id'] = new_id
-            DATA[device][brand][model_name]['serial_num'] = new_serial
-            DATA[device][brand][model_name]['functionality'] = new_functionality
-            DATA[device][brand][model_name]['specs'] = new_specs
-            DATA[device][brand][model_name]['price'] = new_price
-            DATA[device][brand][model_name]['available'] = new_available
+            # Call backend update logic
+            success, msg = db_update_model(
+                category_name=device,
+                brand_name=brand,
+                model_name=model_name,
+                new_model_name=model_name, # GUI doesn't allow changing model name currently
+                new_id=new_id,
+                new_serial=new_serial,
+                new_functionality=new_functionality,
+                new_specs=new_specs,
+                new_price=new_price
+            )
 
-            # Show success message
-            tk.messagebox.showinfo("Success", f"{model_name} updated successfully!")
-
-            # Go back to brand details page and refresh
-            app.pages["brand_details"].tkraise()
-            show_brand_details(app, device, brand)
+            if success:
+                messagebox.showinfo("Success", msg)
+                app.pages["brand_details"].tkraise()
+                show_brand_details(app, device, brand)
+            else:
+                messagebox.showerror("Error", msg)
 
         except ValueError:
-            tk.messagebox.showerror("Error", "Please enter valid numbers for Price and Stock!")
+            messagebox.showerror("Error", "Please enter valid numbers for Price!")
         except Exception as e:
-            tk.messagebox.showerror("Error", f"An error occurred: {str(e)}")
+            messagebox.showerror("Error", f"An error occurred: {str(e)}")
 
     def cancel_changes():
         """Go back without saving"""
@@ -776,24 +520,22 @@ def show_brand_details(app, device, brand):
         container.grid_columnconfigure(i, weight=1, uniform="col")
 
     # gets models
-    models = list(DATA[device][brand].keys())
+    models_data = get_models(device, brand)
 
     # finds model with most specs listed (used for equal height cards)
-    max_specs = 0
-    for model in models:
-        details = DATA[device][brand][model]
-        max_specs = max(max_specs, len(details['specs']))
+    max_specs = max([len(m['specs']) for m in models_data], default=0)
 
     # calculates rows needed for 3 columns
     num_columns = 3
-    num_rows = (len(models) + num_columns - 1) // num_columns
+    num_rows = (len(models_data) + num_columns - 1) // num_columns if models_data else 1
 
     # creates cards
-    for i, model in enumerate(models):
+    if not models_data:
+        tk.Label(container, text="No models found in inventory.", font=("Arial", 14)).grid(row=0, column=0, columnspan=3)
+    for i, details in enumerate(models_data):
         row = i // 3
         col = i % 3
-
-        # card frame
+        model = details['model_name']
         card = tk.Frame(
             container,
             bg="white",
@@ -814,8 +556,6 @@ def show_brand_details(app, device, brand):
         card.grid_rowconfigure(7, weight=0)  # stock: fixed
         card.grid_rowconfigure(8, weight=0)  # buttons: fixed
         card.grid_columnconfigure(0, weight=1)  # column stretches
-
-        details = DATA[device][brand][model]
 
         # model name
         tk.Label(
@@ -871,7 +611,7 @@ def show_brand_details(app, device, brand):
         specs_frame.grid_columnconfigure(0, weight=1)
 
         # list specs
-        for i, spec in enumerate(details['specs']):
+        for j, spec in enumerate(details['specs']):
             tk.Label(
                 specs_frame,
                 text=f"• {spec}",
@@ -1135,15 +875,8 @@ def add_device(app, device, brand):
         stock = stock_entry.get().strip()
         specs_text = specs_entry.get().strip()
 
-        # validates every entry and shows warning
-        if not name:
-            message.config(text="Enter model name!", fg="red")
-            return
-        if not pid:
-            message.config(text="Enter ID!", fg="red")
-            return
-        if not serial:
-            message.config(text="Enter Serial Number!", fg="red")
+        if not name or not pid or not serial or not specs_text:
+            message.config(text="Please fill in all text fields!", fg="red")
             return
         if not price or not price.isdigit():
             message.config(text="Enter valid price!", fg="red")
@@ -1151,33 +884,32 @@ def add_device(app, device, brand):
         if not stock or not stock.isdigit():
             message.config(text="Enter valid stock!", fg="red")
             return
-        if not specs_text:
-            message.config(text="Enter specs!", fg="red")
-            return
-
-        #checks if model exists
-        if name in DATA[device][brand]:
-            message.config(text=f"❌ {name} already exists!", fg="red")
-            return
 
         #converts specs into list
         specs_list = [s.strip() for s in specs_text.split(",")]
 
-        # saves to data with all fields
-        DATA[device][brand][name] = {
-            "id": pid,
-            "serial_num": serial,
-            "functionality": functionality,
-            "specs": specs_list,
-            "price": int(price),
-            "available": int(stock)
-        }
-        #shows success text
-        message.config(text=f"✅ {name} added!", fg="green")
+        # Send data to Database
+        success, msg = db_add_model(
+            category_name=device,
+            brand_name=brand,
+            model_name=name,
+            product_id=pid,
+            price=int(price),
+            stock_count=int(stock),
+            specs_list=specs_list,
+            functionality=functionality,
+            serial_num=serial
+        )
 
-        #automatically goes back to brand_details after saving. shows the added device during run
-        frame.after(1000, lambda: app.pages["brand_details"].tkraise())
-        frame.after(1000, lambda: show_brand_details(app, device, brand))
+        #shows success text
+        if success:
+            message.config(text=f"✅ {msg}", fg="green")
+
+            #automatically goes back to brand_details after saving. shows the added device during run
+            frame.after(1000, lambda: app.pages["brand_details"].tkraise())
+            frame.after(1000, lambda: show_brand_details(app, device, brand))
+        else:
+            message.config(text=f"❌ {msg}", fg="red")
 
     tk.Button(
         btn_frame,
