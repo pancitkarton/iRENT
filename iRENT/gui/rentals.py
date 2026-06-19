@@ -435,6 +435,8 @@ def show_details(app, order_id):
         bg="#eef2f7"
     ).grid(row=4, column=0, columnspan=2, sticky="w", pady=(0, 10))
 
+    next_row = 5
+
     tk.Frame(
         container,
         height=2,
