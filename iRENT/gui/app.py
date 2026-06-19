@@ -28,13 +28,6 @@ class MainApp:
         self.create_pages()
         self.create_sidebar()
 
-        self.create_dashboard()
-        self.create_rentals_page()
-        self.create_customers_page()
-        self.create_list_page()
-
-        self.pages["dashboard"].tkraise()
-
         self.page_to_sidebar = {
             "dashboard": self.sidebar_labels[0],
             "rentals": self.sidebar_labels[1],
@@ -43,6 +36,13 @@ class MainApp:
             "customers": self.sidebar_labels[2],
             "devices": self.sidebar_labels[3]
         }
+
+        self.create_dashboard()
+        self.create_rentals_page()
+        self.create_customers_page()
+        self.create_list_page()
+
+        self.pages["dashboard"].tkraise()
 
     def add_hover(self, btn, enter_bg, leave_bg, enter_fg=None, leave_fg=None):
 
@@ -253,7 +253,7 @@ class MainApp:
         rentals_page(self.pages["rentals"], self)
 
     def create_customers_page(self):
-        customers_page(self.pages["customers"], self)
+        customers_page(self.pages["customers"], self, refresh_callback=None)
 
     def create_list_page(self):
         create_list(self.pages["devices"], self)

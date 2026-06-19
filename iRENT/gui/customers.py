@@ -1,15 +1,80 @@
 import tkinter as tk
 from PIL import Image, ImageTk
 import os
+from tkinter import messagebox
+from db.customers_logic import get_all_customers, update_customer_db
 
-orders = [
-       {
-        "Customer ID": "1001", "First Name": "William", "Middle Name": "", "Last Name": "Butcher", "Suffix": "",
-        "Birthday": "12-16-1976", "Contact Number": "12312312312", "Email": "example@gmail.com",
-        "Region": "NCR", "City": "Makati", "Barangay": "Brgy. 123", "ZIP/Postal": "0000", "Street/Bldg": "Sa may kanto lang"
-        }
-    ]
-        
+
+def display_table(app, table_wrapper, customer_list, refresh_callback=None):
+    for widget in table_wrapper.winfo_children():
+        widget.destroy()
+
+    canvas = tk.Canvas(table_wrapper, bg="#eef2f7", highlightthickness=0)
+    v_scroll = tk.Scrollbar(table_wrapper, orient="vertical", command=canvas.yview)
+    h_scroll = tk.Scrollbar(table_wrapper, orient="horizontal", command=canvas.xview)
+    scrollable_frame = tk.Frame(canvas, bg="#eef2f7")
+
+    scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+    canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+    canvas.configure(yscrollcommand=v_scroll.set, xscrollcommand=h_scroll.set)
+    
+    v_scroll.pack(side="right", fill="y")
+    h_scroll.pack(side="bottom", fill="x")
+    canvas.pack(side="left", fill="both", expand=True)
+
+    def highlight_row(event, row_idx, color):
+        for child in scrollable_frame.winfo_children():
+            if isinstance(child, tk.Label) and child.grid_info().get('row') == row_idx:
+                child.configure(bg=color)
+
+    headers = ["ID", "First Name", "Middle Name", "Last Name", "Suffix", 
+               "Birthday", "Contact", "Email", "Region", "City", 
+               "Barangay", "ZIP", "Street"]
+    
+    for i, head in enumerate(headers):
+        tk.Label(scrollable_frame, text=head, font=("Arial", 10, "bold"), 
+                 bg="#ffd735", width=12, relief="solid", bd=1).grid(row=0, column=i)
+
+    for i, customer in enumerate (customer_list, start=1):
+
+        display_data = {
+                'Customer ID': customer['CustomerID'],
+                'First Name': customer['FirstName'],
+                'Middle Name': customer['MiddleName'],
+                'Last Name': customer['LastName'],
+                'Suffix': customer['Suffix'],
+                'Contact Number': customer['ContactNumber'],
+                'Email': customer['EmailAddress'],
+                'Birthday': customer['Birthday'],
+                'Street/Bldg': customer['Street'],
+                'Barangay': customer['Barangay'],
+                'City': customer['City'],
+                'Region': customer['Region'],
+                'ZIP/Postal': customer['Postal']
+            }
+            
+        row_data = [
+                customer['CustomerID'], customer['FirstName'], customer['MiddleName'],
+                customer['LastName'], customer['Suffix'], customer['Birthday'],
+                customer['ContactNumber'], customer['EmailAddress'], customer['Region'],
+                customer['City'], customer['Barangay'], customer['Postal'], customer['Street']
+            ]
+            
+        for col, val in enumerate(row_data):
+                cell = tk.Label(
+                    scrollable_frame, 
+                    text=val, 
+                    bg="white", 
+                    width=12, 
+                    relief="solid",
+                    bd=1,
+                    cursor="hand2"
+                )
+                cell.grid(row=i, column=col, sticky="nsew")
+                
+                cell.bind("<Button-1>", lambda e, c=display_data: customer_details(app, c, refresh_callback))
+                cell.bind("<Enter>", lambda e, r=i: highlight_row(e, r, "#f0f0f0"))
+                cell.bind("<Leave>", lambda e, r=i: highlight_row(e, r, "white"))
 
 def add_hover(btn, enter_bg, leave_bg, enter_fg=None, leave_fg=None):
     def on_enter(e):
@@ -23,7 +88,7 @@ def add_hover(btn, enter_bg, leave_bg, enter_fg=None, leave_fg=None):
     btn.bind("<Enter>", on_enter)
     btn.bind("<Leave>", on_leave)
 
-def edit_details(order):
+def edit_details(order, refresh_callback):
     edit_win = tk.Toplevel()
     edit_win.title("Edit Customer Details")
     edit_win.configure(bg="#eef2f7")
@@ -41,14 +106,44 @@ def edit_details(order):
         row_idx = i + 1 
         tk.Label(edit_win, text=key, font=("Arial", 10, "bold"), bg="#eef2f7").grid(row=row_idx, column=0, padx=10, pady=5, sticky="w")
         ent = tk.Entry(edit_win, width=30)
-        ent.insert(0, value)
+        ent.insert(0, str(value))
         ent.grid(row=row_idx, column=1, padx=10, pady=5)
         entries[key] = ent
 
     def save_changes():
-        for key, ent in entries.items():
-            order[key] = ent.get()
-        edit_win.destroy()
+        confirmed = messagebox.askyesno("Confirm", "Are you sure you want to save changes?")
+
+        if not confirmed:
+            return
+        
+        field_map = {
+            'Customer ID': 'CustomerID', 
+            'First Name': 'FirstName', 
+            'Last Name': 'LastName', 
+            'Suffix': 'Suffix',
+            'Contact Number': 'ContactNumber',
+            'Email': 'EmailAddress', 
+            'Birthday': 'Birthday',
+            'Street/Bldg': 'Street', 
+            'Barangay': 'Barangay',
+            'City': 'City', 
+            'Region': 'Region', 
+            'ZIP/Postal': 'Postal'
+        }
+        
+        updated_data = {field_map.get(key, key): ent.get() for key, ent in entries.items()}
+
+        customer_id = order['Customer ID']
+
+        updated_data['MiddleName'] = order.get('MiddleName', '')
+        updated_data['Suffix'] = order.get('Suffix', '')
+        
+        if update_customer_db(order['Customer ID'], updated_data):
+            messagebox.showinfo("Success", "Yay! Customer details updated successfully.")
+            edit_win.destroy()
+            refresh_callback()
+        else:
+            tk.messagebox.showerror("Error", "Could not save to database.")
 
     save_btn = tk.Button(
         edit_win, 
@@ -91,7 +186,9 @@ def rental_customers(app, order):
     
     cframe.tkraise()
 
-def customers_page(main_frame, app):
+
+
+def customers_page(main_frame, app, refresh_callback):
     main_frame.configure(bg="#eef2f7")
 
     title = tk.Label(
@@ -146,11 +243,6 @@ def customers_page(main_frame, app):
     search.bind("<FocusOut>", on_focus_out)
     search.config(fg="gray")
 
-    def sort_menu(event):
-        menu = tk.Menu(main_frame, tearoff=0)
-        menu.add_command(label="Sort by Alphabet")
-        menu.add_command(label="Sort by ID")
-        menu.post(event.x_root, event.y_root)
 
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     sort_path = os.path.join(BASE_DIR, "assets", "sort.png")
@@ -170,83 +262,59 @@ def customers_page(main_frame, app):
     )
     sort_label.image = sort_icon
     sort_label.pack(side="right", padx=10)
-    sort_label.bind("<Button-1>", sort_menu)
 
     add_hover(sort_label, "#eef2f7", "#eef2f7", "black", "#e6b800")
 
 
+
+    def load_table(data=None):
+        if data is None:
+            data = get_all_customers()
+        display_table(app, table_wrapper, data, refresh)
+
+    def refresh():
+        load_table()
+
+    #search and sort 
+    def sort_data(key):
+        all_cust = get_all_customers()
+        if key == "alphabet":
+            sorted_customer = sorted(all_cust, key=lambda x: (x.get('LastName', '').lower(), x.get('FirstName', '').lower()))
+        else:
+            sorted_customer = sorted(all_cust, key=lambda x: int(x.get('CustomerID', 0)))
+        
+        load_table(sorted_customer)
+
+    def sort_menu(event):
+        menu = tk.Menu(main_frame, tearoff=0)
+        menu.add_command(label="Sort by Alphabet", command=lambda: sort_data("alphabet"))
+        menu.add_command(label="Sort by ID", command=lambda: sort_data("id"))
+        menu.post(event.x_root, event.y_root)
+
+    def on_search(event=None):
+        query = search.get().lower()
+        if query == "search..." or query == "":
+            load_table()
+        else:
+            all_cust = get_all_customers()
+            filtered = [
+                c for c in all_cust 
+                if query in c['FirstName'].lower() or 
+                    query in c['LastName'].lower()
+            ]
+            load_table(filtered)
+
+        
     table_wrapper = tk.Frame(main_frame, bg="#eef2f7")
     table_wrapper.pack(fill="both", expand=True, padx=20, pady=10)
 
-    canvas = tk.Canvas(table_wrapper, bg="#eef2f7", highlightthickness=0)
-    v_scroll = tk.Scrollbar(table_wrapper, orient="vertical", command=canvas.yview)
-    h_scroll = tk.Scrollbar(table_wrapper, orient="horizontal", command=canvas.xview)
     
-    scrollable_frame = tk.Frame(canvas, bg="#eef2f7")
-    scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
-    canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-    canvas.configure(yscrollcommand=v_scroll.set, xscrollcommand=h_scroll.set)
+    sort_label.bind("<Button-1>", sort_menu)
+    search.bind("<KeyRelease>", on_search)
 
-    v_scroll.pack(side="right", fill="y")
-    h_scroll.pack(side="bottom", fill="x")
-    canvas.pack(side="left", fill="both", expand=True)
+    load_table()
 
-    
 
-    headers = ["Customer ID", "First Name", "Middle Name", "Last Name", "Suffix", "Birthday", "Contact Number", "Email", "Region", "City", "Barangay", "ZIP/Postal", "Street/Bldg"]
-    for i, head in enumerate(headers):
-        tk.Label(
-            scrollable_frame, 
-            text=head, 
-            font=("Arial", 12, "bold"), 
-            bg="#ffd735", 
-            width=16, 
-            relief="solid", 
-            borderwidth=1
-        ).grid(row=0, column=i, padx=0, pady=0, sticky="nsew")
-
-    def highlight_row(event,row_idx, color):
-        for child in scrollable_frame.winfo_children():
-            if isinstance(child, tk.Label) and child.grid_info().get('row') == row_idx: child.configure(bg=color)
-
-    for i, order in enumerate(orders, start=1):
-        row_data = [
-            order['Customer ID'], 
-            order['First Name'], 
-            order['Middle Name'], 
-            order['Last Name'], 
-            order['Suffix'], 
-            order['Birthday'], 
-            order['Contact Number'], 
-            order['Email'], 
-            order['Region'], 
-            order['City'], 
-            order['Barangay'], 
-            order['ZIP/Postal'], 
-            order['Street/Bldg']
-        ]
-        
-        for col, val in enumerate(row_data):
-            wrap_limit = 140 if col == 4 else None
-
-            cell = tk.Label(
-                scrollable_frame, 
-                text=val, 
-                bg="white", 
-                font=("Arial", 10),
-                width=10,
-                relief="solid", 
-                wraplength=wrap_limit,
-                borderwidth=1,
-                cursor="hand2"
-            )
-            cell.grid(row=i, column=col, sticky="nsew")
-            
-            cell.bind("<Button-1>", lambda e, o=order: customer_details(app, o))
-            cell.bind("<Enter>", lambda e, r=i: highlight_row(e, r, "#f0f0f0"))
-            cell.bind("<Leave>", lambda e, r=i: highlight_row(e, r, "white"))
-
-        scrollable_frame.grid_rowconfigure(i, minsize=35)
 
     bottom = tk.Frame(main_frame, padx=40, pady=20, bg="#eef2f7")
     bottom.pack(fill="x", side="bottom")
@@ -262,7 +330,8 @@ def customers_page(main_frame, app):
     add_hover(add_btn, "#232624", "#ffd735", "#ffd735", "black")
 
 
-def customer_details(app, order):
+
+def customer_details(app, order, refresh_callback):
     frame = app.pages["customer_details"]
     frame.configure(bg="#eef2f7")
 
@@ -400,7 +469,7 @@ def customer_details(app, order):
         text="Edit Details",
         font=("Arial", 17, "bold"),
         bg="#ffd735",
-        command=lambda: edit_details(order)
+        command=lambda: edit_details(order, refresh_callback)    
     )
     add_btn.pack(side="right", padx=5)
     add_hover(add_btn, "#232624", "#ffd735", "#ffd735", "black")
