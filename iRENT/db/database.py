@@ -114,9 +114,7 @@ def initialize_db():
     CREATE TABLE IF NOT EXISTS RentalItem (
         RentalItemID INTEGER PRIMARY KEY AUTOINCREMENT,
         PriceAtRental DECIMAL (10, 2) NOT NULL,
-        DRMonth INTEGER NOT NULL,
-        DRDay INTEGER NOT NULL,
-        DRYear INTEGER NOT NULL,
+        DateReturned TEXT NOT NULL,
         PenaltyFee DECIMAL (10, 2) NOT NULL,
         RentalID INTEGER NOT NULL,
         DeviceID INTEGER NOT NULL,
