@@ -8,8 +8,13 @@ def get_all_rentals():
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT RentalID, CustomerName, RentalStatus
-        FROM Rentals
+        SELECT r.RentalID,
+               c.FirstName || ' ' || c.LastName AS CustomerName,
+               r.RentalStatus
+        FROM Rental r
+        JOIN Customer c
+            ON r.CustomerID = c.CustomerID
+        ORDER BY r.RentalID DESC
     """)
 
     rows = cursor.fetchall()
@@ -63,7 +68,6 @@ def display_rentals():
         for row in rows
     ]
 
-
 def get_rentals_by_status(status):
     conn = get_connection()
     cursor = conn.cursor()
@@ -71,14 +75,7 @@ def get_rentals_by_status(status):
     cursor.execute("""
         SELECT r.RentalID,
                c.FirstName || ' ' || c.LastName AS CustomerName,
-               r.RentalStatus,
-               r.TotalRentalFee,
-               r.SRentalMonth,
-               r.SRentalDay,
-               r.SRentalYear,
-               r.ExReturnMonth,
-               r.ExReturnDay,
-               r.ExReturnYear
+               r.RentalStatus
         FROM Rental r
         JOIN Customer c
             ON r.CustomerID = c.CustomerID
@@ -89,7 +86,14 @@ def get_rentals_by_status(status):
     rows = cursor.fetchall()
     conn.close()
 
-    return rows
+    return [
+        {
+            "id": str(row[0]),
+            "rentee": row[1],
+            "status": row[2]
+        }
+        for row in rows
+    ]
 
 
 def search_rentals(search_term):
@@ -101,9 +105,7 @@ def search_rentals(search_term):
     cursor.execute("""
         SELECT r.RentalID,
                c.FirstName || ' ' || c.LastName AS CustomerName,
-               c.ContactNumber,
-               r.RentalStatus,
-               r.TotalRentalFee
+               r.RentalStatus
         FROM Rental r
         JOIN Customer c
             ON r.CustomerID = c.CustomerID
@@ -117,8 +119,14 @@ def search_rentals(search_term):
     rows = cursor.fetchall()
     conn.close()
 
-    return rows
-
+    return [
+        {
+            "id": str(row[0]),
+            "rentee": row[1],
+            "status": row[2]
+        }
+        for row in rows
+    ]
 
 def get_rental_details(rental_id):
     conn = get_connection()
@@ -155,15 +163,34 @@ def get_rental_details(rental_id):
         WHERE r.RentalID = ?
     """, (rental_id,))
 
-    rows = cursor.fetchall()
+    row = cursor.fetchone()
     conn.close()
 
-    return rows
+    if not row:
+        return None
+
+    return {
+        "id": str(row[0]),
+        "rentee": row[1],
+        "contact number": row[2],
+        "email address": row[3],
+        "region": row[4],
+        "city": row[5],
+        "barangay": row[6],
+        "postal": row[7],
+        "street": row[8],
+        "birthday": row[9],
+        "device_model": row[10],
+        "start_date": f"{row[11]}/{row[12]}/{row[13]}",
+        "expected_return": f"{row[14]}/{row[15]}/{row[16]}",
+        "total_fee": row[17],
+        "status": row[18]
+    }
+
 
 
 
 # UPDATE RENTAL ORDER AS COMPLETE
-
 def mark_rental_as_completed(rental_id):
     conn = get_connection()
     cursor = conn.cursor()

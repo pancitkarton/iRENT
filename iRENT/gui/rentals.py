@@ -31,6 +31,51 @@ def add_hover(btn, enter_bg, leave_bg, enter_fg=None, leave_fg=None):
     btn.bind("<Leave>", on_leave)
 
 
+def refresh_rental_list(app, container, rentals_data):
+    # Clear existing cards
+    for widget in container.winfo_children():
+        widget.destroy()
+    
+    # Recreate cards with new data
+    for order in rentals_data:
+        card = tk.Frame(
+            container,
+            bg="white",
+            highlightbackground="black",
+            highlightthickness=1
+        )
+        card.pack(fill="x", pady=4)
+        
+        info_frame = tk.Frame(card, bg="white")
+        info_frame.pack(side="left", fill="y", padx=10, pady=5)
+        
+        tk.Label(info_frame, text=f"ID: {order['id']}", font=("Arial", 12, "bold"), bg="white").pack(anchor="w")
+        tk.Label(info_frame, text=f"Rentee: {order['rentee']}", font=("Arial", 12), bg="white").pack(anchor="w")
+        
+        actions_frame = tk.Frame(card, bg="white")
+        actions_frame.pack(side="right", padx=10)
+        
+        status_color = status_colors.get(order['status'], "black")
+        tk.Label(
+            actions_frame,
+            text=f"Status: {order['status']}",
+            font=("Arial", 11, "bold"),
+            bg="white",
+            fg=status_color,
+            anchor="w",
+            width=15
+        ).pack(side="left", padx=30)
+        
+        btn = tk.Button(
+            actions_frame, text="See More", bg="#ffd735", fg="black",
+            font=("Arial", 11, "bold"), relief="flat", padx=15, pady=2,
+            cursor="hand2", 
+            command=lambda a= app, o=order: show_details(a, o, container)  
+        )
+        btn.pack(side="left", padx=10)
+        add_hover(btn, "#232624", "#ffd735", "#ffd735", "black")
+
+
 #example receipt
 #turn into completed status when done
 def open_receipt(order):
@@ -124,7 +169,6 @@ def rental_customers(app, order):
     back_btn.pack(side="bottom", pady=20)
 
     cframe.tkraise()
-
 def rentals_page(main_frame, app):
     main_frame.configure(bg="#eef2f7")
 
@@ -162,13 +206,17 @@ def rentals_page(main_frame, app):
     search.insert(0, "Search...")
     search.pack(side="right")
 
+    # CREATE CONTAINER FIRST
+    container = tk.Frame(main_frame, bg="#eef2f7", highlightthickness=0)
+    container.pack(fill="both", expand=True, padx=20)
+
     # SEARCH RENTALS BY NAME/ID FUNCTION
     def trigger_search(event=None):
         term = search.get().strip()
         if term == "" or term == "Search...":
-            display_rentals(get_all_rentals())
+            refresh_rental_list(app, container, get_all_rentals())
         else:
-            display_rentals(search_rentals(term))
+            refresh_rental_list(app, container, search_rentals(term))
 
     search.bind("<KeyRelease>", trigger_search)
 
@@ -190,10 +238,11 @@ def rentals_page(main_frame, app):
     # FILTER RENTAL BY STATUS FUNCTION
     def filter_menu(event):
         menu = tk.Menu(main_frame, tearoff=0)
-        menu.add_command(label="Show Active", command=lambda: display_rentals(get_rentals_by_status("Ongoing")))
-        menu.add_command(label="Show Overdue", command=lambda: display_rentals(get_rentals_by_status("Overdue")))
-        menu.add_command(label="Show Completed", command=lambda: display_rentals(get_rentals_by_status("Completed")))
+        menu.add_command(label="Show Active", command=lambda: refresh_rental_list(app, container, get_rentals_by_status("Ongoing")))
+        menu.add_command(label="Show Overdue", command=lambda: refresh_rental_list(app, container, get_rentals_by_status("Overdue")))
+        menu.add_command(label="Show Completed", command=lambda: refresh_rental_list(app, container, get_rentals_by_status("Completed")))
         menu.post(event.x_root, event.y_root)
+
 
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     filter_path = os.path.join(BASE_DIR, "assets", "filter.png")
@@ -217,48 +266,8 @@ def rentals_page(main_frame, app):
 
     add_hover(filter_label, "#eef2f7", "#eef2f7", "black", "#e6b800")
 
-    container = tk.Frame(main_frame, bg="#eef2f7", highlightthickness=0)
-    container.pack(fill="both", expand=True, padx=20)
-
-    orders = get_all_rentals()
-
-    for order in orders:
-        card = tk.Frame(
-            container,
-            bg="white",
-            highlightbackground="black",
-            highlightthickness=1
-        )
-        card.pack(fill="x", pady=4)
-
-        info_frame = tk.Frame(card, bg="white")
-        info_frame.pack(side="left", fill="y", padx=10, pady=5)
-
-        tk.Label(info_frame, text=f"ID: {order['id']}", font=("Arial", 12, "bold"), bg="white").pack(anchor="w")
-        tk.Label(info_frame, text=f"Rentee: {order['rentee']}", font=("Arial", 12), bg="white").pack(anchor="w")
-
-        actions_frame = tk.Frame(card, bg="white")
-        actions_frame.pack(side="right", padx=10)
-
-
-        status_color = status_colors.get(order['status'], "black")
-        tk.Label(
-            actions_frame,
-            text=f"Status: {order['status']}",
-            font=("Arial", 11, "bold"),
-            bg="white",
-            fg=status_color,
-            anchor="w",
-            width=15
-        ).pack(side="left", padx=30)
-
-        btn = tk.Button(
-            actions_frame, text="See More", bg="#ffd735", fg="black",
-            font=("Arial", 11, "bold"), relief="flat", padx=15, pady=2,
-            cursor="hand2", command=lambda o=order: show_details(app, o)
-        )
-        btn.pack(side="left", padx=10)
-        add_hover(btn, "#232624", "#ffd735", "#ffd735", "black")
+    # Load initial data
+    refresh_rental_list(app, container, get_all_rentals())
 
     bottom = tk.Frame(main_frame, padx=40, pady=20, bg="#eef2f7")
     bottom.pack(fill="x", side="bottom")
@@ -298,30 +307,14 @@ def rentals_page(main_frame, app):
     add_hover(history, "#eef2f7", "#eef2f7", "black", "#e6b800")
     add_hover(add_btn, "#232624", "#ffd735", "#ffd735", "black")
 
-
 # SHOW RENTAL DETAILS FUNCTION
-def show_details(app, order_id):
+def show_details(app, order_id, container):
     frame = app.pages["order_details"]
     frame.configure(bg="#eef2f7")
 
     order = get_rental_details(order_id)
     if not order:
         return
-
-    def add_hover(btn, enter_bg, leave_bg, enter_fg=None, leave_fg=None):
-
-        def on_enter(e):
-            btn.config(bg=enter_bg, cursor="hand2")
-            if enter_fg:
-                btn.config(fg=enter_fg)
-
-        def on_leave(e):
-            btn.config(bg=leave_bg, cursor="")
-            if leave_fg:
-                btn.config(fg=leave_fg)
-
-        btn.bind("<Enter>", on_enter)
-        btn.bind("<Leave>", on_leave)
 
     for w in frame.winfo_children():
         w.destroy()
@@ -357,78 +350,79 @@ def show_details(app, order_id):
     back_btn.pack(side="right", padx=5)
     add_hover(back_btn, "#232624", "gray", "white", "black")
 
-
     # MARK RENTAL AS COMPLETE FUNCTION
     if order['status'] != "Completed":
         def complete_action():
-            mark_rental_as_completed(order['id'])
-            open_receipt(order['id'])
-
+            if mark_rental_as_completed(order['id']):
+                open_receipt(order)
+                app.pages["rentals"].tkraise()
+                refresh_rental_list(app, container, get_all_rentals())
+        
         complete_btn = tk.Button(
             bottom_bar,
             text="COMPLETE RENTAL",
             font=("Arial", 17, "bold"),
             bg="#ffd735",
             cursor="hand2",
-            command=lambda: [mark_rental_as_completed(complete_action(), order['id']), open_receipt(order), app.pages["rentals"].tkraise()]
+            command=complete_action
         )
         complete_btn.pack(side="right", padx=5)
         add_hover(complete_btn, "#232624", "#ffd735", "#ffd735", "black")
 
-    container = tk.Frame(
+    container_details = tk.Frame(
         frame,
         padx=40,
         pady=40,
         bg="#eef2f7"
     )
-    container.pack(fill="both", expand=True)
+    container_details.pack(fill="both", expand=True)
 
-    container.grid_columnconfigure(0, weight=1, minsize=300)
-    container.grid_columnconfigure(1, weight=1, minsize=300)
+    container_details.grid_columnconfigure(0, weight=1, minsize=300)
+    container_details.grid_columnconfigure(1, weight=1, minsize=300)
 
     tk.Label(
-        container,
+        container_details,
         text="RENTEE INFO",
         font=("Arial", 20, "bold"),
         bg="#eef2f7"
     ).grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 10))
 
     tk.Label(
-        container,
+        container_details,
         text=f"Rental ID: {order['id']}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=1, column=0, sticky="w", pady=10)
 
     tk.Label(
-        container,
+        container_details,
         text=f"Rentee Name: {order['rentee']}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=1, column=1, sticky="w", pady=10)
 
     tk.Label(
-        container,
+        container_details,
         text=f"Contact Number: {order['contact number']}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=2, column=0, sticky="w", pady=10)
 
     tk.Label(
-        container,
+        container_details,
         text=f"Email Address: {order['email address']}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=2, column=1, sticky="w", pady=10)
 
     tk.Frame(
-        container,
+        container_details,
         height=2,
         bg="black"
     ).grid(row=3, column=0, columnspan=2, sticky="ew", pady=20)
 
     tk.Label(
-        container,
+        container_details,
         text="DEVICE INFORMATION",
         font=("Arial", 20, "bold"),
         bg="#eef2f7"
@@ -437,15 +431,15 @@ def show_details(app, order_id):
     next_row = 5
 
     tk.Frame(
-        container,
+        container_details,
         height=2,
         bg="black"
     ).grid(row=next_row, column=0, columnspan=2, sticky="ew", pady=20)
 
-    tk.Label(container, text="Rental Date: ", font=("Arial", 14, "bold"), bg="#eef2f7").grid(row=next_row + 1, column=0, sticky="w", pady=10)
+    tk.Label(container_details, text="Rental Date: ", font=("Arial", 14, "bold"), bg="#eef2f7").grid(row=next_row + 1, column=0, sticky="w", pady=10)
 
-    tk.Label(container, text="Must Return By: ", font=("Arial", 14, "bold"), bg="#eef2f7").grid(row=next_row + 1, column=1, sticky="w", pady=10)
+    tk.Label(container_details, text="Must Return By: ", font=("Arial", 14, "bold"), bg="#eef2f7").grid(row=next_row + 1, column=1, sticky="w", pady=10)
 
-    tk.Label(container, text="Rental Total: ", font=("Arial", 14, "bold"), bg="#eef2f7").grid(row=next_row + 2, column=0, sticky="w", pady=20)
+    tk.Label(container_details, text="Rental Total: ", font=("Arial", 14, "bold"), bg="#eef2f7").grid(row=next_row + 2, column=0, sticky="w", pady=20)
 
     frame.tkraise()
