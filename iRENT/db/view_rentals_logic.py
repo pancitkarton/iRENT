@@ -162,7 +162,7 @@ def get_rental_details(rental_id):
 
 
 
-# WRITE / UPDATE OPERATIONS
+# UPDATE RENTAL ORDER AS COMPLETE
 
 def mark_rental_as_completed(rental_id):
     conn = get_connection()
