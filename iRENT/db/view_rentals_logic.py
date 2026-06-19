@@ -1,28 +1,35 @@
 from db.database import get_connection
 
-conn = get_connection()
-cursor = conn.cursor()
 
+# RENTAL LISTING FUNCTIONS
 
-def get_all_rentals(conn):
+def get_all_rentals():
+    conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute('''
-        SELECT r.RentalID,
-               c.FirstName || ' ' || c.LastName AS CustomerName,
-               r.RentalStatus,
-               r.TotalRentalFee,
-               r.SRentalMonth || '/' || r.SRentalDay || '/' || r.SRentalYear AS StartDate,
-               r.ExReturnMonth || '/' || r.ExReturnDay || '/' || r.ExReturnYear AS ExpectedReturn
-        FROM Rental r
-        JOIN Customer c ON r.CustomerID = c.CustomerID
-        ORDER BY r.RentalID DESC
-    ''')
-    return cursor.fetchall()
+
+    cursor.execute("""
+        SELECT RentalID, CustomerName, RentalStatus
+        FROM Rentals
+    """)
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    return [
+        {
+            "id": str(row[0]),
+            "rentee": row[1],
+            "status": row[2]
+        }
+        for row in rows
+    ]
 
 
-def display_rentals(conn):
+def display_rentals():
+    conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute('''
+
+    cursor.execute("""
         SELECT r.RentalID,
                c.FirstName || ' ' || c.LastName AS CustomerName,
                c.ContactNumber,
@@ -38,60 +45,86 @@ def display_rentals(conn):
         JOIN Customer c
             ON r.CustomerID = c.CustomerID
         ORDER BY r.RentalID DESC
-    ''')
+    """)
 
-    return cursor.fetchall()
+    rows = cursor.fetchall()
+    conn.close()
+
+    return [
+        {
+            "id": str(row[0]),
+            "rentee": row[1],
+            "contact": row[2],
+            "status": row[3],
+            "total_fee": row[4],
+            "start_date": f"{row[5]}/{row[6]}/{row[7]}",
+            "expected_return": f"{row[8]}/{row[9]}/{row[10]}"
+        }
+        for row in rows
+    ]
 
 
-def get_rentals_by_status(conn, status):
+def get_rentals_by_status(status):
+    conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute('''
+
+    cursor.execute("""
         SELECT r.RentalID,
                c.FirstName || ' ' || c.LastName AS CustomerName,
                r.RentalStatus,
                r.TotalRentalFee,
-               r.SRentalMonth, 
-               r.SRentalDay, 
+               r.SRentalMonth,
+               r.SRentalDay,
                r.SRentalYear,
-               r.ExReturnMonth, 
-               r.ExReturnDay, 
+               r.ExReturnMonth,
+               r.ExReturnDay,
                r.ExReturnYear
         FROM Rental r
-        JOIN Customer c 
+        JOIN Customer c
             ON r.CustomerID = c.CustomerID
         WHERE r.RentalStatus = ?
         ORDER BY r.RentalID DESC
-    ''', (status,))
+    """, (status,))
 
-    return cursor.fetchall()
+    rows = cursor.fetchall()
+    conn.close()
+
+    return rows
 
 
-def search_rentals(conn, search_term):
+def search_rentals(search_term):
+    conn = get_connection()
     cursor = conn.cursor()
+
     search_pattern = f"%{search_term}%"
 
-    cursor.execute('''
+    cursor.execute("""
         SELECT r.RentalID,
                c.FirstName || ' ' || c.LastName AS CustomerName,
                c.ContactNumber,
                r.RentalStatus,
                r.TotalRentalFee
         FROM Rental r
-        JOIN Customer c 
+        JOIN Customer c
             ON r.CustomerID = c.CustomerID
         WHERE CAST(r.RentalID AS TEXT) LIKE ?
            OR c.FirstName LIKE ?
            OR c.LastName LIKE ?
            OR (c.FirstName || ' ' || c.LastName) LIKE ?
         ORDER BY r.RentalID DESC
-    ''', (search_pattern,) * 4)
+    """, (search_pattern,) * 4)
 
-    return cursor.fetchall()
+    rows = cursor.fetchall()
+    conn.close()
+
+    return rows
 
 
-def get_rental_details(conn, rental_id):
+def get_rental_details(rental_id):
+    conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute('''
+
+    cursor.execute("""
         SELECT
             r.RentalID,
             c.FirstName || ' ' || c.LastName AS CustomerName,
@@ -112,7 +145,6 @@ def get_rental_details(conn, rental_id):
             r.ExReturnYear,
             r.TotalRentalFee,
             r.RentalStatus
-
         FROM Rental r
         JOIN Customer c
             ON r.CustomerID = c.CustomerID
@@ -120,21 +152,30 @@ def get_rental_details(conn, rental_id):
             ON r.RentalID = ri.RentalID
         JOIN Device d
             ON ri.DeviceID = d.DeviceID
-
         WHERE r.RentalID = ?
-    ''', (rental_id,))
-    
-    return cursor.fetchall()
+    """, (rental_id,))
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    return rows
 
 
-def mark_rental_as_completed(conn, rental_id):
+
+# WRITE / UPDATE OPERATIONS
+
+def mark_rental_as_completed(rental_id):
+    conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute('''
+
+    cursor.execute("""
         UPDATE Rental
         SET RentalStatus = 'Completed'
         WHERE RentalID = ?
-    ''', (rental_id,))
-    
+    """, (rental_id,))
+
     conn.commit()
-    
-    return cursor.rowcount > 0
+    updated = cursor.rowcount > 0
+    conn.close()
+
+    return updated

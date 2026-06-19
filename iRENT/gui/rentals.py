@@ -2,9 +2,18 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import os
 
+from db.view_rentals_logic import (
+    get_all_rentals,
+    display_rentals,
+    get_rentals_by_status,
+    search_rentals,
+    get_rental_details,
+    mark_rental_as_completed
+)
+
 # Returned to its original state for a while
 
-orders = [  #temporary only, will delete when create rental exists
+orders = [
         {"id": "001", "rentee": "Daniel Padilla", "status": "Ongoing"},
         {"id": "002", "rentee": "Hughie Campbell", "status": "Overdue"},
         {"id": "003", "rentee": "Hev Abi", "status": "Completed"},
