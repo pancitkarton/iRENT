@@ -8,14 +8,8 @@ from __future__ import annotations
 import sqlite3
 from typing import Any, Dict, List, Optional
 
-# Reuse the shared schema + connection helper.
-from sqlite_crudop import get_connection, make_database
-
-
-def init_db() -> sqlite3.Connection:
-    """Ensure tables exist and return a connection with foreign keys enabled."""
-    make_database()
-    return get_connection()
+# Central DB connection helper
+from db.database import get_connection
 
 
 def _normalize_str(value: Any) -> str:
@@ -23,7 +17,7 @@ def _normalize_str(value: Any) -> str:
 
 
 def _parse_integrity_error(exc: sqlite3.IntegrityError) -> str:
-    """Map SQLite constraint failures to stable error codes."""
+    # Map SQLite constraint failures to stable error codes.
     msg = str(exc)
     if "Customer.ContactNumber" in msg:
         return "duplicate_contact"
@@ -73,7 +67,7 @@ def create_customer(
     birth_day: str,
     birth_year: str,
 ) -> int:
-    """Add a new customer and return the new CustomerID."""
+    # Add a new customer and return the new CustomerID.
 
     required = {
         "first_name": first_name,
@@ -132,7 +126,7 @@ def create_customer(
 
 # READ
 def get_customer_by_id(conn: sqlite3.Connection, customer_id: int) -> Optional[Dict[str, Any]]:
-    """Fetch a customer record by primary key."""
+    # Fetch a customer record by primary key.
     cursor = conn.cursor()
     cursor.execute(
         """
@@ -153,14 +147,10 @@ def get_customer_by_id(conn: sqlite3.Connection, customer_id: int) -> Optional[D
 
 # UPDATE (Edit customer)
 def update_customer(conn: sqlite3.Connection, customer_id: int, **fields: Any) -> bool:
-    """Edit an existing customer.
-
-    Example:
-        update_customer(conn, 1, contact_number='...', email_address='...', city='...')
-
-    Returns True if a row was updated; False if no valid fields were provided
-    or the record was not found.
-    """
+    # Edit an existing customer.
+    # Example:
+    #     update_customer(conn, 1, contact_number='...', email_address='...', city='...')
+    # Returns True if a row was updated; False if no valid fields were provided or the record was not found.
 
     allowed = {
         "first_name": "FirstName",
@@ -208,10 +198,7 @@ def update_customer(conn: sqlite3.Connection, customer_id: int, **fields: Any) -
 
 # DELETE
 def delete_customer(conn: sqlite3.Connection, customer_id: int) -> bool:
-    """Delete customer profile.
-
-    Note: Rental(CustomerID) is ON DELETE CASCADE, so rentals are removed too.
-    """
+    # Delete customer profile.
     cursor = conn.cursor()
     cursor.execute("DELETE FROM Customer WHERE CustomerID = ?", (customer_id,))
     conn.commit()
@@ -220,7 +207,7 @@ def delete_customer(conn: sqlite3.Connection, customer_id: int) -> bool:
 
 # SEARCH (to be wired into GUI later on)
 def search_customers(conn: sqlite3.Connection, term: str, limit: int = 50) -> List[Dict[str, Any]]:
-    """Search customers using LIKE across name/contact/email/address."""
+    # Search customers using LIKE across name/contact/email/address.
     term = _normalize_str(term)
     if term == "":
         return []
@@ -270,7 +257,7 @@ def search_customers(conn: sqlite3.Connection, term: str, limit: int = 50) -> Li
 
 # CUSTOMER RENTAL HISTORY
 def get_customer_rental_history(conn: sqlite3.Connection, customer_id: int) -> List[Dict[str, Any]]:
-    """Return rental history rows for a customer."""
+    # Return rental history rows for a customer.
     cursor = conn.cursor()
     cursor.execute(
         """

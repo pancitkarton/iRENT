@@ -12,7 +12,6 @@ def initialize_db():
     cursor = conn.cursor()
 
     cursor.execute("PRAGMA foreign_keys = ON;")
-    
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Brand (
@@ -55,14 +54,16 @@ def initialize_db():
         MiddleName TEXT,
         LastName TEXT NOT NULL,
         Suffix TEXT,
-        Birthday TEXT,
         ContactNumber TEXT NOT NULL UNIQUE,
         EmailAddress TEXT NOT NULL UNIQUE,
-        Region TEXT,
-        City TEXT,
-        Barangay TEXT,
-        Postal TEXT,
-        Street TEXT
+        Street TEXT NOT NULL,
+        Barangay TEXT NOT NULL,
+        City TEXT NOT NULL,
+        Province TEXT NOT NULL,
+        ZIPCode TEXT NOT NULL,
+        BirthMonth TEXT NOT NULL,
+        BirthDay TEXT NOT NULL,
+        BirthYear TEXT NOT NULL
     )
     """)
 
@@ -108,7 +109,7 @@ def initialize_db():
         FOREIGN KEY(DeviceID) REFERENCES Device(DeviceID) ON DELETE RESTRICT
     )
     """)
-    
+
     #rental item
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS RentalItem (
@@ -133,10 +134,10 @@ def initialize_db():
             ("Monitor", "SN-2002", 150.00, "Good", "Good", "Available", 1, 1)
         ]
         cursor.executemany("""
-            INSERT INTO Device (Model, SerialNumber, RentalPrice, FunctionalStatus, 
+            INSERT INTO Device (Model, SerialNumber, RentalPrice, FunctionalStatus,
                                 Appearance, AvailabilityStatus, DeviceTypeID, BrandID)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """, initial_devices)
         conn.commit()
-    
+
     conn.close()
