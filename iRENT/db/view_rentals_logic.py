@@ -40,12 +40,8 @@ def display_rentals():
                c.ContactNumber,
                r.RentalStatus,
                r.TotalRentalFee,
-               r.SRentalMonth,
-               r.SRentalDay,
-               r.SRentalYear,
-               r.ExReturnMonth,
-               r.ExReturnDay,
-               r.ExReturnYear
+               r.StartRentalDate,
+               r.ExpectedReturnDate,
         FROM Rental r
         JOIN Customer c
             ON r.CustomerID = c.CustomerID
@@ -62,8 +58,8 @@ def display_rentals():
             "contact": row[2],
             "status": row[3],
             "total_fee": row[4],
-            "start_date": f"{row[5]}/{row[6]}/{row[7]}",
-            "expected_return": f"{row[8]}/{row[9]}/{row[10]}"
+            "start_date": row[5],
+            "expected_return": row[6]
         }
         for row in rows
     ]
@@ -145,12 +141,8 @@ def get_rental_details(rental_id):
             c.Street,
             c.Birthday,
             d.Model,
-            r.SRentalMonth,
-            r.SRentalDay,
-            r.SRentalYear,
-            r.ExReturnMonth,
-            r.ExReturnDay,
-            r.ExReturnYear,
+            r.StartRentalDate,
+            r.ExpectedReturnDate,
             r.TotalRentalFee,
             r.RentalStatus
         FROM Rental r
@@ -181,10 +173,10 @@ def get_rental_details(rental_id):
         "street": row[8],
         "birthday": row[9],
         "device_model": row[10],
-        "start_date": f"{row[11]}/{row[12]}/{row[13]}",
-        "expected_return": f"{row[14]}/{row[15]}/{row[16]}",
-        "total_fee": row[17],
-        "status": row[18]
+        "start_date": row[11],
+        "expected_return": row[12],
+        "total_fee": row[13],
+        "status": row[14]
     }
 
 

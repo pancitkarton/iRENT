@@ -123,7 +123,7 @@ def initialize_db():
     )
     """)
 
-    #paupdate nalang neto pag ayos na ung device lists. examples lang muna to
+    #ilagay ung list of devices ni charmie
     cursor.execute("SELECT COUNT(*) FROM Device")
     if cursor.fetchone()[0] == 0:
         initial_devices = [
