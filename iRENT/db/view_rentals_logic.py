@@ -41,7 +41,7 @@ def display_rentals():
                r.RentalStatus,
                r.TotalRentalFee,
                r.StartRentalDate,
-               r.ExpectedReturnDate,
+               r.ExpectedReturnDate
         FROM Rental r
         JOIN Customer c
             ON r.CustomerID = c.CustomerID
