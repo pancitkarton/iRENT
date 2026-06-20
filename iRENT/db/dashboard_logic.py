@@ -19,3 +19,16 @@ def get_dashboard_summary():
     
     conn.close()
     return data
+
+def welcome_staff(staff_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT FirstName FROM Staff WHERE StaffID = ?", (staff_id,))
+    result = cursor.fetchone()
+
+    conn.close()
+
+    if result:
+        return result[0]
+    return "Staff"

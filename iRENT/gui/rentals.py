@@ -282,6 +282,7 @@ def rentals_page(main_frame, app):
         command=lambda: app.set_active_page("add_rental")
     )
     add_btn.pack(side="right", padx=5)
+    add_hover(add_btn, "#232624", "#ffd735", "#ffd735", "black")
 
 
 # SHOW RENTAL DETAILS FUNCTION
