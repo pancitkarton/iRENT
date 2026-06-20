@@ -40,8 +40,12 @@ def display_rentals():
                c.ContactNumber,
                r.RentalStatus,
                r.TotalRentalFee,
-               r.StartRentalDate,
-               r.ExpectedReturnDate
+               r.SRentalMonth,
+               r.SRentalDay,
+               r.SRentalYear,
+               r.ExReturnMonth,
+               r.ExReturnDay,
+               r.ExReturnYear
         FROM Rental r
         JOIN Customer c
             ON r.CustomerID = c.CustomerID
@@ -58,8 +62,8 @@ def display_rentals():
             "contact": row[2],
             "status": row[3],
             "total_fee": row[4],
-            "start_date": row[5],
-            "expected_return": row[6]
+            "start_date": f"{row[5]}/{row[6]}/{row[7]}",
+            "expected_return": f"{row[8]}/{row[9]}/{row[10]}"
         }
         for row in rows
     ]
@@ -131,27 +135,21 @@ def get_rental_details(rental_id):
     cursor.execute("""
         SELECT
             r.RentalID,
-            c.FirstName || ' ' || c.LastName AS CustomerName,
+            IFNULL(c.FirstName || ' ' || c.LastName, 'Unknown') AS CustomerName,
             c.ContactNumber,
             c.EmailAddress,
-            c.Region,
-            c.City,
-            c.Barangay,
-            c.Postal,
-            c.Street,
-            c.Birthday,
+            d.DeviceID,
+            b.BrandName,
             d.Model,
-            r.StartRentalDate,
-            r.ExpectedReturnDate,
+            d.SerialNumber,
+            r.RentalDate,
+            r.ReturnDate,
             r.TotalRentalFee,
             r.RentalStatus
         FROM Rental r
-        JOIN Customer c
-            ON r.CustomerID = c.CustomerID
-        JOIN RentalItem ri
-            ON r.RentalID = ri.RentalID
-        JOIN Device d
-            ON ri.DeviceID = d.DeviceID
+        LEFT JOIN Customer c ON r.CustomerID = c.CustomerID
+        LEFT JOIN Device d ON r.DeviceID = d.DeviceID
+        LEFT JOIN Brand b ON d.BrandID = b.BrandID
         WHERE r.RentalID = ?
     """, (rental_id,))
 
@@ -166,17 +164,14 @@ def get_rental_details(rental_id):
         "rentee": row[1],
         "contact number": row[2],
         "email address": row[3],
-        "region": row[4],
-        "city": row[5],
-        "barangay": row[6],
-        "postal": row[7],
-        "street": row[8],
-        "birthday": row[9],
-        "device_model": row[10],
-        "start_date": row[11],
-        "expected_return": row[12],
-        "total_fee": row[13],
-        "status": row[14]
+        "device_id": row[4],
+        "brand": row[5],
+        "model": row[6],
+        "serial_number": row[7],
+        "start_date": row[8],
+        "expected_return": row[9],
+        "total_fee": row[10],
+        "status": row[11]
     }
 
 

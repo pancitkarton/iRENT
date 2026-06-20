@@ -74,11 +74,9 @@ def initialize_db():
         Model TEXT NOT NULL,
         SerialNumber TEXT NOT NULL UNIQUE,
         RentalPrice REAL NOT NULL,
-
         FunctionalStatus TEXT CHECK(FunctionalStatus IN ('Excellent', 'Good', 'Fair', 'Poor')),
         Appearance TEXT CHECK(Appearance IN ('New', 'Good', 'Scratched', 'Damaged')),
         AvailabilityStatus TEXT CHECK(AvailabilityStatus IN ('Available', 'Rented', 'Maintenance', 'Retired')),
-
         DeviceTypeID INTEGER,
         BrandID INTEGER,
         FOREIGN KEY(DeviceTypeID) REFERENCES DeviceType(DeviceTypeID),
@@ -90,19 +88,14 @@ def initialize_db():
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Rental (
         RentalID INTEGER PRIMARY KEY AUTOINCREMENT,
-
         CustomerID INTEGER NOT NULL,
         StaffID INTEGER NOT NULL,
         DeviceID INTEGER NOT NULL,
-
         RentalDate TEXT NOT NULL,
         ReturnDate TEXT NOT NULL,
-
         RentalStatus TEXT NOT NULL DEFAULT 'Ongoing',
         TotalRentalFee REAL DEFAULT 0,
-
         CHECK(RentalStatus IN ('Ongoing', 'Completed', 'Overdue')),
-
         FOREIGN KEY(CustomerID) REFERENCES Customer(CustomerID) ON DELETE CASCADE,
         FOREIGN KEY(StaffID) REFERENCES Staff(StaffID) ON DELETE RESTRICT,
         FOREIGN KEY(DeviceID) REFERENCES Device(DeviceID) ON DELETE RESTRICT

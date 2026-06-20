@@ -70,7 +70,7 @@ def refresh_rental_list(app, container, rentals_data):
             actions_frame, text="See More", bg="#ffd735", fg="black",
             font=("Arial", 11, "bold"), relief="flat", padx=15, pady=2,
             cursor="hand2", 
-            command=lambda a=app, oid=order['id']: show_details(a, oid, container)  
+            command=lambda a=app, oid=order['id']: show_details(a, oid)
         )
         btn.pack(side="left", padx=10)
         add_hover(btn, "#232624", "#ffd735", "#ffd735", "black")
@@ -210,6 +210,8 @@ def rentals_page(main_frame, app):
     container = tk.Frame(main_frame, bg="#eef2f7", highlightthickness=0)
     container.pack(fill="both", expand=True, padx=20)
 
+    app.rental_list_container = container
+
     # SEARCH RENTALS BY NAME/ID FUNCTION
     def trigger_search(event=None):
         term = search.get().strip()
@@ -282,35 +284,18 @@ def rentals_page(main_frame, app):
     add_btn.pack(side="right", padx=5)
 
 
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    history_path = os.path.join(BASE_DIR, "assets", "history.png")
-    history_icon = ImageTk.PhotoImage(Image.open(history_path).resize((30, 30)))
-
-    history = tk.Button(
-        bottom,
-        text="Previous Rentals",
-        image=history_icon,
-        compound="left",
-        font=("Arial", 17, "bold"),
-        bg="#eef2f7",
-        fg="#ffd735",
-        cursor="hand2",
-        command=lambda:app.set_active_page("history"),
-        borderwidth=0,
-        highlightthickness=0,
-        relief="flat"
-    )
-    history.image = history_icon
-    history.pack(side="left", padx=5)
-
-
-    add_hover(history, "#eef2f7", "#eef2f7", "black", "#e6b800")
-    add_hover(add_btn, "#232624", "#ffd735", "#ffd735", "black")
-
 # SHOW RENTAL DETAILS FUNCTION
-def show_details(app, order_id, container):
+def show_details(app, order_id):
+    app.set_active_page("order_details")
+
     frame = app.pages["order_details"]
+    for w in frame.winfo_children():
+        w.destroy()
+
     frame.configure(bg="#eef2f7")
+    frame.grid_columnconfigure(0, weight=1)
+    frame.grid_rowconfigure(0, weight=1)
+    frame.grid_rowconfigure(1, weight=0)
 
     order = get_rental_details(order_id)
     if not order:
@@ -319,6 +304,132 @@ def show_details(app, order_id, container):
     for w in frame.winfo_children():
         w.destroy()
 
+
+    container_details = tk.Frame(
+        frame,
+        padx=40,
+        pady=40,
+        bg="#eef2f7"
+    )
+    container_details.grid(row=0, column=0, sticky="nsew")
+
+    container_details.grid_columnconfigure(0, weight=1, minsize=300)
+    container_details.grid_columnconfigure(1, weight=1, minsize=300)
+
+    tk.Label(
+        container_details,
+        text="RENTAL INFO",
+        font=("Arial", 20, "bold"),
+        bg="#eef2f7"
+    ).grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 10))
+
+
+    tk.Label(
+        container_details, 
+        text=f"Rental ID:", 
+        font=("Arial", 12, "bold"), 
+        bg="#eef2f7"
+    ).grid(row=1, column=0, sticky="w",  pady=(0,10))
+
+    tk.Label(
+        container_details, 
+        text=f"Rental Date: {order['start_date']}", 
+        font=("Arial", 12, "bold"), 
+        bg="#eef2f7"
+    ).grid(row=2, column=0, sticky="w",  pady=(0,10))
+
+    tk.Label(
+        container_details, 
+        text=f"Must Return By: {order['expected_return']}", 
+        font=("Arial", 12, "bold"), 
+        bg="#eef2f7"
+        ).grid(row=1, column=1, sticky="w",  pady=(0,10))
+    
+    tk.Frame(
+        container_details,
+        height=2,
+        bg="black"
+    ).grid(row=3, column=0, columnspan=2, sticky="ew", pady=20)
+
+    tk.Label(
+        container_details,
+        text="CUSTOMER INFO",
+        font=("Arial", 20, "bold"),
+        bg="#eef2f7"
+    ).grid(row=4, column=0, columnspan=2, sticky="w", pady=(0, 10))
+
+    tk.Label(
+        container_details,
+        text=f"Customer ID: {order['id']}",
+        font=("Arial", 12, "bold"),
+        bg="#eef2f7"
+    ).grid(row=5, column=0, sticky="w",  pady=(0,10))
+
+    tk.Label(
+        container_details,
+        text=f"Contact Number: {order['contact number']}",
+        font=("Arial", 12, "bold"),
+        bg="#eef2f7"
+    ).grid(row=5, column=1, sticky="w",  pady=(0,10))
+
+    tk.Label(
+        container_details,
+        text=f"Rentee Name: {order['rentee']}",
+        font=("Arial", 12, "bold"),
+        bg="#eef2f7"
+    ).grid(row=6, column=0, sticky="w",  pady=(0,10))
+
+    tk.Label(
+        container_details,
+        text=f"Email Address: {order['email address']}",
+        font=("Arial", 12, "bold"),
+        bg="#eef2f7"
+    ).grid(row=6, column=1, sticky="w",  pady=(0,10))
+
+    tk.Frame(
+        container_details,
+        height=2,
+        bg="black"
+    ).grid(row=7, column=0, columnspan=2, sticky="ew", pady=20)
+
+    tk.Label(
+        container_details,
+        text="DEVICE INFORMATION",
+        font=("Arial", 20, "bold"),
+        bg="#eef2f7"
+    ).grid(row=8, column=0, columnspan=2, sticky="w", pady=(0, 10))
+    
+    
+    tk.Label(
+        container_details,
+        text=f"Device ID: {order['device_id']}",
+        font=("Arial", 12, "bold"),
+        bg="#eef2f7"
+    ).grid(row=9, column=0, sticky="w",  pady=(0,10))
+
+    tk.Label(
+        container_details,
+        text=f"Serial Number: {order['serial_number']}",
+        font=("Arial", 12, "bold"),
+        bg="#eef2f7"
+    ).grid(row=9, column=1, sticky="w", pady=(0,10))
+
+
+    tk.Label(
+        container_details,
+        text=f"Brand: {order['brand']}",
+        font=("Arial", 12, "bold"),
+        bg="#eef2f7"
+    ).grid(row=10, column=0, sticky="w", pady=(0,10))
+
+    tk.Label(
+        container_details,
+        text=f"Model: {order['model']}",
+        font=("Arial", 12, "bold"),
+        bg="#eef2f7"
+    ).grid(row=10, column=1, sticky="w", pady=(0,10))
+
+
     #bottom
     bottom_bar = tk.Frame(
         frame,
@@ -326,17 +437,40 @@ def show_details(app, order_id, container):
         pady=20,
         bg="#eef2f7"
     )
-    bottom_bar.pack(fill="x", side="bottom")
+    bottom_bar.grid(row=1, column=0, sticky="ew")
 
     scolor = status_colors.get(order['status'], "black")
+
+    total_box = tk.Frame(
+        bottom_bar, 
+        bg="white", 
+        highlightbackground="black", 
+        highlightthickness=1
+    )
+    total_box.pack(side="left", pady=5)
+
+    tk.Label(
+        total_box, 
+        text="TOTAL DUE", 
+        font=("Arial", 10, "bold"), 
+        bg="white", 
+        fg="#9B8F8F"
+        ).pack(padx=10, pady=(5, 0))
+    
+    tk.Label(
+        total_box, 
+        text=f"{order['total_fee']} PHP", 
+        font=("Arial", 20, "bold"), 
+        bg="white"
+    ).pack(padx=10, pady=(0, 5))
 
     tk.Label(
         bottom_bar,
         text=f"Rental Status: {order['status']}",
-        font=("Arial", 20, "italic", "bold"),
+        font=("Arial", 18, "italic", "bold"),
         fg=scolor,
         bg="#eef2f7"
-    ).pack(side="left")
+    ).pack(side="left", padx=20)
 
 
     back_btn = tk.Button(
@@ -356,7 +490,7 @@ def show_details(app, order_id, container):
             if mark_rental_as_completed(order['id']):
                 open_receipt(order)
                 app.pages["rentals"].tkraise()
-                refresh_rental_list(app, container, get_all_rentals())
+                refresh_rental_list(app, app.rental_list_container, get_all_rentals())
         
         complete_btn = tk.Button(
             bottom_bar,
@@ -369,77 +503,5 @@ def show_details(app, order_id, container):
         complete_btn.pack(side="right", padx=5)
         add_hover(complete_btn, "#232624", "#ffd735", "#ffd735", "black")
 
-    container_details = tk.Frame(
-        frame,
-        padx=40,
-        pady=40,
-        bg="#eef2f7"
-    )
-    container_details.pack(fill="both", expand=True)
-
-    container_details.grid_columnconfigure(0, weight=1, minsize=300)
-    container_details.grid_columnconfigure(1, weight=1, minsize=300)
-
-    tk.Label(
-        container_details,
-        text="RENTEE INFO",
-        font=("Arial", 20, "bold"),
-        bg="#eef2f7"
-    ).grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 10))
-
-    tk.Label(
-        container_details,
-        text=f"Rental ID: {order['id']}",
-        font=("Arial", 12, "bold"),
-        bg="#eef2f7"
-    ).grid(row=1, column=0, sticky="w", pady=10)
-
-    tk.Label(
-        container_details,
-        text=f"Rentee Name: {order['rentee']}",
-        font=("Arial", 12, "bold"),
-        bg="#eef2f7"
-    ).grid(row=1, column=1, sticky="w", pady=10)
-
-    tk.Label(
-        container_details,
-        text=f"Contact Number: {order['contact number']}",
-        font=("Arial", 12, "bold"),
-        bg="#eef2f7"
-    ).grid(row=2, column=0, sticky="w", pady=10)
-
-    tk.Label(
-        container_details,
-        text=f"Email Address: {order['email address']}",
-        font=("Arial", 12, "bold"),
-        bg="#eef2f7"
-    ).grid(row=2, column=1, sticky="w", pady=10)
-
-    tk.Frame(
-        container_details,
-        height=2,
-        bg="black"
-    ).grid(row=3, column=0, columnspan=2, sticky="ew", pady=20)
-
-    tk.Label(
-        container_details,
-        text="DEVICE INFORMATION",
-        font=("Arial", 20, "bold"),
-        bg="#eef2f7"
-    ).grid(row=4, column=0, columnspan=2, sticky="w", pady=(0, 10))
-
-    next_row = 5
-
-    tk.Frame(
-        container_details,
-        height=2,
-        bg="black"
-    ).grid(row=next_row, column=0, columnspan=2, sticky="ew", pady=20)
-
-    tk.Label(container_details, text="Rental Date: ", font=("Arial", 14, "bold"), bg="#eef2f7").grid(row=next_row + 1, column=0, sticky="w", pady=10)
-
-    tk.Label(container_details, text="Must Return By: ", font=("Arial", 14, "bold"), bg="#eef2f7").grid(row=next_row + 1, column=1, sticky="w", pady=10)
-
-    tk.Label(container_details, text="Rental Total: ", font=("Arial", 14, "bold"), bg="#eef2f7").grid(row=next_row + 2, column=0, sticky="w", pady=20)
-
     frame.tkraise()
+    

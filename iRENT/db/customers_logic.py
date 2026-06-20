@@ -21,9 +21,9 @@ def update_customer_db(customer_id, data_dict):
     
     try:
         query = """UPDATE Customer SET 
-                   FirstName=?, MiddleName=?, LastName=?, Suffix=?, Birthday=?, 
-                   ContactNumber=?, EmailAddress=?, Region=?, City=?, 
-                   Barangay=?, Postal=?, Street=? 
+                   FirstName=?, MiddleName=?, LastName=?, Suffix=?, 
+                   Birthday=?, ContactNumber=?, EmailAddress=?, 
+                   Region=?, City=?, Barangay=?, Postal=?, Street=? 
                    WHERE CustomerID=?"""
         cursor.execute(query, (
             data_dict['FirstName'], data_dict['MiddleName'], data_dict['LastName'], 

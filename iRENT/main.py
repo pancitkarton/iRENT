@@ -1,7 +1,10 @@
 import tkinter as tk
 from gui.auth import AuthApp
+from db.database import initialize_db
 
 def main():
+    initialize_db()
+
     root = tk.Tk()
     app = AuthApp(root)
     root.mainloop()

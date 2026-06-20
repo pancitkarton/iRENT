@@ -7,7 +7,6 @@ import os
 
 from db.dashboard_logic import get_dashboard_summary
 from gui.rentals import rentals_page
-from gui.history import create_history_page
 from gui.add_rental import add_rental_page
 from gui.customers import customers_page
 from gui.list import create_list
