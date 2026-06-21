@@ -35,7 +35,7 @@ def refresh_rental_list(app, container, rentals_data):
     # Clear existing cards
     for widget in container.winfo_children():
         widget.destroy()
-    
+
     # Recreate cards with new data
     for order in rentals_data:
         card = tk.Frame(
@@ -45,16 +45,16 @@ def refresh_rental_list(app, container, rentals_data):
             highlightthickness=1
         )
         card.pack(fill="x", pady=4)
-        
+
         info_frame = tk.Frame(card, bg="white")
         info_frame.pack(side="left", fill="y", padx=10, pady=5)
-        
+
         tk.Label(info_frame, text=f"ID: {order['id']}", font=("Arial", 12, "bold"), bg="white").pack(anchor="w")
         tk.Label(info_frame, text=f"Rentee: {order['rentee']}", font=("Arial", 12), bg="white").pack(anchor="w")
-        
+
         actions_frame = tk.Frame(card, bg="white")
         actions_frame.pack(side="right", padx=10)
-        
+
         status_color = status_colors.get(order['status'], "black")
         tk.Label(
             actions_frame,
@@ -65,11 +65,11 @@ def refresh_rental_list(app, container, rentals_data):
             anchor="w",
             width=15
         ).pack(side="left", padx=30)
-        
+
         btn = tk.Button(
             actions_frame, text="See More", bg="#ffd735", fg="black",
             font=("Arial", 11, "bold"), relief="flat", padx=15, pady=2,
-            cursor="hand2", 
+            cursor="hand2",
             command=lambda a=app, oid=order['id']: show_details(a, oid)
         )
         btn.pack(side="left", padx=10)
@@ -326,33 +326,34 @@ def show_details(app, order_id):
 
 
     tk.Label(
-        container_details, 
-        text=f"Rental ID:", 
-        font=("Arial", 12, "bold"), 
+        container_details,
+        text=f"Rental ID:",
+        font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=1, column=0, sticky="w",  pady=(0,10))
 
     tk.Label(
-        container_details, 
-        text=f"Rental Date: {order['start_date']}", 
-        font=("Arial", 12, "bold"), 
+        container_details,
+        text=f"Rental Date: {order['start_date']}",
+        font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=2, column=0, sticky="w",  pady=(0,10))
 
     tk.Label(
-        container_details, 
-        text=f"Must Return By: {order['expected_return']}", 
-        font=("Arial", 12, "bold"), 
+        container_details,
+        text=f"Must Return By: {order['expected_return']}",
+        font=("Arial", 12, "bold"),
         bg="#eef2f7"
         ).grid(row=1, column=1, sticky="w",  pady=(0,10))
 
+    # TODO: Connect Overdue Fee DB to GUI (Default of 300)
     tk.Label(
-        container_details, 
-        text="Overdue Fee: ", 
-        font=("Arial", 12, "bold"), 
+        container_details,
+        text="Overdue Fee: ",
+        font=("Arial", 12, "bold"),
         bg="#eef2f7"
         ).grid(row=2, column=1, sticky="w",  pady=(0,10))
-    
+
     tk.Frame(
         container_details,
         height=2,
@@ -406,8 +407,8 @@ def show_details(app, order_id):
         font=("Arial", 20, "bold"),
         bg="#eef2f7"
     ).grid(row=8, column=0, columnspan=2, sticky="w", pady=(0, 10))
-    
-    
+
+
     tk.Label(
         container_details,
         text=f"Device ID: {order['device_id']}",
@@ -450,25 +451,25 @@ def show_details(app, order_id):
     scolor = status_colors.get(order['status'], "black")
 
     total_box = tk.Frame(
-        bottom_bar, 
-        bg="white", 
-        highlightbackground="black", 
+        bottom_bar,
+        bg="white",
+        highlightbackground="black",
         highlightthickness=1
     )
     total_box.pack(side="left", pady=5)
 
     tk.Label(
-        total_box, 
-        text="TOTAL DUE", 
-        font=("Arial", 10, "bold"), 
-        bg="white", 
+        total_box,
+        text="TOTAL DUE",
+        font=("Arial", 10, "bold"),
+        bg="white",
         fg="#9B8F8F"
         ).pack(padx=10, pady=(5, 0))
-    
+
     tk.Label(
-        total_box, 
-        text=f"{order['total_fee']} PHP", 
-        font=("Arial", 20, "bold"), 
+        total_box,
+        text=f"{order['total_fee']} PHP",
+        font=("Arial", 20, "bold"),
         bg="white"
     ).pack(padx=10, pady=(0, 5))
 
@@ -499,7 +500,7 @@ def show_details(app, order_id):
                 open_receipt(order)
                 app.pages["rentals"].tkraise()
                 refresh_rental_list(app, app.rental_list_container, get_all_rentals())
-        
+
         complete_btn = tk.Button(
             bottom_bar,
             text="COMPLETE RENTAL",
@@ -512,4 +513,3 @@ def show_details(app, order_id):
         add_hover(complete_btn, "#232624", "#ffd735", "#ffd735", "black")
 
     frame.tkraise()
-    
