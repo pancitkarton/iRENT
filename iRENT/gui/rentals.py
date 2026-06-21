@@ -345,6 +345,13 @@ def show_details(app, order_id):
         font=("Arial", 12, "bold"), 
         bg="#eef2f7"
         ).grid(row=1, column=1, sticky="w",  pady=(0,10))
+
+    tk.Label(
+        container_details, 
+        text="Overdue Fee: ", 
+        font=("Arial", 12, "bold"), 
+        bg="#eef2f7"
+        ).grid(row=2, column=1, sticky="w",  pady=(0,10))
     
     tk.Frame(
         container_details,
