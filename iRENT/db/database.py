@@ -13,7 +13,6 @@ def initialize_db():
 
     cursor.execute("PRAGMA foreign_keys = ON;")
 
-
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Brand (
         BrandID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -66,15 +65,17 @@ def initialize_db():
     )
     """)
 
-
-    #dev
+    #dev (UPDATED WITH NEW COLUMNS  by Yuri)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Device (
         DeviceID INTEGER PRIMARY KEY AUTOINCREMENT,
         Model TEXT NOT NULL,
+        ProductID TEXT,
         SerialNumber TEXT NOT NULL UNIQUE,
         RentalPrice REAL NOT NULL,
         FunctionalStatus TEXT CHECK(FunctionalStatus IN ('Excellent', 'Good', 'Fair', 'Poor')),
+        Functionality TEXT DEFAULT 'Excellent',
+        SpecsText TEXT,
         Appearance TEXT CHECK(Appearance IN ('New', 'Good', 'Scratched', 'Damaged')),
         AvailabilityStatus TEXT CHECK(AvailabilityStatus IN ('Available', 'Rented', 'Maintenance', 'Retired')),
         DeviceTypeID INTEGER,
@@ -116,18 +117,18 @@ def initialize_db():
     )
     """)
 
-    #ilagay ung list of devices ni charmie
-    # TODO: Integrate view_device_list_logic.py logic into database.py
+    #ilagay ung list of devices ni charmie (UPDATED INITIAL SEEDING by Yuri)
     cursor.execute("SELECT COUNT(*) FROM Device")
     if cursor.fetchone()[0] == 0:
         initial_devices = [
-            ("Laptop", "SN-1001", 500.00, "Excellent", "New", "Available", 1, 1),
-            ("Monitor", "SN-2002", 150.00, "Good", "Good", "Available", 1, 1)
+            # Model, ProductID, SerialNumber, RentalPrice, FunctionalStatus, Functionality, SpecsText, Appearance, AvailabilityStatus, DeviceTypeID, BrandID
+            ("Laptop", "LAP-01", "SN-1001", 500.00, "Excellent", "Excellent", "16GB RAM|512GB SSD", "New", "Available", 1, 1),
+            ("Monitor", "MON-01", "SN-2002", 150.00, "Good", "Good", "1080p|60Hz", "Good", "Available", 1, 1)
         ]
         cursor.executemany("""
-            INSERT INTO Device (Model, SerialNumber, RentalPrice, FunctionalStatus,
+            INSERT INTO Device (Model, ProductID, SerialNumber, RentalPrice, FunctionalStatus, Functionality, SpecsText,
                                 Appearance, AvailabilityStatus, DeviceTypeID, BrandID)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, initial_devices)
         conn.commit()
 

@@ -51,6 +51,9 @@ def get_brands(category_name, conn=None):
 
 # 3. Get all models for a (category, brand) with specs, price, stock, functionality, serial_num
 def get_models(category_name, brand_name, conn=None):
+    if conn is None:
+        conn = get_connection()
+
     cursor = conn.cursor()
     cursor.execute('''
         SELECT

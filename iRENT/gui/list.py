@@ -170,10 +170,10 @@ def show_device_brands(app, device):
             text=brand,
             bg="white",
             font=("Arial", 20, "bold")
-        ).grid(row=0, column=0, pady=(30, 100))
+        ).grid(row=0, column=0, pady=(30, 20)) # FIXED by Yuri: Changed from 100 to 20
 
         # button
-        # FIXME: "See More" button in GUI disappeared; bring back
+        # FIXED: Made button visible again (Yuri)
         btn = tk.Button(
             content_frame,
             text="See More",
@@ -181,7 +181,7 @@ def show_device_brands(app, device):
             font=("Arial", 12, "bold"),
             command=lambda d=device, b=brand: show_brand_details(app, d, b)
         )
-        btn.grid(row=1, column=0, pady=(0, 40))
+        btn.grid(row=1, column=0, pady=(0, 20)) # FIXED by Yuri: Changed from 40 to 20
         add_hover(btn, "#232624", "#ffd735", "#ffd735", "black")  # Use global
 
     # back
@@ -195,7 +195,7 @@ def show_device_brands(app, device):
         bg="#ffd735", fg="black", relief="flat",
         command=lambda: app.pages["devices"].tkraise()
     )
-    back_btn.pack(pady=100)
+    back_btn.pack(pady=20, padx=40) # FIXED by Yuri: changed from (pady=100) to (pady=20, padx=40)
     add_hover(back_btn, "#232624", "#ffd735", "#ffd735", "black")
     app.pages["brand_devices"].tkraise()
 
@@ -683,11 +683,11 @@ def show_brand_details(app, device, brand):
         menu_btn.grid(row=0, column=1, padx=10, sticky="e")
         add_hover(menu_btn, "#d0d0d0", "#e0e0e0", "black", "black")
 
-         # create dropdown menu for this specific card
+        # create dropdown menu for this specific card
         menu = tk.Menu(menu_btn, tearoff=0)
         menu.add_command(
             label="✏️ Edit Details",
-            command=lambda d=device, b=brand, m=model: open_edit_details(app, d, b, m)
+            command=lambda d=device, b=brand, m=model, det=details: open_edit_details(app, d, b, m, det) #FIXED by Yuri: Fixed edit details not working
         )
         menu.add_separator()
         menu.add_command(
