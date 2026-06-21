@@ -12,7 +12,7 @@ def initialize_db():
     cursor = conn.cursor()
 
     cursor.execute("PRAGMA foreign_keys = ON;")
-    
+
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Brand (
@@ -101,7 +101,7 @@ def initialize_db():
         FOREIGN KEY(DeviceID) REFERENCES Device(DeviceID) ON DELETE RESTRICT
     )
     """)
-    
+
     #rental item
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS RentalItem (
@@ -117,6 +117,7 @@ def initialize_db():
     """)
 
     #ilagay ung list of devices ni charmie
+    # TODO: Integrate view_device_list_logic.py logic into database.py
     cursor.execute("SELECT COUNT(*) FROM Device")
     if cursor.fetchone()[0] == 0:
         initial_devices = [
@@ -124,10 +125,10 @@ def initialize_db():
             ("Monitor", "SN-2002", 150.00, "Good", "Good", "Available", 1, 1)
         ]
         cursor.executemany("""
-            INSERT INTO Device (Model, SerialNumber, RentalPrice, FunctionalStatus, 
+            INSERT INTO Device (Model, SerialNumber, RentalPrice, FunctionalStatus,
                                 Appearance, AvailabilityStatus, DeviceTypeID, BrandID)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """, initial_devices)
         conn.commit()
-    
+
     conn.close()

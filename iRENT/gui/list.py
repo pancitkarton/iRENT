@@ -173,6 +173,7 @@ def show_device_brands(app, device):
         ).grid(row=0, column=0, pady=(30, 100))
 
         # button
+        # FIXME: "See More" button in GUI disappeared; bring back
         btn = tk.Button(
             content_frame,
             text="See More",
