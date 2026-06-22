@@ -4,6 +4,8 @@ from PIL import Image, ImageTk
 from tkcalendar import DateEntry
 from tkinter import messagebox
 from db.add_rental_logic import getcreate_customer, create_rental, get_devices, get_customers
+from db.validation import validate_input
+import re
 
 
 def select_customer(rental, name_entries, contact_entry, email_entry):
@@ -96,6 +98,12 @@ def select_customer(rental, name_entries, contact_entry, email_entry):
     tree.bind("<Double-1>", on_select)
 
 def add_rental_page(container_frame,rental):
+        
+        vcmd_num = (container_frame.register(lambda P: validate_input(P, "numbers", length=11)), '%P')
+        vcmd_alpha = (container_frame.register(lambda P: validate_input(P, "alpha", length=20)), '%P')
+        vcmd_suffix = (container_frame.register(lambda P: validate_input(P, "suffix", length=5)), '%P')
+        vcmd_email = (container_frame.register(lambda P: validate_input(P, "email", length=50)), '%P')
+        
         for widget in container_frame.winfo_children():
             widget.destroy()
 
@@ -106,6 +114,24 @@ def add_rental_page(container_frame,rental):
         form_frame.pack(fill="both", expand=True)
 
         def save_rental():
+
+            fn = rental.entries["First Name"].get()
+            ln = rental.entries["Last Name"].get()
+            contact = rental.contact_entry.get()
+            email = rental.email_entry.get()
+            
+            if not (fn and ln and contact and email):
+                messagebox.showwarning("Error", "Please fill in all required fields!")
+                return
+
+            if len(contact) < 11:
+                messagebox.showerror("Error", "Contact number must be 11 digits.")
+                return
+            
+            email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+            if not re.match(email_pattern, email):
+                messagebox.showerror("Error", "Please enter a valid email address.")
+                return
 
             try:
                 customer_id = getcreate_customer(
@@ -183,12 +209,20 @@ def add_rental_page(container_frame,rental):
         select_btn.pack(side="right", padx=10, ipady=3) 
         rental.add_hover(select_btn, "#232624", "#ffd735", enter_fg="#ffd735", leave_fg="black")
 
-        rental.entries = {
-            "First Name": cframe(row1, "First Name:", 20),
-            "Middle Name": cframe(row1, "Middle Name:", 20),
-            "Last Name": cframe(row1, "Last Name:", 20),
-            "Suffix": cframe(row1, "Suffix:", 5),
-        }
+        rental.entries = {}
+        
+        rental.entries["First Name"] = cframe(row1, "First Name:", 20)
+        rental.entries["First Name"].config(validate="key", validatecommand=vcmd_alpha)
+
+        rental.entries["Middle Name"] = cframe(row1, "Middle Name:", 20)
+        rental.entries["Middle Name"].config(validate="key", validatecommand=vcmd_alpha)
+
+        rental.entries["Last Name"] = cframe(row1, "Last Name:", 20)
+        rental.entries["Last Name"].config(validate="key", validatecommand=vcmd_alpha)
+
+        rental.entries["Suffix"] = cframe(row1, "Suffix:", 5)
+        rental.entries["Suffix"].config(validate="key", validatecommand=vcmd_suffix)
+
         bday_f = tk.Frame(row1, bg="#f0f0f0")
         bday_f.pack(side="left")
 
@@ -240,7 +274,10 @@ def add_rental_page(container_frame,rental):
         row_contact.pack(fill="x")
 
         rental.contact_entry = cframe(row_contact, "Contact Number:", 30)
+        rental.contact_entry.config(validate="key", validatecommand=vcmd_num)
+
         rental.email_entry = cframe(row_contact, "Email Address:", 30)
+        rental.email_entry.config(validate="key", validatecommand=vcmd_email)
 
 
         device_frame = tk.LabelFrame(
