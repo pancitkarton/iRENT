@@ -257,6 +257,7 @@ class AuthApp:
         name_frame.columnconfigure(3, weight=0)
 
         def name_fields(label_text, col, width=None):
+            
             tk.Label(
                 name_frame,
                 text=label_text,
@@ -282,14 +283,29 @@ class AuthApp:
             return entry
         
         
+        def helper(parent, col, row_offset, text, color="#7F7F7F"):
+            tk.Label(
+                parent,
+                text=text,
+                font=("Arial", 10), 
+                bg="#313338",
+                fg=color,
+                anchor="e"
+            ).grid(row=row_offset, column=col, sticky="w")
+        
+        
         create_firstname = name_fields("First Name", 0)
         create_firstname.config(validate="key", validatecommand=vcmd_alpha)
+        helper(name_frame, 0, 2, "Ex: Juan")
         create_middlename = name_fields("Middle Name", 1)
         create_middlename.config(validate="key", validatecommand=vcmd_alpha)
+        helper(name_frame, 1, 2, "(Optional)")
         create_lastname = name_fields("Last Name", 2)
         create_lastname.config(validate="key", validatecommand=vcmd_alpha)
+        helper(name_frame, 2, 2, "Ex: Dela Cruz")
         create_suffix = name_fields("Suffix", 3, width=5)
         create_suffix.config(validate="key", validatecommand=vcmd_suffix)
+        helper(name_frame, 3, 2, "(Optional)")
 
 
          # Email
