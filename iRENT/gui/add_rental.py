@@ -154,14 +154,17 @@ def add_rental_page(container_frame,rental):
 
                 if selected_device not in rental.device_map:
                     raise Exception("Please select a valid device")
+                
+                total_text = total_label_text.get().replace("Rental Total: ₱", "").replace(",", "")
+                total_fee = float(total_text)
 
                 create_rental(
                     customer_id,
                     rental.staff_id,
-                    rental.device_map[selected_device],
-
+                    rental.device_map[selected_device]["id"],
                     rental.rental_calendar.get(),
                     rental.return_calendar.get(),
+                    total_fee
                 )
 
                 messagebox.showinfo("Success", "Rental saved successfully!")
@@ -171,17 +174,27 @@ def add_rental_page(container_frame,rental):
 
 
 
-        def cframe(parent, label_text, width, is_cb=False):
-            f = tk.Frame(parent, bg="#f0f0f0")
-            f.pack(side="left", padx=(0, 10), pady=0)
-            tk.Label(f, text=label_text, bg="#f0f0f0", font=("Arial", 10)).pack(anchor="w")
+        def cframe(parent, label_text, width, is_cb=False, is_date=False, helper=None):
+
+            c = tk.Frame(parent, bg="#f0f0f0")
+            c.pack(side="left", padx=(0, 15), pady=0, anchor="n")
+
+            
+            tk.Label(c, text=label_text, bg="#f0f0f0", font=("Arial", 10)).pack(anchor="w")
             
             if is_cb:
-                widget = ttk.Combobox(f, width=width)
+                widget = ttk.Combobox(c, width=width)
+            elif is_date:
+                widget = DateEntry(c, width=width, date_pattern="mm-dd-yyyy")
             else:
-                widget = tk.Entry(f, width=width)
+                widget = tk.Entry(c, width=width)
                 
             widget.pack(anchor="w", ipady=3)
+
+            if helper:
+                tk.Label(c, text=helper, bg="#f0f0f0", fg="#7F7F7F", font=("Arial", 8)).pack(anchor="w", pady=(2,0))
+
+
             return widget
 
 
@@ -190,10 +203,10 @@ def add_rental_page(container_frame,rental):
             text="RENTEE INFO", 
             font=("Arial", 20, "bold"), 
             padx=10,
-            pady=10, 
+            pady=2, 
             bg="#f0f0f0"
         )
-        rentee_info_frame.pack(fill="x", padx=10, pady=10)
+        rentee_info_frame.pack(fill="x", padx=10, pady=5)
 
 
         row1 = tk.Frame(rentee_info_frame, bg="#f0f0f0")
@@ -211,30 +224,19 @@ def add_rental_page(container_frame,rental):
 
         rental.entries = {}
         
-        rental.entries["First Name"] = cframe(row1, "First Name:", 20)
+        rental.entries["First Name"] = cframe(row1, "First Name:", 20, helper="Ex: Juan")
         rental.entries["First Name"].config(validate="key", validatecommand=vcmd_alpha)
 
-        rental.entries["Middle Name"] = cframe(row1, "Middle Name:", 20)
+        rental.entries["Middle Name"] = cframe(row1, "Middle Name:", 20, helper="(Optional)")
         rental.entries["Middle Name"].config(validate="key", validatecommand=vcmd_alpha)
 
-        rental.entries["Last Name"] = cframe(row1, "Last Name:", 20)
+        rental.entries["Last Name"] = cframe(row1, "Last Name:", 20, helper = "Ex: Dela Cruz")
         rental.entries["Last Name"].config(validate="key", validatecommand=vcmd_alpha)
 
-        rental.entries["Suffix"] = cframe(row1, "Suffix:", 5)
+        rental.entries["Suffix"] = cframe(row1, "Suffix:", 8, helper="(Optional)")
         rental.entries["Suffix"].config(validate="key", validatecommand=vcmd_suffix)
 
-        bday_f = tk.Frame(row1, bg="#f0f0f0")
-        bday_f.pack(side="left")
-
-        tk.Label(
-            bday_f, 
-            text="Birthday:",
-            font=("Arial", 10),
-            bg="#f0f0f0"
-        ).pack(anchor="w")
-
-        rental.entries["Birthday"] = DateEntry(bday_f, width=15, date_pattern="mm-dd-yyyy")
-        rental.entries["Birthday"].pack(anchor="w", ipady=3)
+        rental.entries["Birthday"] = cframe(row1, "Birthday:", 15, is_date=True)
 
 
         addr_frame = tk.Frame(rentee_info_frame, bg="#f0f0f0")
@@ -245,8 +247,8 @@ def add_rental_page(container_frame,rental):
         rental.region_cb = cframe(addr_frame, "Region:", 12, is_cb=True)
         rental.city_cb = cframe(addr_frame, "City:", 12, is_cb=True)
         rental.brgy_cb = cframe(addr_frame, "Brgy:", 12, is_cb=True)
-        rental.postal_entry = cframe(addr_frame, "Postal:", 8, is_cb=False)
-        rental.street_entry = cframe(addr_frame, "Street/Bldg:", 30, is_cb=False)
+        rental.postal_entry = cframe(addr_frame, "Postal:", 8, is_cb=False, helper="e.g. 1000")
+        rental.street_entry = cframe(addr_frame, "Street/Bldg:", 30, is_cb=False, helper="Ex: 1234 Maple Street, Apt 5B")
 
         #dummy values lng muna
         rental.region_cb["values"] = [
@@ -266,17 +268,17 @@ def add_rental_page(container_frame,rental):
             text="CONTACT INFO", 
             font=("Arial", 20, "bold"), 
             padx=10, 
-            pady=10, 
+            pady=2, 
             bg="#f0f0f0"
         )
-        contact_frame.pack(fill="x", padx=10, pady=10)
+        contact_frame.pack(fill="x", padx=10, pady=5)
         row_contact = tk.Frame(contact_frame, bg="#f0f0f0")
         row_contact.pack(fill="x")
 
-        rental.contact_entry = cframe(row_contact, "Contact Number:", 30)
+        rental.contact_entry = cframe(row_contact, "Contact Number:", 30, helper="Ex: 09XX-XXX-YYYY")
         rental.contact_entry.config(validate="key", validatecommand=vcmd_num)
 
-        rental.email_entry = cframe(row_contact, "Email Address:", 30)
+        rental.email_entry = cframe(row_contact, "Email Address:", 30, helper="Ex: example@gmail.com")
         rental.email_entry.config(validate="key", validatecommand=vcmd_email)
 
 
@@ -285,10 +287,10 @@ def add_rental_page(container_frame,rental):
             text="DEVICE RENTAL", 
             font=("Arial", 20, "bold"), 
             padx=10, 
-            pady=10, 
+            pady=5, 
             bg="#f0f0f0"
         )
-        device_frame.pack(fill="x", padx=10, pady=10)
+        device_frame.pack(fill="x", padx=10, pady=5)
         
         row_dev = tk.Frame(device_frame, bg="#f0f0f0")
         row_dev.pack(fill="x")
@@ -299,15 +301,12 @@ def add_rental_page(container_frame,rental):
 
         rental.device_map = {}
 
-        for device_id, model in devices:
-            rental.device_map[model] = device_id
+        for device_id, model, price in devices:
+            rental.device_map[model] = {"id": device_id, "price": price}
 
         rental.device_combobox["values"] = list(
             rental.device_map.keys()
         )
-
-        if devices:
-            rental.device_combobox.current(0)
 
 
 
@@ -317,7 +316,7 @@ def add_rental_page(container_frame,rental):
         tk.Label(
             d1, 
             text="Rental Date:",
-            font=("Arial", 10, "bold"), 
+            font=("Arial", 10), 
             bg="#f0f0f0"
         ).pack(anchor="w")
         rental.rental_calendar = DateEntry(d1, width=15, date_pattern="mm-dd-yyyy")
@@ -329,7 +328,7 @@ def add_rental_page(container_frame,rental):
         tk.Label(
             d2, 
             text="Return By:", 
-            font=("Arial", 10, "bold"), 
+            font=("Arial", 10), 
             bg="#f0f0f0"
         ).pack(anchor="w")
         rental.return_calendar = DateEntry(d2, width=15, date_pattern="mm-dd-yyyy")
@@ -341,11 +340,14 @@ def add_rental_page(container_frame,rental):
         bottom_bar = tk.Frame(form_frame, padx=10, pady=20, bg="#eef2f7")
         bottom_bar.pack(fill="x", side="bottom")
 
-        tk.Label(
-            bottom_bar,
-            text="Rental Total: ₱0.00",
-            font=("Arial", 20, "bold")
-        ).pack(side="left")
+        total_label_text = tk.StringVar(value="Rental Total: ₱0.00")
+        total_label = tk.Label(
+            bottom_bar, 
+            textvariable=total_label_text, 
+            font=("Arial", 20, "bold"), 
+            bg="#eef2f7"
+        )
+        total_label.pack(side="left")
 
 
         back_btn = tk.Button(
@@ -384,3 +386,27 @@ def add_rental_page(container_frame,rental):
         rental.add_hover(create_btn, "#232624", "#ffd735", enter_fg="#ffd735", leave_fg="black")
         rental.add_hover(back_btn, "#232624", "gray", "white", "black")
         rental.add_hover(reset_btn, "#232624", "#eef2f7", "white", "black")
+
+        def update_total(*args):
+            try:
+                selected_model = rental.device_combobox.get()
+                if not selected_model or selected_model not in rental.device_map:
+                    total_label_text.set("Rental Total: ₱0.00")
+                    return
+                
+                price = rental.device_map[selected_model]["price"]
+                
+                start_date = rental.rental_calendar.get_date()
+                end_date = rental.return_calendar.get_date()
+
+                delta = (end_date - start_date).days
+                days = max(1, delta)
+                
+                total = days * price
+                total_label_text.set(f"Rental Total: ₱{total:,.2f}")
+            except:
+                total_label_text.set("Rental Total: ₱0.00")
+
+        rental.device_combobox.bind("<<ComboboxSelected>>", update_total)
+        rental.rental_calendar.bind("<<DateEntrySelected>>", update_total)
+        rental.return_calendar.bind("<<DateEntrySelected>>", update_total)

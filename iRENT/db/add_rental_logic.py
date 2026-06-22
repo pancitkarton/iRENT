@@ -61,7 +61,7 @@ def get_devices():
     cursor = conn.cursor()
     
     cursor.execute("""
-        SELECT DeviceID, Model
+        SELECT DeviceID, Model, RentalPrice
         FROM Device
         WHERE AvailabilityStatus = 'Available'
     """)
@@ -76,7 +76,8 @@ def create_rental(
         staff_id, 
         device_id,
         rental_date, 
-        return_date
+        return_date,
+        total_fee
     ):
 
     conn = get_connection()
@@ -88,16 +89,23 @@ def create_rental(
             StaffID, 
             DeviceID,
             RentalDate, 
-            ReturnDate
+            ReturnDate,
+            TotalRentalFee
         )
-        VALUES (?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?)
     """, (
         customer_id,
         staff_id,
         device_id,
         rental_date,
-        return_date
+        return_date,
+        total_fee
     ))
+
+    cursor.execute("""
+        UPDATE Device SET AvailabilityStatus = 'Rented'
+        WHERE DeviceID = ?
+    """, (device_id,))
 
     conn.commit()
     conn.close()
