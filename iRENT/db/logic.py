@@ -1,4 +1,4 @@
-# db and functions for add rental
+# db and functions for login
 import sqlite3
 import os
 
