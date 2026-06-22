@@ -93,7 +93,7 @@ def open_receipt(order):
     details_frame = tk.Frame(receipt_win, bg="white")
     details_frame.pack(fill="x", padx=40)
 
-
+# Paayos nalang din here, nakaconnect naman na po. Wala dapat masisira ha.
     base_fee = order['total_fee'] if order['total_fee'] else 1000.00
     is_overdue = (order['status'] == "Overdue")
     penalty = 300.00 if is_overdue else 0.00
@@ -286,6 +286,8 @@ def rentals_page(main_frame, app):
 
 
 # SHOW RENTAL DETAILS FUNCTION
+# Rental see more details to add: Device price is automatic depends on the chosen device
+# Pasingit nalang nito, kasi wala pa yung devices mismo kay charmie, salamat po!
 def show_details(app, order_id):
     app.set_active_page("order_details")
 
@@ -345,11 +347,14 @@ def show_details(app, order_id):
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
         ).grid(row=1, column=1, sticky="w",  pady=(0,10))
-
-    # TODO: Connect Overdue Fee DB to GUI (Default of 300)
+    
+    # Connected Overdue Fee (please check if correct)
+    is_overdue = (order.get('status') == "Overdue")
+    penalty = 300.00 if is_overdue else 0.00
+    
     tk.Label(
         container_details,
-        text="Overdue Fee: ",
+        text=f"Overdue Fee: {penalty:.2f}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
         ).grid(row=2, column=1, sticky="w",  pady=(0,10))
@@ -466,6 +471,7 @@ def show_details(app, order_id):
         fg="#9B8F8F"
         ).pack(padx=10, pady=(5, 0))
 
+# Dito yung mga comments na sinabi ko, sana tama, paayos and test nalang
     tk.Label(
         total_box,
         text=f"{order['total_fee']} PHP",
