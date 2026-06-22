@@ -1,6 +1,6 @@
 import re
 
-def validate_input(P, mode, length=20):
+def validate_input(P, mode, length=None):
     if P == "": return True
 
     if len(P) > length:
