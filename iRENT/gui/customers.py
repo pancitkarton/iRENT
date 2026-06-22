@@ -3,6 +3,8 @@ from PIL import Image, ImageTk
 import os
 from tkinter import messagebox
 from db.customers_logic import get_all_customers, update_customer_db
+from db.validation import validate_input
+import re
 
 
 def display_table(app, table_wrapper, customer_list, refresh_callback=None):
@@ -92,6 +94,11 @@ def edit_details(order, refresh_callback):
     edit_win = tk.Toplevel()
     edit_win.title("Edit Customer Details")
     edit_win.configure(bg="#eef2f7")
+
+    vcmd_num = (edit_win.register(lambda P: validate_input(P, "numbers", length=11)), '%P')
+    vcmd_alpha = (edit_win.register(lambda P: validate_input(P, "alpha")), '%P')
+    vcmd_suffix = (edit_win.register(lambda P: validate_input(P, "suffix", length=5)), '%P')
+    vcmd_email = (edit_win.register(lambda P: validate_input(P, "email")), '%P')
     
     entries = {}
 
@@ -110,7 +117,29 @@ def edit_details(order, refresh_callback):
         ent.grid(row=row_idx, column=1, padx=10, pady=5)
         entries[key] = ent
 
+        if key in ["First Name", "Middle Name", "Last Name"]:
+            ent.config(validate="key", validatecommand=vcmd_alpha)
+        elif key == "Suffix":
+            ent.config(validate="key", validatecommand=vcmd_suffix)
+        elif key == "Contact Number":
+            ent.config(validate="key", validatecommand=vcmd_num)
+        elif key == "Email":
+            ent.config(validate="key", validatecommand=vcmd_email)
+
     def save_changes():
+        email = entries['Email'].get()
+        contact = entries['Contact Number'].get()
+
+        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(email_pattern, email):
+            messagebox.showerror("Error", "Invalid email address.")
+            return
+        
+        if len(contact) < 11:
+            messagebox.showerror("Error", "Contact number must be 11 digits.")
+            return
+        
+
         confirmed = messagebox.askyesno("Confirm", "Are you sure you want to save changes?")
 
         if not confirmed:
