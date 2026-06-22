@@ -11,7 +11,6 @@ from db.view_rentals_logic import (
     mark_rental_as_completed
 )
 
-
 status_colors = {
         "Ongoing": "#ebc427",
         "Overdue": "#D9534F",
@@ -76,8 +75,7 @@ def refresh_rental_list(app, container, rentals_data):
         add_hover(btn, "#232624", "#ffd735", "#ffd735", "black")
 
 
-#example receipt
-#turn into completed status when done
+# turn into completed status when done
 def open_receipt(order):
     receipt_win = tk.Toplevel()
     receipt_win.title("Rental Receipt")
@@ -93,12 +91,11 @@ def open_receipt(order):
     details_frame = tk.Frame(receipt_win, bg="white")
     details_frame.pack(fill="x", padx=40)
 
-# Paayos nalang din here, nakaconnect naman na po. Wala dapat masisira ha.
-    base_fee = order['total_fee'] if order['total_fee'] else 1000.00
-    is_overdue = (order['status'] == "Overdue")
+    # DYNAMIC FEE CALCULATION
+    base_fee = float(order.get('total_fee', 0.00))
+    is_overdue = (order.get('status') == "Overdue")
     penalty = 300.00 if is_overdue else 0.00
     total = base_fee + penalty
-
 
     items = [
         ("Rental ID:", order['id']),
@@ -169,6 +166,7 @@ def rental_customers(app, order):
     back_btn.pack(side="bottom", pady=20)
 
     cframe.tkraise()
+
 def rentals_page(main_frame, app):
     main_frame.configure(bg="#eef2f7")
 
@@ -245,7 +243,6 @@ def rentals_page(main_frame, app):
         menu.add_command(label="Show Completed", command=lambda: refresh_rental_list(app, container, get_rentals_by_status("Completed")))
         menu.post(event.x_root, event.y_root)
 
-
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     filter_path = os.path.join(BASE_DIR, "assets", "filter.png")
     filter_icon = ImageTk.PhotoImage(Image.open(filter_path).resize((25, 25)))
@@ -286,8 +283,6 @@ def rentals_page(main_frame, app):
 
 
 # SHOW RENTAL DETAILS FUNCTION
-# Rental see more details to add: Device price is automatic depends on the chosen device
-# Pasingit nalang nito, kasi wala pa yung devices mismo kay charmie, salamat po!
 def show_details(app, order_id):
     app.set_active_page("order_details")
 
@@ -307,7 +302,6 @@ def show_details(app, order_id):
     for w in frame.winfo_children():
         w.destroy()
 
-
     container_details = tk.Frame(
         frame,
         padx=40,
@@ -326,37 +320,40 @@ def show_details(app, order_id):
         bg="#eef2f7"
     ).grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 10))
 
-
+    # FIXED: Added the actual order['id'] variable
     tk.Label(
         container_details,
-        text=f"Rental ID:",
+        text=f"Rental ID: {order.get('id', 'N/A')}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=1, column=0, sticky="w",  pady=(0,10))
 
     tk.Label(
         container_details,
-        text=f"Rental Date: {order['start_date']}",
+        text=f"Rental Date: {order.get('start_date', 'N/A')}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=2, column=0, sticky="w",  pady=(0,10))
 
     tk.Label(
         container_details,
-        text=f"Must Return By: {order['expected_return']}",
+        text=f"Must Return By: {order.get('expected_return', 'N/A')}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
         ).grid(row=1, column=1, sticky="w",  pady=(0,10))
-    
-    # Connected Overdue Fee (please check if correct)
+
+    # DYNAMIC FEE CALCULATION
+    base_fee = float(order.get('total_fee', 0.00))
     is_overdue = (order.get('status') == "Overdue")
     penalty = 300.00 if is_overdue else 0.00
-    
+    total_due = base_fee + penalty
+
     tk.Label(
         container_details,
-        text=f"Overdue Fee: {penalty:.2f}",
+        text=f"Overdue Fee: ₱{penalty:.2f}",
         font=("Arial", 12, "bold"),
-        bg="#eef2f7"
+        bg="#eef2f7",
+        fg="red" if is_overdue else "black"
         ).grid(row=2, column=1, sticky="w",  pady=(0,10))
 
     tk.Frame(
@@ -372,30 +369,31 @@ def show_details(app, order_id):
         bg="#eef2f7"
     ).grid(row=4, column=0, columnspan=2, sticky="w", pady=(0, 10))
 
+    # FIXED: Changed from 'id' to 'customer_id' so it doesn't show Rental ID
     tk.Label(
         container_details,
-        text=f"Customer ID: {order['id']}",
+        text=f"Customer ID: {order.get('customer_id', 'N/A')}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=5, column=0, sticky="w",  pady=(0,10))
 
     tk.Label(
         container_details,
-        text=f"Contact Number: {order['contact number']}",
+        text=f"Contact Number: {order.get('contact number', 'N/A')}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=5, column=1, sticky="w",  pady=(0,10))
 
     tk.Label(
         container_details,
-        text=f"Rentee Name: {order['rentee']}",
+        text=f"Rentee Name: {order.get('rentee', 'N/A')}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=6, column=0, sticky="w",  pady=(0,10))
 
     tk.Label(
         container_details,
-        text=f"Email Address: {order['email address']}",
+        text=f"Email Address: {order.get('email address', 'N/A')}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=6, column=1, sticky="w",  pady=(0,10))
@@ -416,14 +414,14 @@ def show_details(app, order_id):
 
     tk.Label(
         container_details,
-        text=f"Device ID: {order['device_id']}",
+        text=f"Device ID: {order.get('device_id', 'N/A')}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=9, column=0, sticky="w",  pady=(0,10))
 
     tk.Label(
         container_details,
-        text=f"Serial Number: {order['serial_number']}",
+        text=f"Serial Number: {order.get('serial_number', 'N/A')}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=9, column=1, sticky="w", pady=(0,10))
@@ -431,18 +429,25 @@ def show_details(app, order_id):
 
     tk.Label(
         container_details,
-        text=f"Brand: {order['brand']}",
+        text=f"Brand: {order.get('brand', 'N/A')}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=10, column=0, sticky="w", pady=(0,10))
 
     tk.Label(
         container_details,
-        text=f"Model: {order['model']}",
+        text=f"Model: {order.get('model', 'N/A')}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=10, column=1, sticky="w", pady=(0,10))
 
+    # NEW: Added Device Price/Rate
+    tk.Label(
+        container_details,
+        text=f"Daily Rate: ₱{order.get('device_price', 0.0):.2f}",
+        font=("Arial", 12, "bold"),
+        bg="#eef2f7"
+    ).grid(row=11, column=0, sticky="w", pady=(0,10))
 
     #bottom
     bottom_bar = tk.Frame(
@@ -471,12 +476,13 @@ def show_details(app, order_id):
         fg="#9B8F8F"
         ).pack(padx=10, pady=(5, 0))
 
-# Dito yung mga comments na sinabi ko, sana tama, paayos and test nalang
+    # AUTOMATIC TOTAL DUE DEPENDING ON CHOSEN DEVICE & PENALTY
     tk.Label(
         total_box,
-        text=f"{order['total_fee']} PHP",
+        text=f"₱ {total_due:.2f}",
         font=("Arial", 20, "bold"),
-        bg="white"
+        bg="white",
+        fg="#D9534F" if is_overdue else "black"
     ).pack(padx=10, pady=(0, 5))
 
     tk.Label(
@@ -486,7 +492,6 @@ def show_details(app, order_id):
         fg=scolor,
         bg="#eef2f7"
     ).pack(side="left", padx=20)
-
 
     back_btn = tk.Button(
         bottom_bar,

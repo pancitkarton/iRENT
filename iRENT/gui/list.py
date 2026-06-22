@@ -620,7 +620,7 @@ def show_brand_details(app, device, brand):
                 font=("Arial", 9),
                 wraplength=200,
                 justify="left"
-            ).grid(row=i, column=0, sticky="w", pady=2)
+            ).grid(row=j, column=0, sticky="w", pady=2) # FIXED by Yuri: Changed row=i to row=j
 
         # add empty rows to match tallest card (keeps all cards same height)
         for empty_row in range(len(details['specs']), max_specs):
