@@ -1,4 +1,5 @@
 from db.database import get_connection
+import sqlite3
 
 
 # RENTAL LISTING FUNCTIONS
@@ -180,30 +181,35 @@ def get_rental_details(rental_id):
 # UPDATE RENTAL ORDER AS COMPLETE
 def mark_rental_as_completed(rental_id):
     conn = get_connection()
-    cursor = conn.cursor()
 
-    cursor.execute("""
-        UPDATE Rental
-        SET RentalStatus = 'Completed'
-        WHERE RentalID = ?
-    """, (rental_id,))
+    try:
+        cursor = conn.cursor()
 
-    # Update device to available once returned/completed
-    # Update nalang yung view device list logic related to this
-    cursor.execute("""
-            UPDATE Device
-            SET AvailabilityStatus = 'Available'
-            WHERE DeviceID IN (
-                SELECT DeviceID
-                FROM RentalDevice
-                WHERE RentalID = ?
-            )
+        cursor.execute("""
+            UPDATE Rental
+            SET RentalStatus = 'Completed'
+            WHERE RentalID = ?
         """, (rental_id,))
-    
-    device_updated = cursor.rowcount
-    
-    conn.commit()
-    updated = cursor.rowcount > 0
-    conn.close()
 
-    return updated
+        # Update device to available once returned/completed
+        # Update nalang yung view device list logic related to this
+        cursor.execute("""
+                UPDATE Device
+                SET AvailabilityStatus = 'Available'
+                WHERE DeviceID IN (
+                    SELECT DeviceID
+                    FROM RentalDevice
+                    WHERE RentalID = ?
+                )
+            """, (rental_id,))
+        
+        conn.commit()
+        updated = cursor.rowcount > 0
+        return updated
+    
+    except sqlite3.Error as e:
+        print(f"Error: {e}")
+        conn.rollback()
+        return False
+    finally:
+        conn.close()

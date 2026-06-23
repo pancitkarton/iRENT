@@ -1,4 +1,5 @@
 from db.database import get_connection
+import sqlite3
 
 def getcreate_customer(
         first, 
@@ -81,34 +82,39 @@ def create_rental(
     ):
 
     conn = get_connection()
-    cursor = conn.cursor()
 
-    cursor.execute("""
-        INSERT INTO Rental (
-            CustomerID, 
-            StaffID, 
-            DeviceID,
-            RentalDate, 
-            ReturnDate,
-            TotalRentalFee
-        )
-        VALUES (?, ?, ?, ?, ?, ?)
-    """, (
-        customer_id,
-        staff_id,
-        device_id,
-        rental_date,
-        return_date,
-        total_fee
-    ))
+    try:
+        cursor = conn.cursor()
 
-    cursor.execute("""
-        UPDATE Device SET AvailabilityStatus = 'Rented'
-        WHERE DeviceID = ?
-    """, (device_id,))
+        cursor.execute("""
+            INSERT INTO Rental (
+                CustomerID, 
+                StaffID, 
+                DeviceID,
+                RentalDate, 
+                ReturnDate,
+                TotalRentalFee
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (
+            customer_id,
+            staff_id,
+            device_id,
+            rental_date,
+            return_date,
+            total_fee
+        ))
 
-    conn.commit()
-    conn.close()
+        cursor.execute("""
+            UPDATE Device SET AvailabilityStatus = 'Rented'
+            WHERE DeviceID = ?
+        """, (device_id,))
+
+        conn.commit()
+    except sqlite3.Error as e:
+        conn.rollback()
+    finally:
+        conn.close()
 
 def get_customers():
 

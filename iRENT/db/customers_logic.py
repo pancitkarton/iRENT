@@ -45,7 +45,7 @@ def has_active_rentals(customer_id):
     cursor = conn.cursor()
     cursor.execute("""
         SELECT COUNT(*) FROM Rental
-        WHERE CustomerID = ? AND RentalStatus != 'Completed'
+        WHERE CustomerID = ? AND RentalStatus IN ('Ongoing', 'Overdue')
     """, (customer_id,))
     count = cursor.fetchone()[0]
     conn.close()
