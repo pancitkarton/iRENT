@@ -155,8 +155,7 @@ class MainApp:
             label.pack(pady=10, padx=20, fill="x")
             self.sidebar_labels.append(label)
 
-            if i < len(buttons) - 1:
-                tk.Frame(menu, height=2, bg="#ffd735").pack(fill="x", padx=15)
+            tk.Frame(menu, height=2, bg="#ffd735").pack(fill="x", padx=15)
 
             label.bind("<Button-1>", lambda e, p=page: self.set_active_page(p))
 
