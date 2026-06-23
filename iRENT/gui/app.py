@@ -88,7 +88,8 @@ class MainApp:
         main_frame.grid_columnconfigure(0, weight=0)
         main_frame.grid_columnconfigure(1, weight=1)
 
-        self.left = tk.Frame(main_frame, bg="#313338", width=300)
+        self.left = tk.Frame(main_frame, bg="#313338", width=250)
+        self.left.pack_propagate(False)
         self.left.grid(row=0, column=0, sticky="ns")
 
         self.right = tk.Frame(main_frame, width=800, bg="#ffffff")
@@ -116,46 +117,20 @@ class MainApp:
 
 
     def create_sidebar(self):
-        search_box = tk.LabelFrame(self.left, bg="#313338", bd=0)
-        search_box.pack(pady=20, fill="x")
+        
+        menu = tk.LabelFrame(self.left, bg="#313338", bd=0)
+        menu.pack(pady=20, fill="x")
 
         tk.Label(
-            search_box,
-            text="Search",
+            menu,
+            text="MENU",
             bg="#313338",
-            fg="white",
-            font=("Arial", 14, "bold"),
+            fg="#ffd735",
+            font=("Arial", 20, "bold"),
             anchor="w"
-        ).pack(padx=10, fill="x")
+        ).pack(padx=20, pady=(0, 5), fill="x")
 
-        search_entry = tk.Entry(
-            search_box,
-            font=("Arial", 12),
-            width=28,
-            bg="#313338",
-            fg="white",
-            highlightbackground="#ffd735",
-            highlightcolor="#ffd735",
-            highlightthickness=2,
-            insertbackground="white"
-        )
-        search_entry.pack(pady=(5, 40), padx=10, ipady=6, anchor="w")
-
-
-        def on_focus_in(event):
-            if search_entry.get() == "Search...":
-                search_entry.delete(0, "end")
-                search_entry.config(fg="white")
-
-        def on_focus_out(event):
-                if search_entry.get() == "":
-                    search_entry.insert(0, "Search...")
-                    search_entry.config(fg="#ffffffc5")
-
-        search_entry.bind("<FocusIn>", on_focus_in)
-        search_entry.bind("<FocusOut>", on_focus_out)
-        search_entry.insert(0, "Search...")
-        search_entry.config(fg="gray")
+        tk.Frame(menu, height=2, bg="#ffd735").pack(fill="x", padx=15, pady=(0, 20))
 
         self.sidebar_labels = []
 
@@ -169,7 +144,7 @@ class MainApp:
 
         for i, (text, page) in enumerate(buttons):
             label = tk.Label (
-                search_box,
+                menu,
                 text=text,
                 bg="#313338",
                 fg="white",
@@ -181,7 +156,7 @@ class MainApp:
             self.sidebar_labels.append(label)
 
             if i < len(buttons) - 1:
-                tk.Frame(search_box, height=2, bg="#ffd735").pack(fill="x", padx=10)
+                tk.Frame(menu, height=2, bg="#ffd735").pack(fill="x", padx=15)
 
             label.bind("<Button-1>", lambda e, p=page: self.set_active_page(p))
 
