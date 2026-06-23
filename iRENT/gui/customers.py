@@ -2,20 +2,22 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import os
 from tkinter import messagebox
-from db.customers_logic import get_all_customers, update_customer, archive_customer, unarchive_customer
+from db.customers_logic import get_all_customers, update_customer, archive_customer, unarchive_customer, has_active_rentals
 from db.validation import validate_input
 import re
 
 
 def perform_archive(customer_id, refresh_callback, app):
+
+    if has_active_rentals(customer_id):
+        messagebox.showerror("Cannot Archive", "This customer has an ongoing rental.")
+        return
+    
     if messagebox.askyesno("Archive", "Are you sure? This customer will be hidden from the active list."):
         if archive_customer(customer_id):
             messagebox.showinfo("Success", "Customer archived.")
-
             refresh_callback()
-
             app.set_active_page("customers")
-
         else:
             messagebox.showerror("Error", "Could not archive customer.")
 

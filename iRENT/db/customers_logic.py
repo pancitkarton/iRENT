@@ -40,6 +40,17 @@ def update_customer(customer_id, data_dict):
     finally:
         conn.close()
 
+def has_active_rentals(customer_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT COUNT(*) FROM Rental
+        WHERE CustomerID = ? AND RentalStatus != 'Completed'
+    """, (customer_id,))
+    count = cursor.fetchone()[0]
+    conn.close()
+    return count > 0
+
 def archive_customer(customer_id):
     conn = get_connection()
     cursor = conn.cursor()
