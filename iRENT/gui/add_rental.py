@@ -97,7 +97,7 @@ def select_customer(rental, name_entries, contact_entry, email_entry):
 
     tree.bind("<Double-1>", on_select)
 
-def add_rental_page(container_frame,rental):
+def add_rental_page(container_frame,rental, prefill_device=None, prefill_model=None):
         
         vcmd_num = (container_frame.register(lambda P: validate_input(P, "numbers", length=11)), '%P')
         vcmd_alpha = (container_frame.register(lambda P: validate_input(P, "alpha", length=20)), '%P')
@@ -307,6 +307,10 @@ def add_rental_page(container_frame,rental):
         rental.device_combobox["values"] = list(
             rental.device_map.keys()
         )
+
+        if prefill_model:
+            if prefill_model in rental.device_map:
+                rental.device_combobox.set(prefill_model)
 
 
 

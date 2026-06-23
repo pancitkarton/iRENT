@@ -660,7 +660,10 @@ def show_brand_details(app, device, brand):
             fg = "black",
             font=("Arial", 12, "bold"),
             cursor="hand2",
-            command=lambda: app.set_active_page("add_rental")
+            command=lambda d=device, m=model: [
+                add_rental_page(app.pages["add_rental"], app, prefill_model=m),
+                app.pages["add_rental"].tkraise()
+            ]
         )
         rent_btn.grid(row=0, column=0, padx=10, sticky="w")
         add_hover(rent_btn, "#232624", "#ffd735", "#ffd735", "black")
