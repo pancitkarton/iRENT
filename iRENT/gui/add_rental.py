@@ -173,6 +173,23 @@ def add_rental_page(container_frame,rental, prefill_device=None, prefill_model=N
                 messagebox.showerror("Database Error", str(e))
 
 
+        def reset_form():
+            for entry in rental.entries.values():
+                entry.delete(0, tk.END)
+            
+            rental.contact_entry.delete(0, tk.END)
+            rental.email_entry.delete(0, tk.END)
+            rental.postal_entry.delete(0, tk.END)
+            rental.street_entry.delete(0, tk.END)
+            
+            rental.region_cb.set('')
+            rental.city_cb.set('')
+            rental.brgy_cb.set('')
+            rental.device_combobox.set('')
+            
+            total_label_text.set("Rental Total: ₱0.00")
+
+
 
         def cframe(parent, label_text, width, is_cb=False, is_date=False, helper=None):
 
@@ -340,6 +357,8 @@ def add_rental_page(container_frame,rental, prefill_device=None, prefill_model=N
 
 
 
+
+
         #bottom
         bottom_bar = tk.Frame(form_frame, padx=10, pady=20, bg="#eef2f7")
         bottom_bar.pack(fill="x", side="bottom")
@@ -383,7 +402,8 @@ def add_rental_page(container_frame,rental, prefill_device=None, prefill_model=N
         cursor="hand2",
         borderwidth=0,
         highlightthickness=0,
-        relief="flat"
+        relief="flat",
+        command=reset_form
         )
         reset_btn.pack(side="right", padx=5)
 
