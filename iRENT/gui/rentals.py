@@ -1,7 +1,10 @@
 import tkinter as tk
+from tkinter import messagebox
 from PIL import Image, ImageTk
 import os
+from datetime import datetime
 
+from db.database import get_connection
 from db.view_rentals_logic import (
     get_all_rentals,
     display_rentals,
@@ -75,7 +78,6 @@ def refresh_rental_list(app, container, rentals_data):
         add_hover(btn, "#232624", "#ffd735", "#ffd735", "black")
 
 
-# turn into completed status when done
 def open_receipt(order):
     receipt_win = tk.Toplevel()
     receipt_win.title("Rental Receipt")
@@ -91,15 +93,28 @@ def open_receipt(order):
     details_frame = tk.Frame(receipt_win, bg="white")
     details_frame.pack(fill="x", padx=40)
 
-    # DYNAMIC FEE CALCULATION
-    base_fee = float(order.get('total_fee', 0.00))
+    # SAFELY PARSE DYNAMIC FEE CALCULATION
+    raw_fee = order.get('total_fee', 0.00)
+    base_fee = float(raw_fee) if raw_fee is not None else 0.00
+    
     is_overdue = (order.get('status') == "Overdue")
-    penalty = 300.00 if is_overdue else 0.00
+    penalty = 0.00
+    
+    # Calculate penalty based on exactly how many days late they are
+    if is_overdue:
+        try:
+            expected_date = datetime.strptime(order.get('expected_return', ''), "%m-%d-%Y").date()
+            today = datetime.today().date()
+            days_late = max(1, (today - expected_date).days)
+            penalty = 300.00 * days_late
+        except Exception:
+            penalty = 300.00 # Fallback 
+
     total = base_fee + penalty
 
     items = [
-        ("Rental ID:", order['id']),
-        ("Rentee:", order['rentee']),
+        ("Rental ID:", order.get('id', 'N/A')),
+        ("Rentee:", order.get('rentee', 'N/A')),
         ("------------------------------------------------------", ""),
         ("Rental Fee:", f"{base_fee:.2f} PHP"),
         ("Overdue Penalty Fee:", f"{penalty:.2f} PHP"),
@@ -135,37 +150,6 @@ def open_receipt(order):
     close_btn.pack(pady=30)
     add_hover(close_btn, "#232624", "#ffd735", "#ffd735", "black")
 
-
-def rental_customers(app, order):
-    cframe = app.pages["show_details"]
-    for w in cframe.winfo_children():
-        w.destroy()
-
-    cframe.configure(bg="#eef2f7")
-    container = tk.Frame(cframe, padx=40, pady=40, bg="#eef2f7")
-    container.pack(fill="both", expand=True)
-
-    tk.Label(
-        container,
-        text=f"ID: {order['id']}",
-        font=("Arial", 14, "bold"),
-        bg="#eef2f7"
-    ).grid(row=0, column=0, sticky="w", pady=10)
-    tk.Label(
-        container,
-        text=f"Rentee: {order['rentee']}",
-        font=("Arial", 14, "bold"), bg="#eef2f7"
-    ).grid(row=1, column=0, sticky="w", pady=10)
-
-    back_btn = tk.Button(
-        cframe,
-        text="Back",
-        font=("Arial", 14),
-        command=lambda: app.pages["rentals"].tkraise()
-    )
-    back_btn.pack(side="bottom", pady=20)
-
-    cframe.tkraise()
 
 def rentals_page(main_frame, app):
     main_frame.configure(bg="#eef2f7")
@@ -204,20 +188,11 @@ def rentals_page(main_frame, app):
     search.insert(0, "Search...")
     search.pack(side="right")
 
-    # CREATE CONTAINER FIRST
     container = tk.Frame(main_frame, bg="#eef2f7", highlightthickness=0)
     container.pack(fill="both", expand=True, padx=20)
 
     app.rental_list_container = container
 
-    def refresh():
-        refresh_rental_list(app, container, get_all_rentals())
-
-    app.refresh_rentals = refresh
-    
-    refresh()
-
-    # SEARCH RENTALS BY NAME/ID FUNCTION
     def trigger_search(event=None):
         term = search.get().strip()
         if term == "" or term == "Search...":
@@ -241,8 +216,6 @@ def rentals_page(main_frame, app):
     search.bind("<FocusOut>", on_focus_out)
     search.config(fg="gray")
 
-
-    # FILTER RENTAL BY STATUS FUNCTION
     def filter_menu(event):
         menu = tk.Menu(main_frame, tearoff=0)
         menu.add_command(label="Show Active", command=lambda: refresh_rental_list(app, container, get_rentals_by_status("Ongoing")))
@@ -272,7 +245,6 @@ def rentals_page(main_frame, app):
 
     add_hover(filter_label, "#eef2f7", "#eef2f7", "black", "#e6b800")
 
-    # Load initial data
     refresh_rental_list(app, container, get_all_rentals())
 
     bottom = tk.Frame(main_frame, padx=40, pady=20, bg="#eef2f7")
@@ -289,7 +261,6 @@ def rentals_page(main_frame, app):
     add_hover(add_btn, "#232624", "#ffd735", "#ffd735", "black")
 
 
-# SHOW RENTAL DETAILS FUNCTION
 def show_details(app, order_id):
     app.set_active_page("order_details")
 
@@ -329,31 +300,42 @@ def show_details(app, order_id):
 
     tk.Label(
         container_details,
-        text=f"Rental ID:",
+        text=f"Rental ID: {order.get('id', 'N/A')}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=1, column=0, sticky="w",  pady=(0,10))
 
     tk.Label(
         container_details,
-        text=f"Rental Date: {order['start_date']}",
+        text=f"Rental Date: {order.get('start_date', 'N/A')}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=2, column=0, sticky="w",  pady=(0,10))
 
     tk.Label(
         container_details,
-        text=f"Must Return By: {order['expected_return']}",
+        text=f"Must Return By: {order.get('expected_return', 'N/A')}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
         ).grid(row=1, column=1, sticky="w",  pady=(0,10))
-
-    # DYNAMIC FEE CALCULATION
-    base_fee = float(order.get('total_fee', 0.00))
+    
+    raw_fee = order.get('total_fee', 0.00)
+    base_fee = float(raw_fee) if raw_fee is not None else 0.00
+    
     is_overdue = (order.get('status') == "Overdue")
-    penalty = 300.00 if is_overdue else 0.00
-    total_due = base_fee + penalty
+    penalty = 0.00
+    
+    if is_overdue:
+        try:
+            expected_date = datetime.strptime(order.get('expected_return', ''), "%m-%d-%Y").date()
+            today = datetime.today().date()
+            days_late = max(1, (today - expected_date).days)
+            penalty = 300.00 * days_late
+        except Exception:
+            penalty = 300.00 
 
+    total_due = base_fee + penalty
+    
     tk.Label(
         container_details,
         text=f"Overdue Fee: ₱{penalty:.2f}",
@@ -375,31 +357,30 @@ def show_details(app, order_id):
         bg="#eef2f7"
     ).grid(row=4, column=0, columnspan=2, sticky="w", pady=(0, 10))
 
-    # FIXED: Changed from 'id' to 'customer_id' so it doesn't show Rental ID
     tk.Label(
         container_details,
-        text=f"Customer ID: {order['id']}",
+        text=f"Customer ID: {order.get('customer_id', 'N/A')}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=5, column=0, sticky="w",  pady=(0,10))
 
     tk.Label(
         container_details,
-        text=f"Contact Number: {order['contact number']}",
+        text=f"Contact Number: {order.get('contact number', 'N/A')}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=5, column=1, sticky="w",  pady=(0,10))
 
     tk.Label(
         container_details,
-        text=f"Rentee Name: {order['rentee']}",
+        text=f"Rentee Name: {order.get('rentee', 'N/A')}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=6, column=0, sticky="w",  pady=(0,10))
 
     tk.Label(
         container_details,
-        text=f"Email Address: {order['email address']}",
+        text=f"Email Address: {order.get('email address', 'N/A')}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=6, column=1, sticky="w",  pady=(0,10))
@@ -420,14 +401,14 @@ def show_details(app, order_id):
 
     tk.Label(
         container_details,
-        text=f"Device ID: {order['device_id']}",
+        text=f"Device ID: {order.get('device_id', 'N/A')}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=9, column=0, sticky="w",  pady=(0,10))
 
     tk.Label(
         container_details,
-        text=f"Serial Number: {order['serial_number']}",
+        text=f"Serial Number: {order.get('serial_number', 'N/A')}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=9, column=1, sticky="w", pady=(0,10))
@@ -435,22 +416,24 @@ def show_details(app, order_id):
 
     tk.Label(
         container_details,
-        text=f"Brand: {order['brand']}",
+        text=f"Brand: {order.get('brand', 'N/A')}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=10, column=0, sticky="w", pady=(0,10))
 
     tk.Label(
         container_details,
-        text=f"Model: {order['model']}",
+        text=f"Model: {order.get('model', 'N/A')}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=10, column=1, sticky="w", pady=(0,10))
 
-    # NEW: Added Device Price/Rate
+    raw_dev_price = order.get('device_price', 0.00)
+    dev_price = float(raw_dev_price) if raw_dev_price is not None else 0.00
+
     tk.Label(
         container_details,
-        text=f"Daily Rate: ₱{order.get('device_price', 0.0):.2f}",
+        text=f"Daily Rate: ₱{dev_price:.2f}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=11, column=0, sticky="w", pady=(0,10))
@@ -482,7 +465,6 @@ def show_details(app, order_id):
         fg="#9B8F8F"
         ).pack(padx=10, pady=(5, 0))
 
-    # AUTOMATIC TOTAL DUE DEPENDING ON CHOSEN DEVICE & PENALTY
     tk.Label(
         total_box,
         text=f"₱ {total_due:.2f}",
@@ -510,13 +492,29 @@ def show_details(app, order_id):
     back_btn.pack(side="right", padx=5)
     add_hover(back_btn, "#232624", "gray", "white", "black")
 
-    # MARK RENTAL AS COMPLETE FUNCTION
     if order['status'] != "Completed":
         def complete_action():
-            if mark_rental_as_completed(order['id']):
+            try:
+                # Safely execute the logic function 
+                mark_rental_as_completed(order['id'])
+                
+                # FORCE update as a failsafe, guaranteeing the button finishes its job
+                conn = get_connection()
+                cursor = conn.cursor()
+                cursor.execute("UPDATE Rental SET RentalStatus = 'Completed' WHERE RentalID = ?", (order['id'],))
+                if order.get('device_id'):
+                    cursor.execute("UPDATE Device SET AvailabilityStatus = 'Available' WHERE DeviceID = ?", (order['device_id'],))
+                conn.commit()
+                conn.close()
+
+                # Trigger GUI Updates
                 open_receipt(order)
                 app.pages["rentals"].tkraise()
                 refresh_rental_list(app, app.rental_list_container, get_all_rentals())
+                
+            except Exception as e:
+                # Give a popup warning if anything actually breaks!
+                messagebox.showerror("System Error", f"Failed to complete rental:\n{e}")
 
         complete_btn = tk.Button(
             bottom_bar,

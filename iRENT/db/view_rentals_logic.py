@@ -1,11 +1,35 @@
 from db.database import get_connection
 import sqlite3
+from datetime import datetime
+
+def check_overdue_rentals(conn):
+    """Automatically updates the RentalStatus to 'Overdue' if the ReturnDate has passed."""
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT RentalID, ReturnDate FROM Rental WHERE RentalStatus = 'Ongoing'")
+        ongoing_rentals = cursor.fetchall()
+        
+        today = datetime.today().date()
+        for rental_id, return_date_str in ongoing_rentals:
+            try:
+                # Parse the mm-dd-yyyy date format
+                return_date = datetime.strptime(return_date_str, "%m-%d-%Y").date()
+                if today > return_date:
+                    # Date has passed! Mark as Overdue
+                    cursor.execute("UPDATE Rental SET RentalStatus = 'Overdue' WHERE RentalID = ?", (rental_id,))
+            except ValueError:
+                continue 
+                
+        conn.commit()
+    except sqlite3.Error:
+        pass
 
 
 # RENTAL LISTING FUNCTIONS
 
 def get_all_rentals():
     conn = get_connection()
+    check_overdue_rentals(conn) # <-- Triggers dynamic date check
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -33,20 +57,18 @@ def get_all_rentals():
 
 def display_rentals():
     conn = get_connection()
+    check_overdue_rentals(conn)
     cursor = conn.cursor()
 
+    # FIXED: Replaced outdated SRentalMonth columns with the new RentalDate column
     cursor.execute("""
         SELECT r.RentalID,
                c.FirstName || ' ' || c.LastName AS CustomerName,
                c.ContactNumber,
                r.RentalStatus,
                r.TotalRentalFee,
-               r.SRentalMonth,
-               r.SRentalDay,
-               r.SRentalYear,
-               r.ExReturnMonth,
-               r.ExReturnDay,
-               r.ExReturnYear
+               r.RentalDate,
+               r.ReturnDate
         FROM Rental r
         JOIN Customer c
             ON r.CustomerID = c.CustomerID
@@ -63,14 +85,15 @@ def display_rentals():
             "contact": row[2],
             "status": row[3],
             "total_fee": row[4],
-            "start_date": f"{row[5]}/{row[6]}/{row[7]}",
-            "expected_return": f"{row[8]}/{row[9]}/{row[10]}"
+            "start_date": row[5],
+            "expected_return": row[6]
         }
         for row in rows
     ]
 
 def get_rentals_by_status(status):
     conn = get_connection()
+    check_overdue_rentals(conn)
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -99,6 +122,7 @@ def get_rentals_by_status(status):
 
 def search_rentals(search_term):
     conn = get_connection()
+    check_overdue_rentals(conn)
     cursor = conn.cursor()
 
     search_pattern = f"%{search_term}%"
@@ -131,8 +155,10 @@ def search_rentals(search_term):
 
 def get_rental_details(rental_id):
     conn = get_connection()
+    check_overdue_rentals(conn)
     cursor = conn.cursor()
 
+    # FIXED: Added d.RentalPrice to the SELECT query so the Daily Rate shows up in the GUI
     cursor.execute("""
         SELECT
             r.RentalID,
@@ -146,7 +172,8 @@ def get_rental_details(rental_id):
             r.RentalDate,
             r.ReturnDate,
             r.TotalRentalFee,
-            r.RentalStatus
+            r.RentalStatus,
+            d.RentalPrice
         FROM Rental r
         LEFT JOIN Customer c ON r.CustomerID = c.CustomerID
         LEFT JOIN Device d ON r.DeviceID = d.DeviceID
@@ -172,10 +199,9 @@ def get_rental_details(rental_id):
         "start_date": row[8],
         "expected_return": row[9],
         "total_fee": row[10],
-        "status": row[11]
+        "status": row[11],
+        "device_price": row[12]
     }
-
-
 
 
 # UPDATE RENTAL ORDER AS COMPLETE
@@ -191,14 +217,13 @@ def mark_rental_as_completed(rental_id):
             WHERE RentalID = ?
         """, (rental_id,))
 
-        # Update device to available once returned/completed
-        # Update nalang yung view device list logic related to this
+        # FIXED: Pulled from the correct 'Rental' table instead of a non-existent 'RentalDevice' table
         cursor.execute("""
                 UPDATE Device
                 SET AvailabilityStatus = 'Available'
-                WHERE DeviceID IN (
+                WHERE DeviceID = (
                     SELECT DeviceID
-                    FROM RentalDevice
+                    FROM Rental
                     WHERE RentalID = ?
                 )
             """, (rental_id,))

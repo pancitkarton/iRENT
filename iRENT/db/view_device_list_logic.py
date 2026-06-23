@@ -5,7 +5,6 @@ from db.database import get_connection
 # Delimiter used to join/split specs
 SPECS_DELIMITER = "|"
 
-
 # Ensure the SpecsText column exists (run once)
 def _ensure_specs_column(conn):
     cursor = conn.cursor()
@@ -51,9 +50,10 @@ def get_brands(category_name, conn=None):
 
 # 3. Get all models for a (category, brand) with specs, price, stock, functionality, serial_num
 def get_models(category_name, brand_name, conn=None):
+    # FIXED: Added fallback connection to prevent crash when triggered by GUI
     if conn is None:
         conn = get_connection()
-
+        
     cursor = conn.cursor()
     cursor.execute('''
         SELECT

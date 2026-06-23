@@ -274,15 +274,33 @@ def add_rental_page(container_frame,rental, prefill_device=None, prefill_model=N
 
         #dummy values lng muna
         rental.region_cb["values"] = [
-            "NCR"
+            "NCR",
+            "MIMAROPA",
+            "CALABARZON",
+            "REGION IV-A",
+            "REGION V"
         ]
 
         rental.city_cb["values"] = [
-            "Quezon City"
+            "Quezon City",
+            "Caloocan City",
+            "Rizal City",
+            "Baguio City",
+            "Taguig City",
+            "Pasig City",
+            "Tacloban City"
         ]
 
         rental.brgy_cb["values"] = [
-            "Brgy. 123"
+            "Brgy. Payatas",
+            "Brgy. Commonwealth",
+            "Brgy. San Isidro",
+            "Brgy. 123",
+            "Brgy. 168",
+            "Brgy. 173",
+            "Brgy. 178",
+            "Brgy. 181",
+            
         ]
 
         contact_frame = tk.LabelFrame(

@@ -14,6 +14,8 @@ from db.view_device_list_logic import (
     update_model as db_update_model
 )
 
+#hover effect: add_hover(btn, "#232624", "#ffd735", "#ffd735", "black")
+
 # global func to use anywhere in the code
 def add_hover(btn, enter_bg, leave_bg, enter_fg=None, leave_fg=None):
     def on_enter(e):
@@ -190,12 +192,12 @@ def show_device_brands(app, device):
 
     back_btn = tk.Button(
         back_btn_frame,
-        text="←",
+        text="Back",
         font=("Arial", 16, "bold"),
         bg="#ffd735", fg="black", relief="flat",
         command=lambda: app.pages["devices"].tkraise()
     )
-    back_btn.pack(pady=20, padx=40) # FIXED by Yuri: changed from (pady=100) to (pady=20, padx=40)
+    back_btn.pack(pady=(100, 20), padx=40) # FIXED by Yuri: changed from (pady=100) to (pady=20, padx=40)
     add_hover(back_btn, "#232624", "#ffd735", "#ffd735", "black")
     app.pages["brand_devices"].tkraise()
 
@@ -684,17 +686,17 @@ def show_brand_details(app, device, brand):
             relief="raised"
         )
         menu_btn.grid(row=0, column=1, padx=10, sticky="e")
-        add_hover(menu_btn, "#d0d0d0", "#e0e0e0", "black", "black")
+        add_hover(menu_btn, "#232624", "#ffd735", "#ffd735", "black")
 
         # create dropdown menu for this specific card
         menu = tk.Menu(menu_btn, tearoff=0)
         menu.add_command(
-            label="✏️ Edit Details",
+            label="Edit Details",
             command=lambda d=device, b=brand, m=model, det=details: open_edit_details(app, d, b, m, det) #FIXED by Yuri: Fixed edit details not working
         )
         menu.add_separator()
         menu.add_command(
-            label="🗑️ Delete Model",
+            label="Delete Model",
             command=lambda d=device, b=brand, m=model: delete_model(app, d, b, m)
         )
 
@@ -736,7 +738,7 @@ def show_brand_details(app, device, brand):
     # back button - RIGHT (sticky = "e")
     back_btn = tk.Button(
         btm_btn_frame,
-        text="←",
+        text="Back",
         font=("Arial", 14, "bold"),
         bg="#ffd735",
         fg="black",
@@ -915,7 +917,7 @@ def add_device(app, device, brand):
         else:
             message.config(text=f"❌ {msg}", fg="red")
 
-    tk.Button(
+    add_btn = tk.Button(
         btn_frame,
         text="Add Model",
         font=("Arial", 14, "bold"),
@@ -923,8 +925,9 @@ def add_device(app, device, brand):
         cursor="hand2",
         command=save
     ).pack(side="left", padx=10)
+    add_hover(add_btn, "#232624", "#ffd735", "#ffd735", "black")
 
-    tk.Button(
+    cancel_btn = tk.Button(
         btn_frame,
         text="Cancel",
         font=("Arial", 14, "bold"),
@@ -932,6 +935,7 @@ def add_device(app, device, brand):
         cursor="hand2",
         command=lambda: app.pages["brand_details"].tkraise()
     ).pack(side="left", padx=10)
+    add_hover(cancel_btn, "#232624", "#ffd735", "#ffd735", "black")
 
     # Show the page
     app.pages["add_device"].tkraise()
