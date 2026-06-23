@@ -1,11 +1,11 @@
 import sqlite3
 from db.database import get_connection
 
-def get_all_customers():
+def get_all_customers(status='Active'):
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM Customer")
+    cursor.execute("SELECT * FROM Customer WHERE Status = ?", (status,))
     rows = cursor.fetchall()
     
     colnames = [description[0] for description in cursor.description]
@@ -15,7 +15,7 @@ def get_all_customers():
     return customers
 
 
-def update_customer_db(customer_id, data_dict):
+def update_customer(customer_id, data_dict):
     conn = get_connection()
     cursor = conn.cursor()
     
@@ -36,6 +36,30 @@ def update_customer_db(customer_id, data_dict):
         return True
     except sqlite3.Error as e:
         print(f"Error updating customer: {e}")
+        return False
+    finally:
+        conn.close()
+
+def archive_customer(customer_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("UPDATE Customer SET Status = 'Archived' WHERE CustomerID = ?", (customer_id,))
+        conn.commit()
+        return True
+    except sqlite3.Error:
+        return False
+    finally:
+        conn.close()
+
+def unarchive_customer(customer_id):
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("UPDATE Customer SET Status = 'Active' WHERE CustomerID = ?", (customer_id,))
+        conn.commit()
+        return True
+    except sqlite3.Error:
         return False
     finally:
         conn.close()

@@ -61,7 +61,8 @@ def initialize_db():
         City TEXT,
         Barangay TEXT,
         Postal TEXT,
-        Street TEXT
+        Street TEXT,
+        Status TEXT DEFAULT 'Active'
     )
     """)
 

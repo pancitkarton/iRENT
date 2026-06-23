@@ -210,8 +210,6 @@ def add_rental_page(container_frame,rental, prefill_device=None, prefill_model=N
 
             if helper:
                 tk.Label(c, text=helper, bg="#f0f0f0", fg="#7F7F7F", font=("Arial", 8)).pack(anchor="w", pady=(2,0))
-
-
             return widget
 
 
@@ -362,6 +360,7 @@ def add_rental_page(container_frame,rental, prefill_device=None, prefill_model=N
         #bottom
         bottom_bar = tk.Frame(form_frame, padx=10, pady=20, bg="#eef2f7")
         bottom_bar.pack(fill="x", side="bottom")
+
 
         total_label_text = tk.StringVar(value="Rental Total: ₱0.00")
         total_label = tk.Label(

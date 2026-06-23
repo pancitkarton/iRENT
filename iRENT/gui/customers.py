@@ -2,10 +2,31 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import os
 from tkinter import messagebox
-from db.customers_logic import get_all_customers, update_customer_db
+from db.customers_logic import get_all_customers, update_customer, archive_customer, unarchive_customer
 from db.validation import validate_input
 import re
 
+
+def perform_archive(customer_id, refresh_callback, app):
+    if messagebox.askyesno("Archive", "Are you sure? This customer will be hidden from the active list."):
+        if archive_customer(customer_id):
+            messagebox.showinfo("Success", "Customer archived.")
+
+            refresh_callback()
+
+            app.set_active_page("customers")
+
+        else:
+            messagebox.showerror("Error", "Could not archive customer.")
+
+def perform_unarchive(customer_id, refresh_callback, app):
+    if messagebox.askyesno("Unarchive", "Restore this customer to the active list?"):
+        if unarchive_customer(customer_id):
+            messagebox.showinfo("Success", "Customer restored.")
+            refresh_callback()
+            app.set_active_page("customers")
+        else:
+            messagebox.showerror("Error", "Could not unarchive customer.")
 
 def display_table(app, table_wrapper, customer_list, refresh_callback=None):
     for widget in table_wrapper.winfo_children():
@@ -52,7 +73,8 @@ def display_table(app, table_wrapper, customer_list, refresh_callback=None):
                 'Barangay': customer['Barangay'],
                 'City': customer['City'],
                 'Region': customer['Region'],
-                'ZIP/Postal': customer['Postal']
+                'ZIP/Postal': customer['Postal'],
+                'Status': customer.get('Status', 'Active'),
             }
             
         row_data = [
@@ -149,7 +171,7 @@ def edit_details(order, refresh_callback):
             'Customer ID': 'CustomerID', 
             'First Name': 'FirstName', 
             'Last Name': 'LastName', 
-            'Suffix': 'Suffix',
+            'Suffix': 'Suffix', 
             'Contact Number': 'ContactNumber',
             'Email': 'EmailAddress', 
             'Birthday': 'Birthday',
@@ -167,7 +189,7 @@ def edit_details(order, refresh_callback):
         updated_data['MiddleName'] = order.get('MiddleName', '')
         updated_data['Suffix'] = order.get('Suffix', '')
         
-        if update_customer_db(order['Customer ID'], updated_data):
+        if update_customer(order['Customer ID'], updated_data):
             messagebox.showinfo("Success", "Yay! Customer details updated successfully.")
             edit_win.destroy()
             refresh_callback()
@@ -296,28 +318,32 @@ def customers_page(main_frame, app, refresh_callback):
 
 
 
-    def load_table(data=None):
+    def load_table(data=None, show_archived=False):
         if data is None:
-            data = get_all_customers()
+            data = get_all_customers(status='Archived') if show_archived else get_all_customers(status='Active')
         display_table(app, table_wrapper, data, refresh)
 
     def refresh():
         load_table()
 
     #search and sort 
-    def sort_data(key):
-        all_cust = get_all_customers()
+    def sort_data(key, show_archived=False):
+        all_cust = get_all_customers(status='Archived' if show_archived else 'Active')
+
         if key == "alphabet":
             sorted_customer = sorted(all_cust, key=lambda x: (x.get('LastName', '').lower(), x.get('FirstName', '').lower()))
         else:
             sorted_customer = sorted(all_cust, key=lambda x: int(x.get('CustomerID', 0)))
         
-        load_table(sorted_customer)
+        load_table(sorted_customer, show_archived)
 
     def sort_menu(event):
         menu = tk.Menu(main_frame, tearoff=0)
         menu.add_command(label="Sort by Alphabet", command=lambda: sort_data("alphabet"))
         menu.add_command(label="Sort by ID", command=lambda: sort_data("id"))
+        menu.add_separator()
+        menu.add_command(label="View Active Customers", command=lambda: load_table(show_archived=False))
+        menu.add_command(label="View Archived Customers", command=lambda: load_table(show_archived=True))
         menu.post(event.x_root, event.y_root)
 
     def on_search(event=None):
@@ -481,7 +507,6 @@ def customer_details(app, order, refresh_callback):
     )
     bottom_bar.pack(fill="x", side="bottom")
 
-
     back_btn = tk.Button(
         bottom_bar,
         text="Back",
@@ -493,15 +518,41 @@ def customer_details(app, order, refresh_callback):
     back_btn.pack(side="right", padx=5)
     add_hover(back_btn, "#232624", "gray", "white", "black")
 
-    add_btn = tk.Button(
-        bottom_bar,
-        text="Edit Details",
-        font=("Arial", 17, "bold"),
-        bg="#ffd735",
-        command=lambda: edit_details(order, refresh_callback)    
-    )
-    add_btn.pack(side="right", padx=5)
-    add_hover(add_btn, "#232624", "#ffd735", "#ffd735", "black")
+    status = order.get('Status', 'Active')
 
+    if status == 'Active':
+        archive_btn = tk.Button(
+            bottom_bar, 
+            text="Archive Customer", 
+            font=("Arial", 17, "bold"),
+            bg="#ff4d4d", 
+            fg="white", 
+            cursor="hand2",
+            command=lambda: perform_archive(order['Customer ID'], refresh_callback, app)
+        )
+        archive_btn.pack(side="left", padx=5)
+        add_hover(archive_btn, "#b30000", "#ff4d4d", "white", "white")
+        
+        edit_btn = tk.Button(
+            bottom_bar, 
+            text="Edit Details", 
+            font=("Arial", 17, "bold"),
+            bg="#ffd735", 
+            command=lambda: edit_details(order, refresh_callback)
+        )
+        edit_btn.pack(side="right", padx=5)
+        add_hover(edit_btn, "#232624", "#ffd735", "#ffd735", "black")
+
+    elif status == 'Archived':
+        unarchive_btn = tk.Button(
+            bottom_bar, 
+            text="Unarchive Customer", 
+            font=("Arial", 17, "bold"),
+            bg="#4caf50", 
+            fg="white", cursor="hand2",
+            command=lambda: perform_unarchive(order['Customer ID'], refresh_callback, app)
+        )
+        unarchive_btn.pack(side="left", padx=5)
+        add_hover(unarchive_btn, "#388e3c", "#4caf50", "white", "white")
 
     frame.tkraise()
