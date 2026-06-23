@@ -320,24 +320,23 @@ def show_details(app, order_id):
         bg="#eef2f7"
     ).grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 10))
 
-    # FIXED: Added the actual order['id'] variable
     tk.Label(
         container_details,
-        text=f"Rental ID: {order.get('id', 'N/A')}",
+        text=f"Rental ID:",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=1, column=0, sticky="w",  pady=(0,10))
 
     tk.Label(
         container_details,
-        text=f"Rental Date: {order.get('start_date', 'N/A')}",
+        text=f"Rental Date: {order['start_date']}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=2, column=0, sticky="w",  pady=(0,10))
 
     tk.Label(
         container_details,
-        text=f"Must Return By: {order.get('expected_return', 'N/A')}",
+        text=f"Must Return By: {order['expected_return']}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
         ).grid(row=1, column=1, sticky="w",  pady=(0,10))
@@ -372,28 +371,28 @@ def show_details(app, order_id):
     # FIXED: Changed from 'id' to 'customer_id' so it doesn't show Rental ID
     tk.Label(
         container_details,
-        text=f"Customer ID: {order.get('customer_id', 'N/A')}",
+        text=f"Customer ID: {order['id']}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=5, column=0, sticky="w",  pady=(0,10))
 
     tk.Label(
         container_details,
-        text=f"Contact Number: {order.get('contact number', 'N/A')}",
+        text=f"Contact Number: {order['contact number']}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=5, column=1, sticky="w",  pady=(0,10))
 
     tk.Label(
         container_details,
-        text=f"Rentee Name: {order.get('rentee', 'N/A')}",
+        text=f"Rentee Name: {order['rentee']}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=6, column=0, sticky="w",  pady=(0,10))
 
     tk.Label(
         container_details,
-        text=f"Email Address: {order.get('email address', 'N/A')}",
+        text=f"Email Address: {order['email address']}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=6, column=1, sticky="w",  pady=(0,10))
@@ -414,14 +413,14 @@ def show_details(app, order_id):
 
     tk.Label(
         container_details,
-        text=f"Device ID: {order.get('device_id', 'N/A')}",
+        text=f"Device ID: {order['device_id']}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=9, column=0, sticky="w",  pady=(0,10))
 
     tk.Label(
         container_details,
-        text=f"Serial Number: {order.get('serial_number', 'N/A')}",
+        text=f"Serial Number: {order['serial_number']}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=9, column=1, sticky="w", pady=(0,10))
@@ -429,14 +428,14 @@ def show_details(app, order_id):
 
     tk.Label(
         container_details,
-        text=f"Brand: {order.get('brand', 'N/A')}",
+        text=f"Brand: {order['brand']}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=10, column=0, sticky="w", pady=(0,10))
 
     tk.Label(
         container_details,
-        text=f"Model: {order.get('model', 'N/A')}",
+        text=f"Model: {order['model']}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
     ).grid(row=10, column=1, sticky="w", pady=(0,10))
