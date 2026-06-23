@@ -111,6 +111,7 @@ def create_rental(
         """, (device_id,))
 
         conn.commit()
+        return True
     except sqlite3.Error as e:
         conn.rollback()
     finally:

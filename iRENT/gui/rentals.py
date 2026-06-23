@@ -210,6 +210,13 @@ def rentals_page(main_frame, app):
 
     app.rental_list_container = container
 
+    def refresh():
+        refresh_rental_list(app, container, get_all_rentals())
+
+    app.refresh_rentals = refresh
+    
+    refresh()
+
     # SEARCH RENTALS BY NAME/ID FUNCTION
     def trigger_search(event=None):
         term = search.get().strip()

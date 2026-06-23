@@ -167,7 +167,14 @@ def add_rental_page(container_frame,rental, prefill_device=None, prefill_model=N
                     total_fee
                 )
 
+                if hasattr(rental, 'refresh_rentals'):
+                    rental.refresh_rentals()
+
                 messagebox.showinfo("Success", "Rental saved successfully!")
+
+                rental.pages["rentals"].tkraise()
+
+                reset_form()
 
             except Exception as e:
                 messagebox.showerror("Database Error", str(e))
