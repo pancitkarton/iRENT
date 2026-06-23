@@ -117,7 +117,7 @@ def initialize_db():
     )
     """)
 
-    #ilagay ung list of devices ni charmie (UPDATED INITIAL SEEDING by Yuri)
+     #ilagay ung list of devices ni charmie (pakiupdate mamaya na!)
     cursor.execute("SELECT COUNT(*) FROM Device")
     if cursor.fetchone()[0] == 0:
         initial_devices = [

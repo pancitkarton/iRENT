@@ -188,6 +188,20 @@ def mark_rental_as_completed(rental_id):
         WHERE RentalID = ?
     """, (rental_id,))
 
+    # Update device to available once returned/completed
+    # Update nalang yung view device list logic related to this
+    cursor.execute("""
+            UPDATE Device
+            SET AvailabilityStatus = 'Available'
+            WHERE DeviceID IN (
+                SELECT DeviceID
+                FROM RentalDevice
+                WHERE RentalID = ?
+            )
+        """, (rental_id,))
+    
+    device_updated = cursor.rowcount
+    
     conn.commit()
     updated = cursor.rowcount > 0
     conn.close()
