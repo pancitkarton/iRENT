@@ -14,7 +14,7 @@ from db.view_device_list_logic import (
     update_model as db_update_model
 )
 
-#hover effect: add_hover(btn, "#232624", "#ffd735", "#ffd735", "black")
+#add these in pages (app.py): add_device_type, 
 
 # global func to use anywhere in the code
 def add_hover(btn, enter_bg, leave_bg, enter_fg=None, leave_fg=None):
@@ -40,6 +40,9 @@ def create_list(main_frame, app):
     for widget in main_frame.winfo_children():
         widget.destroy()
 
+    #NEW = FOR TEMPORARILY SHOWING DEVICE
+    app.main_frame = main_frame 
+
     main_frame.grid_rowconfigure(0, weight=1)
     main_frame.grid_rowconfigure(1, weight=10)
     main_frame.grid_columnconfigure(0, weight=1)
@@ -55,6 +58,9 @@ def create_list(main_frame, app):
     # container for all device cards
     container = tk.Frame(main_frame)
     container.grid(row=1, column=0, sticky="nsew", padx=40, pady=20)
+    
+    # NEW IN CODE
+    app.device_container = container
 
     # config container grid
     container.grid_rowconfigure(0, weight=1)
@@ -84,11 +90,155 @@ def create_list(main_frame, app):
         )
         btn.grid(row=row, column=col, padx=15, pady=15, sticky="nsew")
         add_hover(btn, "#232624", "#ffd735", "#ffd735", "black")
+    
+    add_device_container = tk.Frame(main_frame)
+    add_device_container.grid(row=2, column=0, padx=10, pady=10)
+
+    # add device - left (sticky = "w")
+    add_btn = tk.Button(
+        add_device_container,
+        text="➕ Add Device",
+        font=("Arial", 12, "bold"),
+        bg="#4CAF50",
+        fg="white",
+        cursor="hand2",
+        relief="raised",
+        command=lambda: add_device_type(app)
+    )
+    add_btn.grid(sticky="se", pady=5)
+    add_hover(add_btn, "#142C14", "#4CAF50", "white", "white")
+
+
+def add_device_type(app):
+    frame = app.pages["add_device_type"]
+
+    for w in frame.winfo_children():
+        w.destroy()
+    
+    frame.grid_rowconfigure(0, weight=0)     #title, fixed
+    frame.grid_rowconfigure(1, weight=5)     #content, expands
+    frame.grid_columnconfigure(0, weight=1)  #expands horizontally, shares extra width 
+
+    title = tk.Label(
+        frame,
+        text="ADD DEVICE TYPE",
+        font=("Arial", 24, "bold"),
+        fg="black"
+    )
+    title.grid(row=0, column=0, pady=20)
+
+    # getting device for entry
+    container = tk.LabelFrame(frame, text="DEVICE", font=("Arial", 24, "bold"), bd=2, relief="solid")
+    container.grid(row=1, column=0, sticky="n", pady=10)
+
+    device_label = tk.Label(container, text="Device Type:", font=("Arial", 12, "bold"))
+    device_label.grid(row=0, column=0, padx=10, pady=10)
+
+    device_entry = tk.Entry(container, font=("Arial", 12), width=35, bd=1, relief="solid")
+    device_entry.grid(row=0, column=1, padx=10, pady=10)
+
+    message = tk.Label(container, text="", font=("Arial", 11), fg="red")
+    message.grid(row=1, column=0, columnspan=2, pady=(0, 10), sticky="w", padx=20)
+
+    devices = [
+        "CAMERA",
+        "CELLPHONE",
+        "LAPTOP",
+        "CONSOLE",
+        "PORTABLE DVD PLAYER",
+        "SOUND SYSTEM"
+    ]
+    
+    def save_device_type():
+        """Save all changes and update DATA"""
+        # Get values from entries
+        new_device = device_entry.get().strip()     #NEW
+            
+        if not new_device:
+            message.config(text="Please fill in all text fields!")
+            return
+        if new_device.isdigit():
+            message.config(text="Please fill in VALID device type!")
+            return
+        if new_device.lower() in (device.lower() for device in devices):
+            message.config(text="Device already exists!", fg="red")
+            return  
+
+        success = True
+        msg = ""
+
+        #shows success text
+        if success:
+            message.config(text=f"✅ Added: {new_device.upper()}")
+            devices.append(new_device.upper())
+            container = app.device_container
+
+            # NEW - counts all widgets inside the grid; buttons, grids, frames
+            count = len(container.winfo_children())
+            row = count // 2
+            col = count % 2
+
+            newdevice_btn = tk.Button(
+                container,
+                text=new_device.upper(),
+                font=("Arial", 20, "bold"),
+                bg="#ffd735",
+                fg="black",
+                relief="ridge",
+                command=lambda d=new_device.upper(): open_brands(app, d)
+            )
+            newdevice_btn.grid(row=row, column=col, sticky="w", padx=10)
+            add_hover(newdevice_btn, "#45a049", "#4CAF50", "white", "white")
+
+        # automatically goes back to devices after saving. 
+        # shows the added device during run 
+            frame.after(1000, lambda: app.pages["devices"].tkraise()) 
+            frame.after(1000, lambda: create_list(app.main_frame, app)) 
+        else: 
+            message.config(text=f"❌ {msg}", fg="red")
+
+    def cancel_changes():
+        """Go back without saving"""
+        app.pages["devices"].tkraise()
+
+    save_btn = tk.Button(
+        container, 
+        text="Save Device", 
+        font=("Arial", 10, "bold"),
+        bg="#4CAF50",
+        fg="white",
+        cursor="hand2",
+        padx=5,
+        pady=5, 
+        bd=1,
+        command=save_device_type
+        )
+    save_btn.grid(row=2, column=2, padx=5, pady=5)
+    add_hover(save_btn, "#45a049", "#4CAF50", "white", "white")
+
+    cancel_btn = tk.Button(
+        container, 
+        text="Cancel", 
+        font=("Arial", 10, "bold"),
+        bg="#f44336",
+        fg="white",
+        cursor="hand2",
+        padx=5,
+        pady=5,
+        bd=1,
+        command=cancel_changes
+        )
+    cancel_btn.grid(row=2, column=3, padx=5, pady=5)
+    add_hover(cancel_btn, "#d32f2f", "#f44336", "white", "white")
+
+    app.pages["add_device_type"].tkraise()
+
 
 
 def open_brands(app, device):
     show_device_brands(app, device)
     app.pages["brand_devices"].tkraise()
+
 
 
 def show_device_brands(app, device):
@@ -187,19 +337,151 @@ def show_device_brands(app, device):
         add_hover(btn, "#232624", "#ffd735", "#ffd735", "black")  # Use global
 
     # back
-    back_btn_frame = tk.Frame(container, bg="#eef2f7")
-    back_btn_frame.grid(row=2, column=0, sticky="e", pady=20)  # Changed from num_brands+1 to 2
+    btn_frame = tk.Frame(container, bg="#eef2f7")
+    btn_frame.grid(row=2, column=0, sticky="s", pady=20)  # Changed from num_brands+1 to 2
+
+     # add device - left (sticky = "w")
+    add_btn = tk.Button(
+        btn_frame,
+        text="➕ Add Device Brand",
+        font=("Arial", 12, "bold"),
+        bg="#4CAF50",
+        fg="white",
+        cursor="hand2",
+        relief="raised",
+        height=1,
+        command=lambda: add_device_brand(app, device)
+    )
+    add_btn.grid(row=0, column=0, sticky = "s", padx=(0, 10), pady=(0,20)) 
+    add_hover(add_btn, "#142C14", "#4CAF50", "white", "white")
 
     back_btn = tk.Button(
-        back_btn_frame,
+        btn_frame,
         text="Back",
-        font=("Arial", 16, "bold"),
-        bg="#ffd735", fg="black", relief="flat",
+        font=("Arial", 12, "bold"),
+        bg="#ffd735", 
+        fg="black", 
+        relief="raised",
+        height=1,
         command=lambda: app.pages["devices"].tkraise()
     )
-    back_btn.pack(pady=(100, 20), padx=40) # FIXED by Yuri: changed from (pady=100) to (pady=20, padx=40)
+    back_btn.grid(row=0, column=1, sticky = "s", pady=(0,20)) # FIXED by Yuri: changed from (pady=100) to (pady=20, padx=40)
     add_hover(back_btn, "#232624", "#ffd735", "#ffd735", "black")
+    
     app.pages["brand_devices"].tkraise()
+
+#FOR TESTING ONLY
+DEVICES_DATA = {
+        "CAMERA": ["SONY", "CANON", "INSTAX"],
+        "CELLPHONE": ["IPHONE", "SAMSUNG", "XIAOMI"],
+        "CONSOLE": ["SONY", "MICROSOFT", "NINTENDO"],
+        "PORTABLE DVD PLAYER": ["SONY", "PHILIPS", "DBPOWER"],
+        "LAPTOP": ["DELL", "HP", "LENOVO"],
+        "SOUND SYSTEM": ["JBL", "SAMSUNG", "SVS"]
+    }
+
+def add_device_brand(app, device):
+    frame = app.pages["add_device_brand"]
+
+    frame.grid_rowconfigure(0, weight=0)     #title, fixed
+    frame.grid_rowconfigure(1, weight=5)     #content, expands
+    frame.grid_columnconfigure(0, weight=1)  #expands horizontally, shares extra width 
+
+    title = tk.Label(
+        frame,
+        text="ADD DEVICE BRAND",
+        font=("Arial", 24, "bold"),
+        fg="black"
+    )
+    title.grid(row=0, column=0, pady=20)
+
+    # Main content container
+    container = tk.LabelFrame(frame, text="DEVICE BRAND", font=("Arial", 20, "bold"), bd=2, relief="solid")
+    container.grid(row=1, column=0, sticky="n", pady=10)
+
+    device_label = tk.Label(container, text="Brand Name:", font=("Arial", 12, "bold"))
+    device_label.grid(row=0, column=0, padx=10, pady=10)
+
+    devicebrand_entry = tk.Entry(container, font=("Arial", 12), width=35, bd=1, relief="solid")
+    devicebrand_entry.grid(row=0, column=1, padx=10, pady=10)
+
+    message = tk.Label(container, text="", font=("Arial", 11), fg="red")
+    message.grid(row=1, column=0, columnspan=2, pady=(0, 10), sticky="w", padx=20)
+    
+    def save_device_brand():
+        """Save all changes and update DEVICES_DATA"""
+        # Get values from entries
+        new_brand = devicebrand_entry.get().strip()     #NEW
+            
+        if not new_brand:
+            message.config(text="Please enter a brand name!")
+            return
+        if new_brand.isdigit():
+            message.config(text="Please enter a valid brand name!")
+            return
+        if any(brand.lower() == new_brand.lower() for brand in DEVICES_DATA.get(device, [])):
+            message.config(
+                text="Brand already exists for this device!",
+                fg="red"
+            )
+            return
+        
+        # converts to uppercase for storage (consistent formatting)
+        new_brand_upper = new_brand.upper()
+
+        success = True
+        msg = ""
+
+        if success:
+            if device not in DEVICES_DATA:
+                DEVICES_DATA[device] = []
+            DEVICES_DATA[device].append(new_brand_upper)
+            
+            # Show success message
+            message.config(text=f"✅ Added: {new_brand} for {device.upper()}", fg="green")
+            
+            # Go back to devices page after delay
+            frame.after(1000, lambda: app.pages["brand_devices"].tkraise())
+            frame.after(1000, lambda: show_device_brands(app, device))        
+        else:
+            message.config(text=f"❌ {msg}", fg="red")
+
+    def cancel_changes():
+        """Go back without saving"""
+        app.pages["brand_devices"].tkraise()
+
+    save_btn = tk.Button(
+        container, 
+        text="Save Device", 
+        font=("Arial", 10, "bold"),
+        bg="#4CAF50",
+        fg="white",
+        cursor="hand2",
+        padx=5,
+        pady=5, 
+        bd=1,
+        command=save_device_brand
+        )
+    save_btn.grid(row=2, column=2, padx=5, pady=5)
+    add_hover(save_btn, "#45a049", "#4CAF50", "white", "white")
+
+    cancel_btn = tk.Button(
+        container, 
+        text="Cancel", 
+        font=("Arial", 10, "bold"),
+        bg="#f44336",
+        fg="white",
+        cursor="hand2",
+        padx=5,
+        pady=5,
+        bd=1,
+        command=cancel_changes
+        )
+    cancel_btn.grid(row=2, column=3, padx=5, pady=5)
+    add_hover(cancel_btn, "#d32f2f", "#f44336", "white", "white")
+
+    app.pages["add_device_brand"].tkraise()
+
 
 
 def delete_model(app, device, brand, model_name):
@@ -752,6 +1034,193 @@ def show_brand_details(app, device, brand):
 
 
 def add_device(app, device, brand):
+    frame = app.pages["add_device"]
+
+    for widget in frame.winfo_children():
+        widget.destroy()
+
+    # config grid for main frame (the frame)
+    frame.grid_rowconfigure(0, weight=0)  # title
+    frame.grid_rowconfigure(1, weight=1)  # form
+    frame.grid_columnconfigure(0, weight=1)
+
+    # title label
+    tk.Label(
+        frame,
+        text=f"Add New {brand} Model",
+        font=("Arial", 24, "bold")
+    ).grid(row=0, column=0, pady=20)
+
+    # shows what device - brand you are currently editing with
+    tk.Label(
+        frame,
+        text=f"{device} - {brand}",
+        font=("Arial", 14),
+        fg="gray"
+    ).grid(row=1, column=0)
+
+    # used for everything below inside form
+    form = tk.Frame(frame, bg="white", borderwidth=2, relief="solid", padx=30, pady=30)
+    form.grid(row=2, column=0, sticky="nsew", padx=50, pady=20)
+
+    # make 2 columns in the form (labels on left, entries on right)
+    form.grid_columnconfigure(0, weight=0)  # labels (id, price, stock, etc) FIXED
+    form.grid_columnconfigure(1, weight=1)  # entries (enter id, enter price, etc) EXPANDS
+
+    # row counter
+    row = 0
+
+    # row 0: model name
+    tk.Label(form, text="Model Name:", font=("Arial", 12, "bold"), bg="white"
+    ).grid(row=row, column=0, sticky="w", pady=10, padx=(0, 20))
+
+    model_entry = tk.Entry(form, font=("Arial", 12), width=35,  bd=1, relief="solid")
+    model_entry.grid(row=row, column=1, sticky="ew", pady=10)
+    row += 1
+
+    # row 1: id
+    tk.Label(form, text="ID:", font=("Arial", 12, "bold"), bg="white"
+    ).grid(row=row, column=0, sticky="w", pady=10, padx=(0, 20))
+
+    id_entry = tk.Entry(form, font=("Arial", 12), width=35, bd=1, relief="solid")
+    id_entry.grid(row=row, column=1, sticky="ew", pady=10)
+    row += 1
+
+    # row 2: serial number (NEW)
+    tk.Label(form, text="Serial Number:", font=("Arial", 12, "bold"), bg="white"
+    ).grid(row=row, column=0, sticky="w", pady=10, padx=(0, 20))
+
+    serial_entry = tk.Entry(form, font=("Arial", 12), width=35, bd=1, relief="solid")
+    serial_entry.grid(row=row, column=1, sticky="ew", pady=10)
+    row += 1
+
+    # row 3: functionality (NEW - dropdown)
+    tk.Label(form, text="Functionality:", font=("Arial", 12, "bold"), bg="white"
+    ).grid(row=row, column=0, sticky="w", pady=10, padx=(0, 20))
+
+    from tkinter import ttk
+    func_var = tk.StringVar(value="Excellent")  # Default value
+    func_combo = ttk.Combobox(
+        form,
+        textvariable=func_var,
+        values=["Excellent", "Good", "Fair"],
+        font=("Arial", 12),
+        state="readonly",
+        width=33
+    )
+    func_combo.grid(row=row, column=1, sticky="ew", pady=10)
+    row += 1
+
+    # row 4: price
+    tk.Label(form, text="Price (₱):", font=("Arial", 12, "bold"), bg="white"
+    ).grid(row=row, column=0, sticky="w", pady=10, padx=(0, 20))
+
+    price_entry = tk.Entry(form, font=("Arial", 12), width=35, bd=1, relief="solid")
+    price_entry.grid(row=row, column=1, sticky="ew", pady=10)
+    row += 1
+
+    # row 5: stock
+    tk.Label(form, text="Stock:", font=("Arial", 12, "bold"), bg="white"
+    ).grid(row=row, column=0, sticky="w", pady=10, padx=(0, 20))
+
+    stock_entry = tk.Entry(form, font=("Arial", 12), width=35, bd=1, relief="solid")
+    stock_entry.grid(row=row, column=1, sticky="ew", pady=10)
+    row += 1
+
+    # row 6: specs
+    tk.Label(form, text="Specs (separate with commas):", font=("Arial", 12, "bold"), bg="white"
+    ).grid(row=row, column=0, sticky="w", pady=10, padx=(0, 20))
+
+    specs_entry = tk.Entry(form, font=("Arial", 12), width=35, bd=1, relief="solid")
+    specs_entry.grid(row=row, column=1, sticky="ew", pady=10)
+    row += 1
+
+    # suggestion label, below specs entry box
+    tk.Label(
+        form,
+        text="Example: 33MP, 4K Video, IBIS Stabilization",
+        font=("Arial", 8),
+        fg="gray",
+        bg="white"
+    ).grid(row=row, column=1, sticky="w", pady=(0, 10))
+    row += 1
+
+    # starts empty and later used as message.config to display error messages differently
+    message = tk.Label(frame, text="", font=("Arial", 11))
+    message.grid(row=3, column=0, pady=10)
+
+    # add, cancel
+    btn_frame = tk.Frame(frame)
+    btn_frame.grid(row=4, column=0, pady=20)
+
+    def save():
+        # gets what user typed
+        name = model_entry.get().strip().upper()
+        pid = id_entry.get().strip().upper()
+        serial = serial_entry.get().strip()
+        functionality = func_var.get()
+        price = price_entry.get().strip()
+        stock = stock_entry.get().strip()
+        specs_text = specs_entry.get().strip()
+
+        if not name or not pid or not serial or not specs_text:
+            message.config(text="Please fill in all text fields!", fg="red")
+            return
+        if not price or not price.isdigit():
+            message.config(text="Enter valid price!", fg="red")
+            return
+        if not stock or not stock.isdigit():
+            message.config(text="Enter valid stock!", fg="red")
+            return
+
+        #converts specs into list
+        specs_list = [s.strip() for s in specs_text.split(",")]
+
+        # Send data to Database
+        success, msg = db_add_model(
+            category_name=device,
+            brand_name=brand,
+            model_name=name,
+            product_id=pid,
+            price=int(price),
+            stock_count=int(stock),
+            specs_list=specs_list,
+            functionality=functionality,
+            serial_num=serial
+        )
+
+        #shows success text
+        if success:
+            message.config(text=f"✅ {msg}", fg="green")
+
+            #automatically goes back to brand_details after saving. shows the added device during run
+            frame.after(1000, lambda: app.pages["brand_details"].tkraise())
+            frame.after(1000, lambda: show_brand_details(app, device, brand))
+        else:
+            message.config(text=f"❌ {msg}", fg="red")
+
+    add_btn = tk.Button(
+        btn_frame,
+        text="Add Model",
+        font=("Arial", 14, "bold"),
+        bg="#ffd735",
+        cursor="hand2",
+        command=save
+    ).pack(side="left", padx=10)
+    add_hover(add_btn, "#232624", "#ffd735", "#ffd735", "black")
+
+    cancel_btn = tk.Button(
+        btn_frame,
+        text="Cancel",
+        font=("Arial", 14, "bold"),
+        bg="#cccccc",
+        cursor="hand2",
+        command=lambda: app.pages["brand_details"].tkraise()
+    ).pack(side="left", padx=10)
+    add_hover(cancel_btn, "#232624", "#ffd735", "#ffd735", "black")
+
+    # Show the page
+    app.pages["add_device"].tkraise()
     frame = app.pages["add_device"]
 
     for widget in frame.winfo_children():

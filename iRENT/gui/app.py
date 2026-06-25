@@ -105,7 +105,7 @@ class MainApp:
                      "order_details", 
                      "add_rental", 
                      "customers", "customer_details", 
-                     "devices", "brand_devices", "brand_details", "add_device", "edit_details"]:
+                     "devices", "brand_devices", "brand_details", "add_device", "edit_details", "add_device_type", "add_device_brand"]:
             frame = tk.Frame(self.right)
             frame.grid(row=0, column=0, sticky="nsew")
             self.pages[name] = frame
