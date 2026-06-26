@@ -1,8 +1,9 @@
 import tkinter as tk
+from tkinter import ttk
 from PIL import Image, ImageTk
 import os
 from tkinter import messagebox
-from db.customers_logic import get_all_customers, update_customer, archive_customer, unarchive_customer, has_active_rentals
+from db.customers_logic import get_all_customers, update_customer, archive_customer, unarchive_customer, has_active_rentals, customer_rentals
 from db.validation import validate_input
 import re
 
@@ -57,8 +58,15 @@ def display_table(app, table_wrapper, customer_list, refresh_callback=None):
                "Barangay", "ZIP", "Street"]
     
     for i, head in enumerate(headers):
-        tk.Label(scrollable_frame, text=head, font=("Arial", 10, "bold"), 
-                 bg="#ffd735", width=12, relief="solid", bd=1).grid(row=0, column=i)
+        tk.Label(
+            scrollable_frame, 
+            text=head, 
+            font=("Arial", 10, "bold"), 
+            bg="#ffd735", 
+            width=20, 
+            relief="solid", 
+            bd=1
+        ).grid(row=0, column=i)
 
     for i, customer in enumerate (customer_list, start=1):
 
@@ -91,7 +99,7 @@ def display_table(app, table_wrapper, customer_list, refresh_callback=None):
                     scrollable_frame, 
                     text=val, 
                     bg="white", 
-                    width=12, 
+                    width=15, 
                     relief="solid",
                     bd=1,
                     cursor="hand2"
@@ -319,7 +327,6 @@ def customers_page(main_frame, app, refresh_callback):
     add_hover(sort_label, "#eef2f7", "#eef2f7", "black", "#e6b800")
 
 
-
     def load_table(data=None, show_archived=False):
         if data is None:
             data = get_all_customers(status='Archived') if show_archived else get_all_customers(status='Active')
@@ -392,6 +399,9 @@ def customer_details(app, order, refresh_callback):
     frame = app.pages["customer_details"]
     frame.configure(bg="#eef2f7")
 
+    for w in frame.winfo_children():
+        w.destroy()
+
     def add_hover(btn, enter_bg, leave_bg, enter_fg=None, leave_fg=None):
 
         def on_enter(e):
@@ -406,100 +416,6 @@ def customer_details(app, order, refresh_callback):
 
         btn.bind("<Enter>", on_enter)
         btn.bind("<Leave>", on_leave)
-
-    for w in frame.winfo_children():
-        w.destroy()
-
-    container = tk.Frame(
-        frame,
-        padx=40,
-        pady=40,
-        bg="#eef2f7"
-    )
-    container.pack(fill="both", expand=True)
-
-    tk.Label(
-        container,
-        text="CUSTOMER INFO",
-        font=("Arial", 30, "bold"),
-        bg="#eef2f7"
-    ).grid(row=0, column=0, columnspan=2, pady=(0,20), sticky="w")
-
-    tk.Frame(
-        container,
-        height=2,
-        bg="black"
-    ).grid(row=1, column=0, columnspan=2, sticky="ew", pady=20)
-
-    container.grid_columnconfigure(0, weight=1, minsize=300)
-    container.grid_columnconfigure(1, weight=1)
-
-    tk.Label(
-        container,
-        text=f"Customer ID: {order['Customer ID']}",
-        font=("Arial", 14, "bold"),
-        bg="#eef2f7"
-    ).grid(row=2, column=0, sticky="w", pady=10)
-
-    tk.Label(
-        container, 
-        text=f"Full Name: {order['First Name']} {order['Last Name']}", 
-        font=("Arial", 14, "bold"), 
-        bg="#eef2f7"
-    ).grid(row=2, column=1, sticky="w", pady=10)
-
-    tk.Label(
-        container, 
-        text=f"Contact: {order['Contact Number']}", 
-        font=("Arial", 14, "bold"), 
-        bg="#eef2f7"
-    ).grid(row=3, column=0, sticky="w", pady=10)
-
-    tk.Label(
-        container, 
-        text=f"Email: {order['Email']}", 
-        font=("Arial", 14, "bold"), 
-        bg="#eef2f7"
-    ).grid(row=3, column=1, sticky="w", pady=10)
-
-    tk.Label(
-        container, 
-        text=f"Birthday: {order['Birthday']}", 
-        font=("Arial", 14, "bold"), 
-        bg="#eef2f7"
-    ).grid(row=4, column=0, sticky="w", pady=10)
-
-    address_text = f"{order['Street/Bldg']}, {order['Barangay']}, {order['City']}, {order['Region']}, {order['ZIP/Postal']}"
-    
-    tk.Label(
-        container, 
-        text=f"Address: {address_text}",
-        font=("Arial", 14, "bold"), 
-        bg="#eef2f7",
-        justify="left"
-    ).grid(row=4, column=1, sticky="w", pady=10)
-
-    tk.Frame(
-        container,
-        height=2,
-        bg="black"
-    ).grid(row=5, column=0, columnspan=2, sticky="ew", pady=20)
-
-
-    tk.Label(
-        container,
-        text="Total Devices Rented: 3",
-        font=("Arial", 14, "bold"),
-        bg="#eef2f7"
-    ).grid(row=6, column=0, columnspan=2, sticky="w", pady=10)
-
-    tk.Frame(
-        container,
-        height=2,
-        bg="black"
-    ).grid(row=7, column=0, columnspan=2, sticky="ew", pady=20)
-
-
 
     bottom_bar = tk.Frame(
         frame,
@@ -556,5 +472,97 @@ def customer_details(app, order, refresh_callback):
         )
         unarchive_btn.pack(side="left", padx=5)
         add_hover(unarchive_btn, "#388e3c", "#4caf50", "white", "white")
+
+    container = tk.Frame(
+        frame,
+        padx=40,
+        pady=40,
+        bg="#eef2f7"
+    )
+    container.pack(fill="both", expand=True)
+
+    tk.Label(
+        container,
+        text="CUSTOMER INFO",
+        font=("Arial", 30, "bold"),
+        bg="#eef2f7"
+    ).pack(pady=(0,10), anchor="w")
+
+
+    info_section = tk.Frame(container, bg="#eef2f7")
+    info_section.pack(fill="x")
+
+
+    def infos(label, value):
+        row = tk.Frame(info_section, bg="#eef2f7")
+        row.pack(fill="x", pady=2)
+
+        tk.Label(
+            row,
+            text=f"{label}:",
+            font=("Arial", 10, "bold"),
+            bg="#eef2f7",
+            width=15,
+            anchor="w"
+        ).pack(side="left", padx=10)
+
+        tk.Label(
+            row,
+            text=value, 
+            font=("Arial" ,10),
+            bg = "#eef2f7"
+        ).pack(side="left", padx=10)
+
+    infos("Customer ID", order['Customer ID'])
+    infos("Full Name", f"{order['First Name']} {order['Last Name']}")
+    infos("Contact", order['Contact Number'])
+    infos("Email", order['Email'])
+    infos("Birthday", order['Birthday'])
+    address = f"{order['Street/Bldg']}, {order['Barangay']}, {order['City']}, {order['Region']}, {order['ZIP/Postal']}"
+    infos("Address", address)
+
+    tk.Frame(
+        container,
+        height=2,
+        bg="black"
+    ).pack(fill="x", pady=20)
+    
+    def devices_rented():
+        tk.Label(
+        container,
+        text="RENTAL HISTORY",
+        font=("Arial", 20, "bold"),
+        bg="#eef2f7"
+        ).pack(pady=(0,10), anchor="w")
+        
+        columns = ("device", "rented", "due", "status")
+        tree = ttk.Treeview(container,columns=columns, show="headings", height=20)
+
+        style = ttk.Style()
+        style.configure("Treeview.Heading", font=("Arial", 10, "bold"))
+
+        tree.heading("device", text="Device Name")
+        tree.heading("rented", text="Rental Date")
+        tree.heading("due", text="Due Date")
+        tree.heading("status", text="Status")
+        
+        tree.column("device", width=150, anchor="center")
+        tree.column("rented", width=100, anchor="center")
+        tree.column("due", width=100, anchor="center")
+        tree.column("status", width=80, anchor="center")
+
+        scrollbar = ttk.Scrollbar(container, orient="vertical", command=tree.yview)
+        tree.configure(yscrollcommand=scrollbar.set)
+
+        rented_list = customer_rentals(order['Customer ID'])
+        for item in rented_list:
+            tree.insert("", "end", values=(item['name'], item['rented_date'], item['due_date'], item['status']))
+        
+        tree.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
+    devices_rented()
+        
+
 
     frame.tkraise()

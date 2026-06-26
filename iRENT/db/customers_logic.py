@@ -14,6 +14,27 @@ def get_all_customers(status='Active'):
     conn.close()
     return customers
 
+def customer_rentals(customer_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    query = """
+        SELECT D.Model, R.RentalDate, R.ReturnDate, R.RentalStatus 
+        FROM Rental R
+        JOIN Device D ON R.DeviceID = D.DeviceID
+        WHERE R.CustomerID = ?
+    """
+    cursor.execute(query, (customer_id,))
+    rows = cursor.fetchall()
+
+    rentals = [
+        {"name": row[0], "rented_date": row[1], "due_date": row[2], "status": row[3]} 
+        for row in rows
+    ]
+    
+    conn.close()
+    return rentals
+
 
 def update_customer(customer_id, data_dict):
     conn = get_connection()
