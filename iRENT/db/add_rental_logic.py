@@ -131,3 +131,43 @@ def get_customers():
     conn.close()
     return results
 
+
+def load_devices():
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        SELECT DT.TypeName, B.BrandName, D.Model, D.RentalPrice, D.DeviceID
+        FROM Device D
+        JOIN DeviceType DT ON D.DeviceTypeID = DT.DeviceTypeID
+        JOIN Brand B ON D.BrandID = B.BrandID
+        WHERE D.AvailabilityStatus = 'Available'
+    """)
+    rows = cursor.fetchall()
+    conn.close()
+
+    hierarchy = {}
+    for device_id, dev_type, brand, model, price in rows:
+        if dev_type not in hierarchy:
+            hierarchy[dev_type] = {}
+        if brand not in hierarchy[dev_type]:
+            hierarchy[dev_type][brand] = {}
+        
+        hierarchy[dev_type][brand][model] = {
+            "id": device_id,
+            "price": price
+        }
+    
+    return hierarchy
+
+def all_avail_dev():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT D.DeviceID, DT.TypeName, B.BrandName, D.Model, D.RentalPrice
+        FROM Device D
+        JOIN DeviceType DT ON D.DeviceTypeID = DT.DeviceTypeID
+        JOIN Brand B ON D.BrandID = B.BrandID
+        WHERE D.AvailabilityStatus = 'Available'
+    """)
+    return [{"id": r[0], "type": r[1], "brand": r[2], "model": r[3], "price": r[4]} for r in cursor.fetchall()]

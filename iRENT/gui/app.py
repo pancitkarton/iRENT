@@ -42,7 +42,7 @@ class MainApp:
         self.create_customers_page()
         self.create_list_page()
 
-        self.pages["dashboard"].tkraise()
+        self.set_active_page("dashboard")
 
     def add_hover(self, btn, enter_bg, leave_bg, enter_fg=None, leave_fg=None):
 
