@@ -10,6 +10,7 @@ def getcreate_customer(
         contact, 
         email,
         region,
+        province,
         city,
         barangay,
         postal,
@@ -39,16 +40,17 @@ def getcreate_customer(
         ContactNumber, 
         EmailAddress,
         Region,
+        Province,
         City,
         Barangay,
         Postal,
         Street
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 """, (
     first, middle, last, suffix,
     birthday, contact, email,
-    region, city, barangay, postal, street
+    region, province, city, barangay, postal, street
 ))
 
     conn.commit()
@@ -123,7 +125,7 @@ def get_customers():
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT CustomerID, FirstName, MiddleName, LastName, Suffix, ContactNumber, EmailAddress, Region, City, Barangay, Postal, Street
+        SELECT CustomerID, FirstName, MiddleName, LastName, Suffix, ContactNumber, EmailAddress, Region, Province, City, Barangay, Postal, Street
         FROM Customer
     """)
 

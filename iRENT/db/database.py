@@ -55,6 +55,7 @@ def initialize_db():
         ContactNumber TEXT NOT NULL UNIQUE,
         EmailAddress TEXT NOT NULL UNIQUE,
         Region TEXT,
+        Province TEXT,
         City TEXT,
         Barangay TEXT,
         Postal TEXT,

@@ -5,6 +5,7 @@ from tkcalendar import DateEntry
 from datetime import datetime, date
 from tkinter import messagebox
 from db.add_rental_logic import getcreate_customer, create_rental, get_devices, get_customers, load_devices, all_avail_dev
+from db.address_service import regionsdb, provincesdb, citiesdb, brgysdb
 from db.validation import validate_input
 import re
 
@@ -80,7 +81,7 @@ def select_customer(rental, name_entries, contact_entry, email_entry):
             return
 
         values = tree.item(selected, "values")
-        (cust_id, first, middle, last, suffix, contact, email, region, city, brgy, postal, street) = values
+        (cust_id, first, middle, last, suffix, contact, email, region, province, city, brgy, postal, street) = values
 
         rental.entries["First Name"].delete(0, tk.END)
         rental.entries["First Name"].insert(0, first)
@@ -97,6 +98,7 @@ def select_customer(rental, name_entries, contact_entry, email_entry):
         rental.email_entry.insert(0, email)
 
         rental.region_cb.set(region)
+        rental.province_cb.set(province)
         rental.city_cb.set(city)
         rental.brgy_cb.set(brgy)
         rental.postal_entry.delete(0, tk.END)
@@ -273,7 +275,28 @@ def add_rental_page(container_frame,rental, prefill_device=None, prefill_model=N
 
         default_year = datetime.now().year - 21
         default_bday = date(default_year, 1, 1)
-        
+
+        def on_region_select(event):
+            selected_name = rental.region_cb.get()
+            r_code = rental.region_map[selected_name]
+            provinces = provincesdb(r_code)
+            rental.province_cb["values"] = [p[1] for p in provinces]
+            rental.province_map = {p[1]: p[0] for p in provinces}
+            rental.city_cb.set('')
+            rental.brgy_cb.set('')
+
+        def on_province_select(event):
+            p_code = rental.province_map[rental.province_cb.get()]
+            cities = citiesdb(p_code)
+            rental.city_cb["values"] = [c[1] for c in cities]
+            rental.city_map = {c[1]: c[0] for c in cities}
+            rental.brgy_cb.set('')
+
+        def on_city_select(event):
+            c_code = rental.city_map[rental.city_cb.get()]
+            brgys = brgysdb(c_code)
+            rental.brgy_cb["values"] = [b[1] for b in brgys]
+
         for widget in container_frame.winfo_children():
             widget.destroy()
 
@@ -313,6 +336,7 @@ def add_rental_page(container_frame,rental, prefill_device=None, prefill_model=N
                     rental.contact_entry.get(),
                     rental.email_entry.get(),
                     rental.region_cb.get(),
+                    rental.province_cb.get(),
                     rental.city_cb.get(),
                     rental.brgy_cb.get(),
                     rental.postal_entry.get(),
@@ -360,6 +384,7 @@ def add_rental_page(container_frame,rental, prefill_device=None, prefill_model=N
             rental.street_entry.delete(0, tk.END)
             
             rental.region_cb.set('')
+            rental.province_cb.set('')
             rental.city_cb.set('')
             rental.brgy_cb.set('')
             
@@ -443,42 +468,20 @@ def add_rental_page(container_frame,rental, prefill_device=None, prefill_model=N
 
 
         
-        rental.region_cb = cframe(addr_frame, "Region:", 12, is_cb=True)
-        rental.city_cb = cframe(addr_frame, "City:", 12, is_cb=True)
-        rental.brgy_cb = cframe(addr_frame, "Brgy:", 12, is_cb=True)
+        rental.region_cb = cframe(addr_frame, "Region:", 30, is_cb=True)
+        rental.province_cb = cframe(addr_frame, "Province:", 30, is_cb=True)
+        rental.city_cb = cframe(addr_frame, "City:", 15, is_cb=True)
+        rental.brgy_cb = cframe(addr_frame, "Brgy:", 15, is_cb=True)
         rental.postal_entry = cframe(addr_frame, "Postal:", 8, is_cb=False, helper="e.g. 1000")
         rental.street_entry = cframe(addr_frame, "Street/Bldg:", 30, is_cb=False, helper="Ex: 1234 Maple Street, Apt 5B")
 
-        #dummy values lng muna
-        rental.region_cb["values"] = [
-            "NCR",
-            "MIMAROPA",
-            "CALABARZON",
-            "REGION IV-A",
-            "REGION V"
-        ]
+        regions_data = regionsdb()
+        rental.region_cb["values"] = [r[1] for r in regions_data]
+        rental.region_map = {r[1]: r[0] for r in regions_data}
 
-        rental.city_cb["values"] = [
-            "Quezon City",
-            "Caloocan City",
-            "Rizal City",
-            "Baguio City",
-            "Taguig City",
-            "Pasig City",
-            "Tacloban City"
-        ]
-
-        rental.brgy_cb["values"] = [
-            "Brgy. Payatas",
-            "Brgy. Commonwealth",
-            "Brgy. San Isidro",
-            "Brgy. 123",
-            "Brgy. 168",
-            "Brgy. 173",
-            "Brgy. 178",
-            "Brgy. 181",
-            
-        ]
+        rental.region_cb.bind("<<ComboboxSelected>>", on_region_select)
+        rental.province_cb.bind("<<ComboboxSelected>>", on_province_select)
+        rental.city_cb.bind("<<ComboboxSelected>>", on_city_select)
 
         contact_frame = tk.LabelFrame(
             form_frame, 
