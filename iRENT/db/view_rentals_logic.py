@@ -162,6 +162,7 @@ def get_rental_details(rental_id):
     cursor.execute("""
         SELECT
             r.RentalID,
+            c.CustomerID,
             IFNULL(c.FirstName || ' ' || c.LastName, 'Unknown') AS CustomerName,
             c.ContactNumber,
             c.EmailAddress,
@@ -189,18 +190,19 @@ def get_rental_details(rental_id):
 
     return {
         "id": str(row[0]),
-        "rentee": row[1],
-        "contact number": row[2],
-        "email address": row[3],
-        "device_id": row[4],
-        "brand": row[5],
-        "model": row[6],
-        "serial_number": row[7],
-        "start_date": row[8],
-        "expected_return": row[9],
-        "total_fee": row[10],
-        "status": row[11],
-        "device_price": row[12]
+        "customer_id": row[1],
+        "rentee": row[2],
+        "contact number": row[3],
+        "email address": row[4],
+        "device_id": row[5],
+        "brand": row[6],
+        "model": row[7],
+        "serial_number": row[8],
+        "start_date": row[9],
+        "expected_return": row[10],
+        "total_fee": row[11],
+        "status": row[12],
+        "device_price": row[13]
     }
 
 
