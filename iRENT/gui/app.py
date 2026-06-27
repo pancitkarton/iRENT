@@ -7,6 +7,7 @@ import os
 
 from db.dashboard_logic import get_dashboard_summary, welcome_staff
 from gui.rentals import rentals_page
+from gui.rentals import refresh_rental_list, get_rentals_by_status
 from gui.add_rental import add_rental_page
 from gui.customers import customers_page
 from gui.list import create_list
@@ -234,7 +235,6 @@ class MainApp:
 
 
     def create_dashboard(self):
-
         stats = get_dashboard_summary()
 
         frame = tk.LabelFrame(
@@ -261,6 +261,14 @@ class MainApp:
             fg="black"
         ).grid(row=0, column=0, columnspan=4, pady=(0, 20), sticky="w")
 
+        def filtered_rentals(status):
+            self.set_active_page("rentals")
+            if hasattr(self, 'rental_list_container'):
+                refresh_rental_list(self, self.rental_list_container, get_rentals_by_status(status))
+
+        def gotopage(page_name):
+            self.set_active_page(page_name)
+
         self.create_card(
             frame, 
             "#5CB85C", 
@@ -268,7 +276,8 @@ class MainApp:
             str(stats["active"]), 
             "Active Rentals", 
             1, 
-            row=1
+            row=1,
+            command=lambda: filtered_rentals("Ongoing")
         )
 
 
@@ -279,7 +288,8 @@ class MainApp:
             str(stats["overdue"]), 
             "Overdue Rentals", 
             2, 
-            row=1
+            row=1,
+            command=lambda: filtered_rentals("Overdue")
         )
 
         self.create_card(
@@ -289,7 +299,8 @@ class MainApp:
             str(stats["available"]), 
             "Available for Rent",
             3, 
-            row=1
+            row=1,
+            command=lambda: gotopage("devices")
         )
 
         self.create_card(
@@ -299,7 +310,8 @@ class MainApp:
             str(stats["total_devices"]), 
             "Total Devices", 
             1, 
-            row=2
+            row=2,
+            command=lambda: gotopage("devices")
         )
 
         self.create_card(
@@ -309,7 +321,8 @@ class MainApp:
             str(stats["total_rentees"]), 
             "Total Rentees", 
             2, 
-            row=2
+            row=2,
+            command=lambda: gotopage("customers")
         )
 
         self.create_card(
@@ -322,9 +335,7 @@ class MainApp:
             row=2
         )
 
-
-    
-    def create_card(self, parent, color, icon_name, number, title, column, row=1):
+    def create_card(self, parent, color, icon_name, number, title, column, row=1, command=None):
 
         BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         icon_path = os.path.join(BASE_DIR, "assets", icon_name)
@@ -338,11 +349,33 @@ class MainApp:
             bg=color,
             width=200,
             height=200,
-            highlightbackground="black",
-            highlightthickness=2
         )
         card.grid(row=row, column=column, sticky="n", padx=23, pady=17)
         card.pack_propagate(False)
+
+        def on_enter(e):
+            card.config(highlightbackground="black", highlightthickness=3)
+            card.grid(pady=5)
+            if command: card.config(cursor="hand2")
+
+        def on_leave(e):
+            card.config(highlightbackground="#eef2f7")
+            card.grid(pady=17)
+            card.config(cursor="")
+
+        def bind_all(widget):
+            widget.bind("<Enter>", on_enter)
+            widget.bind("<Leave>", on_leave)
+            if command:
+                widget.bind("<Button-1>", lambda e: command())
+            for child in widget.winfo_children():
+                bind_all(child)
+
+        if command:
+            card.config(cursor="hand2")
+            card.bind("<Button-1>", lambda e: command())
+            for child in card.winfo_children():
+                child.bind("<Button-1>", lambda e: command())
 
         tk.Label(card, image=icon, bg=color).pack(pady=(15, 5))
 
@@ -361,3 +394,5 @@ class MainApp:
             fg="white", 
             bg=color
         ).pack(pady=(0, 20))
+
+        bind_all(card)
