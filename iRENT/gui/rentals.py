@@ -96,10 +96,10 @@ def open_receipt(order):
     # SAFELY PARSE DYNAMIC FEE CALCULATION
     raw_fee = order.get('total_fee', 0.00)
     base_fee = float(raw_fee) if raw_fee is not None else 0.00
-    
+
     is_overdue = (order.get('status') == "Overdue")
     penalty = 0.00
-    
+
     # Calculate penalty based on exactly how many days late they are
     if is_overdue:
         try:
@@ -108,7 +108,7 @@ def open_receipt(order):
             days_late = max(1, (today - expected_date).days)
             penalty = 300.00 * days_late
         except Exception:
-            penalty = 300.00 # Fallback 
+            penalty = 300.00 # Fallback
 
     total = base_fee + penalty
 
@@ -196,7 +196,7 @@ def rentals_page(main_frame, app):
     def trigger_search(event=None):
         term = search.get().strip()
         if term == "" or term == "Search...":
-            refresh_rental_list(app, container, get_all_rentals())
+            refresh_rental_list(app, container, get_rentals_by_status("Ongoing")) # Load Ongoing when cleared
         else:
             refresh_rental_list(app, container, search_rentals(term))
 
@@ -218,6 +218,7 @@ def rentals_page(main_frame, app):
 
     def filter_menu(event):
         menu = tk.Menu(main_frame, tearoff=0)
+        menu.add_command(label="Show All", command=lambda: refresh_rental_list(app, container, get_all_rentals())) # Added option to view all
         menu.add_command(label="Show Active", command=lambda: refresh_rental_list(app, container, get_rentals_by_status("Ongoing")))
         menu.add_command(label="Show Overdue", command=lambda: refresh_rental_list(app, container, get_rentals_by_status("Overdue")))
         menu.add_command(label="Show Completed", command=lambda: refresh_rental_list(app, container, get_rentals_by_status("Completed")))
@@ -245,7 +246,8 @@ def rentals_page(main_frame, app):
 
     add_hover(filter_label, "#eef2f7", "#eef2f7", "black", "#e6b800")
 
-    refresh_rental_list(app, container, get_all_rentals())
+    # Load initial data (Default to Ongoing)
+    refresh_rental_list(app, container, get_rentals_by_status("Ongoing"))
 
     bottom = tk.Frame(main_frame, padx=40, pady=20, bg="#eef2f7")
     bottom.pack(fill="x", side="bottom")
@@ -318,13 +320,13 @@ def show_details(app, order_id):
         font=("Arial", 12, "bold"),
         bg="#eef2f7"
         ).grid(row=1, column=1, sticky="w",  pady=(0,10))
-    
+
     raw_fee = order.get('total_fee', 0.00)
     base_fee = float(raw_fee) if raw_fee is not None else 0.00
-    
+
     is_overdue = (order.get('status') == "Overdue")
     penalty = 0.00
-    
+
     if is_overdue:
         try:
             expected_date = datetime.strptime(order.get('expected_return', ''), "%m-%d-%Y").date()
@@ -332,10 +334,10 @@ def show_details(app, order_id):
             days_late = max(1, (today - expected_date).days)
             penalty = 300.00 * days_late
         except Exception:
-            penalty = 300.00 
+            penalty = 300.00
 
     total_due = base_fee + penalty
-    
+
     tk.Label(
         container_details,
         text=f"Overdue Fee: ₱{penalty:.2f}",
@@ -495,9 +497,9 @@ def show_details(app, order_id):
     if order['status'] != "Completed":
         def complete_action():
             try:
-                # Safely execute the logic function 
+                # Safely execute the logic function
                 mark_rental_as_completed(order['id'])
-                
+
                 # FORCE update as a failsafe, guaranteeing the button finishes its job
                 conn = get_connection()
                 cursor = conn.cursor()
@@ -510,8 +512,9 @@ def show_details(app, order_id):
                 # Trigger GUI Updates
                 open_receipt(order)
                 app.pages["rentals"].tkraise()
-                refresh_rental_list(app, app.rental_list_container, get_all_rentals())
-                
+                # Reload Ongoing rentals after completing one
+                refresh_rental_list(app, app.rental_list_container, get_rentals_by_status("Ongoing"))
+
             except Exception as e:
                 # Give a popup warning if anything actually breaks!
                 messagebox.showerror("System Error", f"Failed to complete rental:\n{e}")
