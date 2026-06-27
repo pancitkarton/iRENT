@@ -106,7 +106,7 @@ def display_table(app, table_wrapper, customer_list, refresh_callback=None):
                 )
                 cell.grid(row=i, column=col, sticky="nsew")
                 
-                cell.bind("<Button-1>", lambda e, c=display_data: customer_details(app, c, refresh_callback))
+                cell.bind("<Button-1>", lambda e, c=customer: customer_details(app, c, refresh_callback))
                 cell.bind("<Enter>", lambda e, r=i: highlight_row(e, r, "#f0f0f0"))
                 cell.bind("<Leave>", lambda e, r=i: highlight_row(e, r, "white"))
 
@@ -122,7 +122,7 @@ def add_hover(btn, enter_bg, leave_bg, enter_fg=None, leave_fg=None):
     btn.bind("<Enter>", on_enter)
     btn.bind("<Leave>", on_leave)
 
-def edit_details(order, refresh_callback):
+def edit_details(order, refresh_callback, render_details_func):
     edit_win = tk.Toplevel()
     edit_win.title("Edit Customer Details")
     edit_win.configure(bg="#eef2f7")
@@ -131,7 +131,22 @@ def edit_details(order, refresh_callback):
     vcmd_alpha = (edit_win.register(lambda P: validate_input(P, "alpha")), '%P')
     vcmd_suffix = (edit_win.register(lambda P: validate_input(P, "suffix", length=5)), '%P')
     vcmd_email = (edit_win.register(lambda P: validate_input(P, "email")), '%P')
-    
+
+    field_map = {
+        'FirstName': 'First Name',
+        'MiddleName': 'Middle Name',
+        'LastName': 'Last Name',
+        'Suffix': 'Suffix',
+        'Birthday': 'Birthday',
+        'ContactNumber': 'Contact Number',
+        'EmailAddress': 'Email',
+        'Region': 'Region',
+        'City': 'City',
+        'Barangay': 'Barangay',
+        'Postal': 'ZIP/Postal',
+        'Street': 'Street/Bldg'
+    }
+
     entries = {}
 
     tk.Label(
@@ -141,21 +156,23 @@ def edit_details(order, refresh_callback):
         bg="#eef2f7"
     ).grid(row=0, column=0, columnspan=2, pady=15, padx=10)
     
-    for i, (key, value) in enumerate(order.items()):
-        row_idx = i + 1 
-        tk.Label(edit_win, text=key, font=("Arial", 10, "bold"), bg="#eef2f7").grid(row=row_idx, column=0, padx=10, pady=5, sticky="w")
+    for i, (db_key, label) in enumerate(field_map.items()):
+        row_idx = i + 1
+        tk.Label(edit_win, text=label, font=("Arial", 10, "bold"), bg="#eef2f7").grid(row=row_idx, column=0, padx=10, pady=5, sticky="w")
+        
         ent = tk.Entry(edit_win, width=30)
-        ent.insert(0, str(value))
+        ent.insert(0, str(order.get(db_key, "")))
         ent.grid(row=row_idx, column=1, padx=10, pady=5)
-        entries[key] = ent
 
-        if key in ["First Name", "Middle Name", "Last Name"]:
+        entries[label] = ent
+    
+        if label in ["First Name", "Middle Name", "Last Name"]:
             ent.config(validate="key", validatecommand=vcmd_alpha)
-        elif key == "Suffix":
+        elif label == "Suffix":
             ent.config(validate="key", validatecommand=vcmd_suffix)
-        elif key == "Contact Number":
+        elif label == "Contact Number":
             ent.config(validate="key", validatecommand=vcmd_num)
-        elif key == "Email":
+        elif label == "Email":
             ent.config(validate="key", validatecommand=vcmd_email)
 
     def save_changes():
@@ -170,39 +187,33 @@ def edit_details(order, refresh_callback):
         if len(contact) < 11:
             messagebox.showerror("Error", "Contact number must be 11 digits.")
             return
-        
-
+    
         confirmed = messagebox.askyesno("Confirm", "Are you sure you want to save changes?")
 
         if not confirmed:
             return
         
-        field_map = {
-            'Customer ID': 'CustomerID', 
-            'First Name': 'FirstName', 
-            'Last Name': 'LastName', 
-            'Suffix': 'Suffix', 
-            'Contact Number': 'ContactNumber',
-            'Email': 'EmailAddress', 
-            'Birthday': 'Birthday',
-            'Street/Bldg': 'Street', 
-            'Barangay': 'Barangay',
-            'City': 'City', 
-            'Region': 'Region', 
-            'ZIP/Postal': 'Postal'
+        updated_data = {
+            'FirstName': entries['First Name'].get(),
+            'MiddleName': entries['Middle Name'].get(),
+            'LastName': entries['Last Name'].get(),
+            'Suffix': entries['Suffix'].get(),
+            'Birthday': entries['Birthday'].get(),
+            'ContactNumber': entries['Contact Number'].get(),
+            'EmailAddress': entries['Email'].get(),
+            'Region': entries['Region'].get(),
+            'City': entries['City'].get(),
+            'Barangay': entries['Barangay'].get(),
+            'Postal': entries['ZIP/Postal'].get(),
+            'Street': entries['Street/Bldg'].get()
         }
         
-        updated_data = {field_map.get(key, key): ent.get() for key, ent in entries.items()}
-
-        customer_id = order['Customer ID']
-
-        updated_data['MiddleName'] = order.get('MiddleName', '')
-        updated_data['Suffix'] = order.get('Suffix', '')
-        
-        if update_customer(order['Customer ID'], updated_data):
+        if update_customer(order['CustomerID'], updated_data):
             messagebox.showinfo("Success", "Yay! Customer details updated successfully.")
             edit_win.destroy()
+            order.update(updated_data)
             refresh_callback()
+            render_details_func(order)
         else:
             tk.messagebox.showerror("Error", "Could not save to database.")
 
@@ -399,170 +410,158 @@ def customer_details(app, order, refresh_callback):
     frame = app.pages["customer_details"]
     frame.configure(bg="#eef2f7")
 
-    for w in frame.winfo_children():
-        w.destroy()
+    def render_details(current_order):
+        for w in frame.winfo_children():
+            w.destroy()
 
-    def add_hover(btn, enter_bg, leave_bg, enter_fg=None, leave_fg=None):
-
-        def on_enter(e):
-            btn.config(bg=enter_bg, cursor="hand2")
-            if enter_fg:
-                btn.config(fg=enter_fg)
-
-        def on_leave(e):
-            btn.config(bg=leave_bg, cursor="")
-            if leave_fg:
-                btn.config(fg=leave_fg)
-
-        btn.bind("<Enter>", on_enter)
-        btn.bind("<Leave>", on_leave)
-
-    bottom_bar = tk.Frame(
+        bottom_bar = tk.Frame(
         frame,
         padx=40,
         pady=20,
         bg="#eef2f7"
     )
-    bottom_bar.pack(fill="x", side="bottom")
+        bottom_bar.pack(fill="x", side="bottom")
 
-    back_btn = tk.Button(
-        bottom_bar,
-        text="Back",
-        font=("Arial", 17, "bold"),
-        bg="gray",
-        cursor="hand2",
-        command=lambda: app.pages["customers"].tkraise()
-    )
-    back_btn.pack(side="right", padx=5)
-    add_hover(back_btn, "#232624", "gray", "white", "black")
-
-    status = order.get('Status', 'Active')
-
-    if status == 'Active':
-        archive_btn = tk.Button(
-            bottom_bar, 
-            text="Archive Customer", 
+        back_btn = tk.Button(
+            bottom_bar,
+            text="Back",
             font=("Arial", 17, "bold"),
-            bg="#ff4d4d", 
-            fg="white", 
+            bg="gray",
             cursor="hand2",
-            command=lambda: perform_archive(order['Customer ID'], refresh_callback, app)
+            command=lambda: app.pages["customers"].tkraise()
         )
-        archive_btn.pack(side="left", padx=5)
-        add_hover(archive_btn, "#b30000", "#ff4d4d", "white", "white")
+        back_btn.pack(side="right", padx=5)
+        add_hover(back_btn, "#232624", "gray", "white", "black")
+
+        status = current_order.get('Status', 'Active')
+
+        if status == 'Active':
+            archive_btn = tk.Button(
+                bottom_bar, 
+                text="Archive Customer", 
+                font=("Arial", 17, "bold"),
+                bg="#ff4d4d", 
+                fg="white", 
+                cursor="hand2",
+                command=lambda: perform_archive(order['CustomerID'], refresh_callback, app)
+            )
+            archive_btn.pack(side="left", padx=5)
+            add_hover(archive_btn, "#b30000", "#ff4d4d", "white", "white")
+            
+            edit_btn = tk.Button(
+                bottom_bar, 
+                text="Edit Details", 
+                font=("Arial", 17, "bold"),
+                bg="#ffd735", 
+                command=lambda: edit_details(order, refresh_callback, render_details)
+            )
+            edit_btn.pack(side="right", padx=5)
+            add_hover(edit_btn, "#232624", "#ffd735", "#ffd735", "black")
+
+        elif status == 'Archived':
+            unarchive_btn = tk.Button(
+                bottom_bar, 
+                text="Unarchive Customer", 
+                font=("Arial", 17, "bold"),
+                bg="#4caf50", 
+                fg="white", cursor="hand2",
+                command=lambda: perform_unarchive(order['CustomerID'], refresh_callback, app)
+            )
+            unarchive_btn.pack(side="left", padx=5)
+            add_hover(unarchive_btn, "#388e3c", "#4caf50", "white", "white")
         
-        edit_btn = tk.Button(
-            bottom_bar, 
-            text="Edit Details", 
-            font=("Arial", 17, "bold"),
-            bg="#ffd735", 
-            command=lambda: edit_details(order, refresh_callback)
+        container = tk.Frame(
+            frame,
+            padx=40,
+            pady=40,
+            bg="#eef2f7"
         )
-        edit_btn.pack(side="right", padx=5)
-        add_hover(edit_btn, "#232624", "#ffd735", "#ffd735", "black")
-
-    elif status == 'Archived':
-        unarchive_btn = tk.Button(
-            bottom_bar, 
-            text="Unarchive Customer", 
-            font=("Arial", 17, "bold"),
-            bg="#4caf50", 
-            fg="white", cursor="hand2",
-            command=lambda: perform_unarchive(order['Customer ID'], refresh_callback, app)
-        )
-        unarchive_btn.pack(side="left", padx=5)
-        add_hover(unarchive_btn, "#388e3c", "#4caf50", "white", "white")
-
-    container = tk.Frame(
-        frame,
-        padx=40,
-        pady=40,
-        bg="#eef2f7"
-    )
-    container.pack(fill="both", expand=True)
-
-    tk.Label(
-        container,
-        text="CUSTOMER INFO",
-        font=("Arial", 30, "bold"),
-        bg="#eef2f7"
-    ).pack(pady=(0,10), anchor="w")
-
-
-    info_section = tk.Frame(container, bg="#eef2f7")
-    info_section.pack(fill="x")
-
-
-    def infos(label, value):
-        row = tk.Frame(info_section, bg="#eef2f7")
-        row.pack(fill="x", pady=2)
+        container.pack(fill="both", expand=True)
 
         tk.Label(
-            row,
-            text=f"{label}:",
-            font=("Arial", 10, "bold"),
-            bg="#eef2f7",
-            width=15,
-            anchor="w"
-        ).pack(side="left", padx=10)
-
-        tk.Label(
-            row,
-            text=value, 
-            font=("Arial" ,10),
-            bg = "#eef2f7"
-        ).pack(side="left", padx=10)
-
-    infos("Customer ID", order['Customer ID'])
-    infos("Full Name", f"{order['First Name']} {order['Last Name']}")
-    infos("Contact", order['Contact Number'])
-    infos("Email", order['Email'])
-    infos("Birthday", order['Birthday'])
-    address = f"{order['Street/Bldg']}, {order['Barangay']}, {order['City']}, {order['Region']}, {order['ZIP/Postal']}"
-    infos("Address", address)
-
-    tk.Frame(
-        container,
-        height=2,
-        bg="black"
-    ).pack(fill="x", pady=20)
-    
-    def devices_rented():
-        tk.Label(
-        container,
-        text="RENTAL HISTORY",
-        font=("Arial", 20, "bold"),
-        bg="#eef2f7"
+            container,
+            text="CUSTOMER INFO",
+            font=("Arial", 30, "bold"),
+            bg="#eef2f7"
         ).pack(pady=(0,10), anchor="w")
+
+
+        info_section = tk.Frame(container, bg="#eef2f7")
+        info_section.pack(fill="x")
+
+
+        def infos(label, value):
+            row = tk.Frame(info_section, bg="#eef2f7")
+            row.pack(fill="x", pady=2)
+
+            tk.Label(
+                row,
+                text=f"{label}:",
+                font=("Arial", 10, "bold"),
+                bg="#eef2f7",
+                width=15,
+                anchor="w"
+            ).pack(side="left", padx=10)
+
+            tk.Label(
+                row,
+                text=value, 
+                font=("Arial" ,10),
+                bg = "#eef2f7"
+            ).pack(side="left", padx=10)
+
+        infos("Customer ID", current_order['CustomerID'])
+        middle = current_order.get('MiddleName', '')
+        full_name = f"{current_order['FirstName']} {middle + ' ' if middle else ''}{current_order['LastName']}"
+        infos("Full Name", full_name)
+        infos("Contact", current_order['ContactNumber'])
+        infos("Email", current_order['EmailAddress'])
+        infos("Birthday", current_order['Birthday'])
+        address = f"{current_order['Street']}, {current_order['Barangay']}, {current_order['City']}, {current_order['Region']}, {current_order['Postal']}"
+        infos("Address", address)
+
+        tk.Frame(
+            container,
+            height=2,
+            bg="black"
+        ).pack(fill="x", pady=20)
         
-        columns = ("device", "rented", "due", "status")
-        tree = ttk.Treeview(container,columns=columns, show="headings", height=20)
+        def devices_rented():
+            tk.Label(
+            container,
+            text="RENTAL HISTORY",
+            font=("Arial", 20, "bold"),
+            bg="#eef2f7"
+            ).pack(pady=(0,10), anchor="w")
+            
+            columns = ("device", "rented", "due", "status")
+            tree = ttk.Treeview(container,columns=columns, show="headings", height=20)
 
-        style = ttk.Style()
-        style.configure("Treeview.Heading", font=("Arial", 10, "bold"))
+            style = ttk.Style()
+            style.configure("Treeview.Heading", font=("Arial", 10, "bold"))
 
-        tree.heading("device", text="Device Name")
-        tree.heading("rented", text="Rental Date")
-        tree.heading("due", text="Due Date")
-        tree.heading("status", text="Status")
+            tree.heading("device", text="Device Name")
+            tree.heading("rented", text="Rental Date")
+            tree.heading("due", text="Due Date")
+            tree.heading("status", text="Status")
+            
+            tree.column("device", width=150, anchor="center")
+            tree.column("rented", width=100, anchor="center")
+            tree.column("due", width=100, anchor="center")
+            tree.column("status", width=80, anchor="center")
+
+            scrollbar = ttk.Scrollbar(container, orient="vertical", command=tree.yview)
+            tree.configure(yscrollcommand=scrollbar.set)
+
+            rented_list = customer_rentals(order['CustomerID'])
+            for item in rented_list:
+                tree.insert("", "end", values=(item['name'], item['rented_date'], item['due_date'], item['status']))
+            
+            tree.pack(side="left", fill="both", expand=True)
+            scrollbar.pack(side="right", fill="y")
+
+        devices_rented()
         
-        tree.column("device", width=150, anchor="center")
-        tree.column("rented", width=100, anchor="center")
-        tree.column("due", width=100, anchor="center")
-        tree.column("status", width=80, anchor="center")
 
-        scrollbar = ttk.Scrollbar(container, orient="vertical", command=tree.yview)
-        tree.configure(yscrollcommand=scrollbar.set)
-
-        rented_list = customer_rentals(order['Customer ID'])
-        for item in rented_list:
-            tree.insert("", "end", values=(item['name'], item['rented_date'], item['due_date'], item['status']))
-        
-        tree.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
-
-    devices_rented()
-        
-
-
+    render_details(order)
     frame.tkraise()
