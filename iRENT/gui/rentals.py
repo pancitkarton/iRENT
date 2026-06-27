@@ -188,8 +188,21 @@ def rentals_page(main_frame, app):
     search.insert(0, "Search...")
     search.pack(side="right")
 
-    container = tk.Frame(main_frame, bg="#eef2f7", highlightthickness=0)
-    container.pack(fill="both", expand=True, padx=20)
+    scroll_wrapper = tk.Frame(main_frame, bg="#eef2f7")
+    scroll_wrapper.pack(fill="both", expand=True, padx=20)
+
+    canvas = tk.Canvas(scroll_wrapper, bg="#eef2f7", highlightthickness=0)
+    scrollbar = tk.Scrollbar(scroll_wrapper, orient="vertical", command=canvas.yview)
+    container = tk.Frame(canvas, bg="#eef2f7")
+
+    canvas.configure(yscrollcommand=scrollbar.set)
+    canvas.pack(side="left", fill="both", expand=True)
+    scrollbar.pack(side="right", fill="y")
+
+    canvas_window = canvas.create_window((0,0), window=container, anchor="nw")
+
+    canvas.bind("<Configure>", lambda e: canvas.itemconfig(canvas_window, width=e.width))
+    container.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
 
     app.rental_list_container = container
 
@@ -219,7 +232,7 @@ def rentals_page(main_frame, app):
     def filter_menu(event):
         menu = tk.Menu(main_frame, tearoff=0)
         menu.add_command(label="Show All", command=lambda: refresh_rental_list(app, container, get_all_rentals())) # Added option to view all
-        menu.add_command(label="Show Active", command=lambda: refresh_rental_list(app, container, get_rentals_by_status("Ongoing")))
+        menu.add_command(label="Show Ongoing", command=lambda: refresh_rental_list(app, container, get_rentals_by_status("Ongoing")))
         menu.add_command(label="Show Overdue", command=lambda: refresh_rental_list(app, container, get_rentals_by_status("Overdue")))
         menu.add_command(label="Show Completed", command=lambda: refresh_rental_list(app, container, get_rentals_by_status("Completed")))
         menu.post(event.x_root, event.y_root)
