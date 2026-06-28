@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 from PIL import Image, ImageTk
 import os
+import sqlite3
 from datetime import datetime
 
 from db.database import get_connection
@@ -78,7 +79,7 @@ def refresh_rental_list(app, container, rentals_data):
         add_hover(btn, "#232624", "#ffd735", "#ffd735", "black")
 
 
-def open_receipt(order):
+def open_receipt(order, final_penalty=0.00):
     receipt_win = tk.Toplevel()
     receipt_win.title("Rental Receipt")
     receipt_win.configure(bg="white")
@@ -93,23 +94,11 @@ def open_receipt(order):
     details_frame = tk.Frame(receipt_win, bg="white")
     details_frame.pack(fill="x", padx=40)
 
-    # SAFELY PARSE DYNAMIC FEE CALCULATION
     raw_fee = order.get('total_fee', 0.00)
     base_fee = float(raw_fee) if raw_fee is not None else 0.00
 
-    is_overdue = (order.get('status') == "Overdue")
-    penalty = 0.00
-
-    # Calculate penalty based on exactly how many days late they are
-    if is_overdue:
-        try:
-            expected_date = datetime.strptime(order.get('expected_return', ''), "%m-%d-%Y").date()
-            today = datetime.today().date()
-            days_late = max(1, (today - expected_date).days)
-            penalty = 300.00 * days_late
-        except Exception:
-            penalty = 300.00 # Fallback
-
+    # Use the explicitly passed penalty
+    penalty = final_penalty
     total = base_fee + penalty
 
     items = [
@@ -152,6 +141,16 @@ def open_receipt(order):
 
 
 def rentals_page(main_frame, app):
+    # Ensure PenaltyFee column exists in the database for tracking late completed items
+    conn = get_connection()
+    try:
+        conn.execute("ALTER TABLE Rental ADD COLUMN PenaltyFee REAL DEFAULT 0.00")
+        conn.commit()
+    except Exception:
+        pass # Column already exists
+    finally:
+        conn.close()
+
     main_frame.configure(bg="#eef2f7")
 
     title = tk.Label(
@@ -206,10 +205,19 @@ def rentals_page(main_frame, app):
 
     app.rental_list_container = container
 
+    # NEW: Attach the refresh function to the app and load ALL rentals
+    def refresh(event=None):
+        refresh_rental_list(app, container, get_all_rentals())
+
+    app.refresh_rentals = refresh
+
+    # NEW: Auto-refresh the page anytime the user clicks the menu button to show it
+    main_frame.bind("<Visibility>", lambda e: refresh() if e.widget == main_frame else None)
+
     def trigger_search(event=None):
         term = search.get().strip()
         if term == "" or term == "Search...":
-            refresh_rental_list(app, container, get_rentals_by_status("Ongoing")) # Load Ongoing when cleared
+            refresh_rental_list(app, container, get_all_rentals()) # Load All when cleared
         else:
             refresh_rental_list(app, container, search_rentals(term))
 
@@ -231,7 +239,7 @@ def rentals_page(main_frame, app):
 
     def filter_menu(event):
         menu = tk.Menu(main_frame, tearoff=0)
-        menu.add_command(label="Show All", command=lambda: refresh_rental_list(app, container, get_all_rentals())) # Added option to view all
+        menu.add_command(label="Show All", command=lambda: refresh_rental_list(app, container, get_all_rentals()))
         menu.add_command(label="Show Ongoing", command=lambda: refresh_rental_list(app, container, get_rentals_by_status("Ongoing")))
         menu.add_command(label="Show Overdue", command=lambda: refresh_rental_list(app, container, get_rentals_by_status("Overdue")))
         menu.add_command(label="Show Completed", command=lambda: refresh_rental_list(app, container, get_rentals_by_status("Completed")))
@@ -259,8 +267,8 @@ def rentals_page(main_frame, app):
 
     add_hover(filter_label, "#eef2f7", "#eef2f7", "black", "#e6b800")
 
-    # Load initial data (Default to Ongoing)
-    refresh_rental_list(app, container, get_rentals_by_status("Ongoing"))
+    # Load initial data (Default to All)
+    refresh_rental_list(app, container, get_all_rentals())
 
     bottom = tk.Frame(main_frame, padx=40, pady=20, bg="#eef2f7")
     bottom.pack(fill="x", side="bottom")
@@ -294,6 +302,18 @@ def show_details(app, order_id):
 
     for w in frame.winfo_children():
         w.destroy()
+
+    # Fetch existing penalty if already completed
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT PenaltyFee FROM Rental WHERE RentalID = ?", (order['id'],))
+        row = cursor.fetchone()
+        saved_penalty = float(row[0]) if row and row[0] is not None else 0.00
+    except Exception:
+        saved_penalty = 0.00
+    finally:
+        conn.close()
 
     container_details = tk.Frame(
         frame,
@@ -337,10 +357,11 @@ def show_details(app, order_id):
     raw_fee = order.get('total_fee', 0.00)
     base_fee = float(raw_fee) if raw_fee is not None else 0.00
 
-    is_overdue = (order.get('status') == "Overdue")
+    status = order.get('status')
     penalty = 0.00
 
-    if is_overdue:
+    # DYNAMICALLY calculate penalty if late, otherwise pull the frozen penalty if it's already completed
+    if status == "Overdue":
         try:
             expected_date = datetime.strptime(order.get('expected_return', ''), "%m-%d-%Y").date()
             today = datetime.today().date()
@@ -348,6 +369,8 @@ def show_details(app, order_id):
             penalty = 300.00 * days_late
         except Exception:
             penalty = 300.00
+    elif status == "Completed":
+        penalty = saved_penalty
 
     total_due = base_fee + penalty
 
@@ -356,7 +379,7 @@ def show_details(app, order_id):
         text=f"Overdue Fee: ₱{penalty:.2f}",
         font=("Arial", 12, "bold"),
         bg="#eef2f7",
-        fg="red" if is_overdue else "black"
+        fg="red" if (status == "Overdue" or penalty > 0) else "black"
         ).grid(row=2, column=1, sticky="w",  pady=(0,10))
 
     tk.Frame(
@@ -485,7 +508,7 @@ def show_details(app, order_id):
         text=f"₱ {total_due:.2f}",
         font=("Arial", 20, "bold"),
         bg="white",
-        fg="#D9534F" if is_overdue else "black"
+        fg="#D9534F" if (status == "Overdue" or penalty > 0) else "black"
     ).pack(padx=10, pady=(0, 5))
 
     tk.Label(
@@ -510,23 +533,27 @@ def show_details(app, order_id):
     if order['status'] != "Completed":
         def complete_action():
             try:
-                # Safely execute the logic function
                 mark_rental_as_completed(order['id'])
 
-                # FORCE update as a failsafe, guaranteeing the button finishes its job
+                # FORCE update as a failsafe and FREEZE the current penalty into the database
                 conn = get_connection()
                 cursor = conn.cursor()
-                cursor.execute("UPDATE Rental SET RentalStatus = 'Completed' WHERE RentalID = ?", (order['id'],))
+                cursor.execute(
+                    "UPDATE Rental SET RentalStatus = 'Completed', PenaltyFee = ? WHERE RentalID = ?",
+                    (penalty, order['id'])
+                )
                 if order.get('device_id'):
                     cursor.execute("UPDATE Device SET AvailabilityStatus = 'Available' WHERE DeviceID = ?", (order['device_id'],))
                 conn.commit()
                 conn.close()
 
                 # Trigger GUI Updates
-                open_receipt(order)
+                open_receipt(order, final_penalty=penalty)
                 app.pages["rentals"].tkraise()
-                # Reload Ongoing rentals after completing one
-                refresh_rental_list(app, app.rental_list_container, get_rentals_by_status("Ongoing"))
+
+                # Reload All rentals after completing one
+                if hasattr(app, 'refresh_rentals'):
+                    app.refresh_rentals()
 
             except Exception as e:
                 # Give a popup warning if anything actually breaks!

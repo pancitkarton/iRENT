@@ -13,7 +13,6 @@ def _ensure_specs_column(conn):
     if "SpecsText" not in columns:
         cursor.execute("ALTER TABLE Device ADD COLUMN SpecsText TEXT")
         conn.commit()
-
     if "ProductID" not in columns:
         cursor.execute("ALTER TABLE Device ADD COLUMN ProductID TEXT")
         conn.commit()
@@ -25,7 +24,6 @@ def get_categories(conn=None):
     cursor = conn.cursor()
     cursor.execute("SELECT TypeName FROM DeviceType ORDER BY TypeName")
     return [row[0] for row in cursor.fetchall()]
-
 
 # 2. Get all brand names under a given category
 def get_brands(category_name, conn=None):
@@ -42,13 +40,11 @@ def get_brands(category_name, conn=None):
     ''', (category_name,))
     return [row[0] for row in cursor.fetchall()]
 
-
 # 3. Get all models for a (category, brand) with specs, price, stock, functionality, serial_num
 def get_models(category_name, brand_name, conn=None):
     # FIXED: Added fallback connection to prevent crash when triggered by GUI
     if conn is None:
         conn = get_connection()
-        
     cursor = conn.cursor()
     cursor.execute('''
         SELECT
@@ -83,7 +79,6 @@ def get_models(category_name, brand_name, conn=None):
         })
     return result
 
-
 # 4. Add a new model (insert multiple devices with identical specs)
 def add_model(category_name, brand_name, model_name, product_id,
               price, stock_count, specs_list,
@@ -95,7 +90,7 @@ def add_model(category_name, brand_name, model_name, product_id,
         close_conn = True
     else:
         close_conn = False
-        cursor = conn.cursor()
+    cursor = conn.cursor()
 
     cursor.execute("SELECT DeviceTypeID FROM DeviceType WHERE TypeName = ?", (category_name,))
     type_row = cursor.fetchone()
@@ -107,9 +102,10 @@ def add_model(category_name, brand_name, model_name, product_id,
     cursor.execute("SELECT BrandID FROM Brand WHERE BrandName = ?", (brand_name,))
     brand_row = cursor.fetchone()
     if not brand_row:
-        if close_conn: conn.close()
-        return False, f"Brand '{brand_name}' not found."
-    brand_id = brand_row[0]
+        cursor.execute("INSERT INTO Brand (BrandName) VALUES (?)", (brand_name,))
+        brand_id = cursor.lastrowid
+    else:
+        brand_id = brand_row[0]
 
     # Optional duplicate check
     cursor.execute('''
@@ -124,26 +120,31 @@ def add_model(category_name, brand_name, model_name, product_id,
     # Join specs with delimiter
     specs_text = SPECS_DELIMITER.join(specs_list)
 
-    # Insert each unit
-    for i in range(stock_count):
-        serial = f"{serial_num}-{i+1:03d}"
+    if stock_count == 0:
         cursor.execute('''
             INSERT INTO Device
             (Model, ProductID, SerialNumber, RentalPrice,
              AvailabilityStatus, DeviceTypeID, BrandID, SpecsText)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (model_name, product_id, serial, price,'Available', type_id, brand_id, specs_text))
+        ''', (model_name, product_id, serial_num, price, 'Retired', type_id, brand_id, specs_text))
+    else:
+        for i in range(stock_count):
+            serial = f"{serial_num}-{i+1:03d}"
+            cursor.execute('''
+                INSERT INTO Device
+                (Model, ProductID, SerialNumber, RentalPrice,
+                 AvailabilityStatus, DeviceTypeID, BrandID, SpecsText)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (model_name, product_id, serial, price,'Available', type_id, brand_id, specs_text))
 
     conn.commit()
     if close_conn:
         conn.close()
     return True, f"Model '{model_name}' added with {stock_count} device(s)."
 
-
 # 5. Delete a model from the database
 def delete_model(category_name, brand_name, model_name, conn=None):
     """Delete all devices matching the model name under a specific brand and category"""
-
     if conn is None:
         conn = get_connection()
         close_conn = True
@@ -151,7 +152,6 @@ def delete_model(category_name, brand_name, model_name, conn=None):
         close_conn = False
 
     cursor = conn.cursor()
-
     try:
         # Get foreign keys
         cursor.execute("SELECT DeviceTypeID FROM DeviceType WHERE TypeName = ?", (category_name,))
@@ -184,7 +184,6 @@ def delete_model(category_name, brand_name, model_name, conn=None):
             DELETE FROM Device
             WHERE Model = ? AND BrandID = ? AND DeviceTypeID = ?
         ''', (model_name, brand_id, type_id))
-
         conn.commit()
         if close_conn:
             conn.close()
@@ -195,12 +194,10 @@ def delete_model(category_name, brand_name, model_name, conn=None):
             conn.close()
         return False, f"Error deleting model: {str(e)}"
 
-
 # 6. Update model details in the database
 def update_model(category_name, brand_name, model_name, new_model_name,
                  new_id, new_serial, new_specs,
                  new_price, conn=None):
-
     if conn is None:
         conn = get_connection()
         close_conn = True
@@ -208,7 +205,6 @@ def update_model(category_name, brand_name, model_name, new_model_name,
         close_conn = False
 
     cursor = conn.cursor()
-
     try:
         cursor.execute("SELECT DeviceTypeID FROM DeviceType WHERE TypeName = ?", (category_name,))
         type_row = cursor.fetchone()
@@ -274,7 +270,6 @@ def update_model(category_name, brand_name, model_name, new_model_name,
             SET SerialNumber = ?
             WHERE DeviceID = ?
         ''', (new_serial, device_id))
-
         conn.commit()
         if close_conn:
             conn.close()
@@ -284,33 +279,27 @@ def update_model(category_name, brand_name, model_name, new_model_name,
         if close_conn:
             conn.close()
         return False, f"Error updating model: {str(e)}"
-    
 
 def search_type(query, conn=None):
     if conn is None:
         conn = get_connection()
     cursor = conn.cursor()
-    
     search_term = f"%{query}%"
-
     cursor.execute('''
-        SELECT TypeName 
-        FROM DeviceType 
-        WHERE TypeName LIKE ? 
-        ORDER BY TypeName 
+        SELECT TypeName
+        FROM DeviceType
+        WHERE TypeName LIKE ?
+        ORDER BY TypeName
         LIMIT 10
     ''', (search_term,))
-
     return [row[0] for row in cursor.fetchall()]
-
 
 def search_brand(category_name,query, conn=None):
     if conn is None:
         conn = get_connection()
     cursor = conn.cursor()
-    
-    search_term = f"%{query}%"
 
+    search_term = f"%{query}%"
     cursor.execute('''
         SELECT DISTINCT b.BrandName
         FROM Brand b
@@ -319,5 +308,4 @@ def search_brand(category_name,query, conn=None):
         WHERE t.TypeName = ? AND b.BrandName LIKE ?
         ORDER BY b.BrandName
     ''', (category_name, search_term,))
-
     return [row[0] for row in cursor.fetchall()]
