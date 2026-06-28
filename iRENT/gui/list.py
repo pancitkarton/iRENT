@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox
 from gui.add_rental import add_rental_page
+from PIL import Image, ImageTk
+import os
 
 # Import database connection and logic
 from db.database import get_connection
@@ -11,7 +13,8 @@ from db.view_device_list_logic import (
     get_models,
     add_model as db_add_model,
     delete_model as db_delete_model,
-    update_model as db_update_model
+    update_model as db_update_model,
+    search_type
 )
 
 #add these in pages (app.py): add_device_type, 
@@ -29,56 +32,19 @@ def add_hover(btn, enter_bg, leave_bg, enter_fg=None, leave_fg=None):
     btn.bind("<Enter>", on_enter)
     btn.bind("<Leave>", on_leave)
 
-
-def create_list(main_frame, app):
-    # Ensure database columns are up to date on load
-    try:
-        _ensure_specs_column(get_connection())
-    except Exception as e:
-        print("DB Check Error:", e)
-
-    for widget in main_frame.winfo_children():
+def refresh_device_grid(container, devices, app):
+    for widget in container.winfo_children():
         widget.destroy()
-
-    #NEW = FOR TEMPORARILY SHOWING DEVICE
-    app.main_frame = main_frame 
-
-    main_frame.grid_rowconfigure(0, weight=1)
-    main_frame.grid_rowconfigure(1, weight=10)
-    main_frame.grid_columnconfigure(0, weight=1)
-
-    title = tk.Label(
-        main_frame,
-        text="LIST OF DEVICES",
-        font=("Arial", 24, "bold"),
-        fg="black"
-    )
-    title.grid(row=0, column=0, pady=20)
-
-    # container for all device cards
-    container = tk.Frame(main_frame)
-    container.grid(row=1, column=0, sticky="nsew", padx=40, pady=20)
     
-    # NEW IN CODE
-    app.device_container = container
-
-    # config container grid
-    container.grid_rowconfigure(0, weight=1)
-    for i in range(2):
+    container.grid_columnconfigure(0, weight=1)
+    container.grid_columnconfigure(1, weight=1)
+    
+    for i in range(2): 
         container.grid_columnconfigure(i, weight=1, uniform="col")
 
-    # Fetch categories from database
-    devices = get_categories()
-
-    rows = (len(devices) + 1) // 2
-
-    for i in range(rows):
-        container.grid_rowconfigure(i, weight=1)
-
     for i, device in enumerate(devices):
-        row = i // 2
-        col = i % 2
-
+        row, col = i // 2, i % 2
+        
         btn = tk.Button(
             container,
             text=device,
@@ -86,28 +52,89 @@ def create_list(main_frame, app):
             bg="#ffd735",
             fg="black",
             relief="ridge",
+            height=5,
             command=lambda d=device: open_brands(app, d)
         )
         btn.grid(row=row, column=col, padx=15, pady=15, sticky="nsew")
+        
         add_hover(btn, "#232624", "#ffd735", "#ffd735", "black")
-    
-    add_device_container = tk.Frame(main_frame)
-    add_device_container.grid(row=2, column=0, padx=10, pady=10)
 
-    # add device - left (sticky = "w")
+
+def create_list(main_frame, app):
+    for widget in main_frame.winfo_children():
+        widget.destroy()
+    main_frame.config(bg="#eef2f7")
+
+    title = tk.Label(main_frame, text="LIST OF DEVICES", font=("Arial", 30, "bold"), fg="black", bg="#eef2f7")
+    title.pack(pady=25)
+
+    tk.Frame(main_frame, height=2, bg="black").pack(fill="x", padx=20, pady=5)
+
+    searchfilter = tk.Frame(main_frame, bg="#eef2f7")
+    searchfilter.pack(fill="x", padx=20, pady=10)
+    
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    swrap = tk.Frame(searchfilter, bg="#eef2f7")
+    swrap.pack(side="right", padx=(10,0))
+
+    search_path = os.path.join(BASE_DIR, "assets", "search.png")
+    search_icon = ImageTk.PhotoImage(Image.open(search_path).resize((20, 20)))
+
+    icon_label = tk.Label(swrap, image=search_icon, bg="#eef2f7")
+    icon_label.image = search_icon
+    icon_label.pack(side="right")
+    
+    search = tk.Entry(swrap, font=("Arial", 12), width=15)
+    search.insert(0, "Search...")
+    search.config(fg="gray")
+    search.pack(side="right", padx=5)
+
+    def perform_search(event=None):
+        query = search.get().strip()
+
+        if query == "Search..." or not query:
+            refresh_device_grid(container, get_categories(), app)
+        else:
+            matches = search_type(query)
+            refresh_device_grid(container, matches, app)
+
+    search.bind("<KeyRelease>", perform_search)
+    search.bind("<FocusIn>", lambda e: (search.delete(0, "end"), search.config(fg="black")) if search.get()=="Search..." else None)
+    search.bind("<FocusOut>", lambda e: (search.insert(0, "Search..."), search.config(fg="gray")) if not search.get() else None)
+
+
+    bottom_bar = tk.Frame(main_frame, bg="#eef2f7")
+    bottom_bar.pack(side="bottom", fill="x", padx=20, pady=20)
+
     add_btn = tk.Button(
-        add_device_container,
-        text="➕ Add Device",
-        font=("Arial", 12, "bold"),
-        bg="#4CAF50",
-        fg="white",
-        cursor="hand2",
-        relief="raised",
+        bottom_bar, 
+        text="➕ Add Device", 
+        font=("Arial", 17, "bold"), 
+        bg="#4CAF50", 
+        fg="white", 
+        cursor="hand2", 
+        relief="raised", 
         command=lambda: add_device_type(app)
     )
-    add_btn.grid(sticky="se", pady=5)
+    add_btn.pack(side="right")
     add_hover(add_btn, "#142C14", "#4CAF50", "white", "white")
 
+    canvas = tk.Canvas(main_frame, bg="#eef2f7", highlightthickness=0)
+    scrollbar = tk.Scrollbar(main_frame, orient="vertical", command=canvas.yview)
+
+    container = tk.Frame(canvas, bg="#eef2f7")
+    app.device_container = container
+
+    container.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+    canvas.bind("<Configure>", lambda e: canvas.itemconfig(canvas_window, width=e.width))
+    canvas_window = canvas.create_window((0, 0), window=container, anchor="nw")
+    canvas.configure(yscrollcommand=scrollbar.set)
+
+    scrollbar.pack(side="right", fill="y")
+    canvas.pack(side="left", fill="both", expand=True)
+    canvas.bind_all("<MouseWheel>", lambda e: canvas.yview_scroll(int(-1*(e.delta/120)), "units"))
+
+    refresh_device_grid(container, get_categories(), app)
 
 def add_device_type(app):
     frame = app.pages["add_device_type"]

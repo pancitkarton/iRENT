@@ -292,3 +292,21 @@ def update_model(category_name, brand_name, model_name, new_model_name,
         if close_conn:
             conn.close()
         return False, f"Error updating model: {str(e)}"
+    
+
+def search_type(query, conn=None):
+    if conn is None:
+        conn = get_connection()
+    cursor = conn.cursor()
+    
+    search_term = f"%{query}%"
+
+    cursor.execute('''
+        SELECT TypeName 
+        FROM DeviceType 
+        WHERE TypeName LIKE ? 
+        ORDER BY TypeName 
+        LIMIT 10
+    ''', (search_term,))
+
+    return [row[0] for row in cursor.fetchall()]
