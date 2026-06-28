@@ -262,7 +262,7 @@ def rental_customers(app, order):
 
 
 
-def customers_page(main_frame, app):
+def customers_page(main_frame, app, refresh_callback):
     main_frame.configure(bg="#eef2f7")
 
     title = tk.Label(
@@ -404,7 +404,6 @@ def customers_page(main_frame, app):
     add_btn.pack(side="right", padx=5)
     add_hover(add_btn, "#232624", "#ffd735", "#ffd735", "black")
 
-    return refresh
 
 
 def customer_details(app, order, refresh_callback):
