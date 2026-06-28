@@ -57,13 +57,15 @@ def display_table(app, table_wrapper, customer_list, refresh_callback=None):
                "Birthday", "Contact", "Email", "Region", "City", 
                "Barangay", "ZIP", "Street"]
     
+    col_widths = [3, 12, 12, 12, 5, 10, 10, 20, 20, 12, 20, 5, 20]
+
     for i, head in enumerate(headers):
         tk.Label(
             scrollable_frame, 
             text=head, 
             font=("Arial", 10, "bold"), 
             bg="#ffd735", 
-            width=20, 
+            width=col_widths[i], 
             relief="solid", 
             bd=1
         ).grid(row=0, column=i)
@@ -99,12 +101,12 @@ def display_table(app, table_wrapper, customer_list, refresh_callback=None):
                     scrollable_frame, 
                     text=val, 
                     bg="white", 
-                    width=15, 
+                    width=col_widths[col], 
                     relief="solid",
                     bd=1,
                     cursor="hand2"
                 )
-                cell.grid(row=i, column=col, sticky="nsew")
+                cell.grid(row=i, column=col, sticky="nsew",ipady=3)
                 
                 cell.bind("<Button-1>", lambda e, c=customer: customer_details(app, c, refresh_callback))
                 cell.bind("<Enter>", lambda e, r=i: highlight_row(e, r, "#f0f0f0"))
@@ -260,7 +262,7 @@ def rental_customers(app, order):
 
 
 
-def customers_page(main_frame, app, refresh_callback):
+def customers_page(main_frame, app):
     main_frame.configure(bg="#eef2f7")
 
     title = tk.Label(
@@ -389,8 +391,6 @@ def customers_page(main_frame, app, refresh_callback):
 
     load_table()
 
-
-
     bottom = tk.Frame(main_frame, padx=40, pady=20, bg="#eef2f7")
     bottom.pack(fill="x", side="bottom")
 
@@ -404,6 +404,7 @@ def customers_page(main_frame, app, refresh_callback):
     add_btn.pack(side="right", padx=5)
     add_hover(add_btn, "#232624", "#ffd735", "#ffd735", "black")
 
+    return refresh
 
 
 def customer_details(app, order, refresh_callback):
@@ -497,22 +498,22 @@ def customer_details(app, order, refresh_callback):
             tk.Label(
                 row,
                 text=f"{label}:",
-                font=("Arial", 10, "bold"),
+                font=("Arial", 12, "bold"),
                 bg="#eef2f7",
-                width=15,
                 anchor="w"
-            ).pack(side="left", padx=10)
+            ).pack(side="left")
 
             tk.Label(
                 row,
                 text=value, 
-                font=("Arial" ,10),
+                font=("Arial" ,12),
                 bg = "#eef2f7"
-            ).pack(side="left", padx=10)
+            ).pack(side="left")
 
         infos("Customer ID", current_order['CustomerID'])
         middle = current_order.get('MiddleName', '')
-        full_name = f"{current_order['FirstName']} {middle + ' ' if middle else ''}{current_order['LastName']}"
+        suffix = current_order.get('Suffix', '')
+        full_name = f"{current_order['FirstName']} {middle + ' ' if middle else ''}{current_order['LastName']}{' ' + suffix if suffix else ''}"
         infos("Full Name", full_name)
         infos("Contact", current_order['ContactNumber'])
         infos("Email", current_order['EmailAddress'])
