@@ -14,7 +14,8 @@ from db.view_device_list_logic import (
     add_model as db_add_model,
     delete_model as db_delete_model,
     update_model as db_update_model,
-    search_type
+    search_type,
+    search_brand
 )
 
 #add these in pages (app.py): add_device_type, 
@@ -119,7 +120,7 @@ def create_list(main_frame, app):
     add_btn.pack(side="right")
     add_hover(add_btn, "#142C14", "#4CAF50", "white", "white")
 
-    canvas = tk.Canvas(main_frame, bg="#eef2f7", highlightthickness=0)
+    canvas = tk.Canvas(main_frame, bg="red", highlightthickness=0)
     scrollbar = tk.Scrollbar(main_frame, orient="vertical", command=canvas.yview)
 
     container = tk.Frame(canvas, bg="#eef2f7")
@@ -274,104 +275,142 @@ def show_device_brands(app, device):
     for w in frame.winfo_children():
         w.destroy()
 
-    frame.grid_rowconfigure(0, weight=1)
-    frame.grid_columnconfigure(0, weight=1)
-
-    container = tk.Frame(frame, bg="#eef2f7")
-    container.grid(row=0, column=0, sticky="nsew", padx=20, pady=20)
-
-    container.grid_columnconfigure(0, weight=1)
-
-    # Fetch brands from database
-    brands = get_brands(device)
-    num_brands = len(brands)
-
-    # set number of columns
-    num_columns = 3
-
-    # calcu number of rows needed
-    num_rows = (num_brands + num_columns - 1) // num_columns if num_brands > 0 else 1
-
-    # title - centered (sticky = "ew" - stretches it left n right)
-    title_frame = tk.Frame(container, bg="#eef2f7")
-    title_frame.grid(row=0, column=0, sticky="ew", pady=20)
-    title_frame.grid_columnconfigure(0, weight=1)
-
     tk.Label(
-        title_frame,
-        text=f"{device} BRANDS",
-        font=("Arial", 24, "bold"),
-        bg="#eef2f7"
-    ).grid(row=0, column=0)
+        frame,
+        text=f"{device.upper()} BRANDS",
+        font=("Arial", 30, "bold"),
+        fg="black",
+        bg ="#eef2f7"
+    ).pack(pady=25)
 
-    # frame for the brand grid (rows and columns)
-    brands_container = tk.Frame(container, bg="#eef2f7")
-    brands_container.grid(row=1, column=0, sticky="nsew", pady=20)
+    tk.Frame(
+        frame,
+        height=2,
+        bg="black"
+    ).pack(fill="x", padx=20, pady=5)
 
-    # configure grid columns for brands_container (equal width)
-    for col in range(num_columns):
-        brands_container.grid_columnconfigure(col, weight=1, uniform="brand_col")
+    searchfilter = tk.Frame(frame, bg="#eef2f7")
+    searchfilter.pack(fill="x", padx=20, pady=10)
 
-    # config rows for brands_container (equal height)
-    for row in range(num_rows):
-        brands_container.grid_rowconfigure(row, weight=1)
+    swrap = tk.Frame(searchfilter, bg="#eef2f7")
+    swrap.pack(side="right", padx=(10,0))
 
-    if not brands:
-        tk.Label(brands_container, text="No brands found for this category.", bg="#eef2f7", font=("Arial", 14)).grid(row=0, column=0, columnspan=3)
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-    # create brand cards in grid layout
-    for i, brand in enumerate(brands):
-        row = i // num_columns
-        col = i % num_columns
+    search_path = os.path.join(BASE_DIR, "assets", "search.png")
+    search_icon = ImageTk.PhotoImage(Image.open(search_path).resize((20, 20)))
 
-        # create card frame
-        brand_frame = tk.Frame(
-            brands_container,
-            bg="white",
-            highlightthickness=1,
-            borderwidth=5,
-            relief="solid"
-        )
-        brand_frame.grid(row=row, column=col, sticky="nsew", padx=10, pady=10)
+    icon_label = tk.Label(swrap, image=search_icon, bg="#eef2f7")
+    icon_label.image = search_icon
+    icon_label.pack(side="right")
+    
+    search = tk.Entry(swrap, font=("Arial", 12), width=15)
+    search.insert(0, "Search...")
+    search.config(fg="gray")
+    search.pack(side="right", padx=5)
 
-        brand_frame.grid_rowconfigure(0, weight=1)  # Top spacer
-        brand_frame.grid_rowconfigure(2, weight=1)  # Bottom spacer
-        brand_frame.grid_columnconfigure(0, weight=1)
+    content = tk.Frame(frame, bg="#eef2f7")
+    content.pack(fill="both", expand=True)
 
-        # content frame to center content
-        content_frame = tk.Frame(brand_frame, bg="white")
-        content_frame.grid(row=1, column=0, sticky="nsew")
-        content_frame.grid_columnconfigure(0, weight=1)
+    canvas = tk.Canvas(content, bg="#eef2f7", highlightthickness=0)
+    scrollbar = tk.Scrollbar(content, orient="vertical", command=canvas.yview)
+    canvas.configure(yscrollcommand=scrollbar.set)
+    
+    brands_container = tk.Frame(canvas, bg="#eef2f7")
+    canvas_window = canvas.create_window((0, 0), window=brands_container, anchor="nw")
+    
+    canvas.bind("<Configure>", lambda e:canvas.itemconfig(canvas_window, width=e.width))
+    brands_container.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+    
+    scrollbar.pack(side="right", fill="y")
+    canvas.pack(side="left", fill="both", expand=True)
 
-        # brand name
-        tk.Label(
-            content_frame,
-            text=brand,
-            bg="white",
-            font=("Arial", 20, "bold")
-        ).grid(row=0, column=0, pady=(30, 20)) # FIXED by Yuri: Changed from 100 to 20
+    num_columns= 3
 
-        # button
-        # FIXED: Made button visible again (Yuri)
-        btn = tk.Button(
-            content_frame,
-            text="See More",
-            bg="#ffd735",
-            font=("Arial", 12, "bold"),
-            command=lambda d=device, b=brand: show_brand_details(app, d, b)
-        )
-        btn.grid(row=1, column=0, pady=(0, 20)) # FIXED by Yuri: Changed from 40 to 20
-        add_hover(btn, "#232624", "#ffd735", "#ffd735", "black")  # Use global
+    def refresh_brand_grid(brand_list):
+        for widget in brands_container.winfo_children():
+            widget.destroy()
 
-    # back
-    btn_frame = tk.Frame(container, bg="#eef2f7")
-    btn_frame.grid(row=2, column=0, sticky="s", pady=20)  # Changed from num_brands+1 to 2
+        for i in range(num_columns):
+            brands_container.grid_columnconfigure(i, weight=0, minsize=330)
 
-     # add device - left (sticky = "w")
+        for i, brand in enumerate(brand_list):
+            row = i // num_columns
+            col = i % num_columns
+
+            # create card frame
+            brand_frame = tk.Frame(
+                brands_container,
+                bg="white",
+                highlightthickness=1,
+                borderwidth=3,
+                relief="solid",
+                width= 300,
+                height=150
+            )
+            brand_frame.pack_propagate(False)
+            brand_frame.grid(row=row, column=col, padx=15, pady=15, sticky="n")
+
+            tk.Label(
+                brand_frame, 
+                text=brand, 
+                bg="white", 
+                font=("Arial", 20, "bold")
+            ).pack(pady=(30, 20), anchor="center")
+
+            btn = tk.Button(
+                brand_frame,
+                text="See More",
+                bg="#ffd735",
+                font=("Arial", 12, "bold"),
+                command=lambda d=device, b=brand: show_brand_details(app, d, b)
+            )
+            btn.pack(pady=(0, 20)) # FIXED by Yuri: Changed from 40 to 20
+            add_hover(btn, "#232624", "#ffd735", "#ffd735", "black")
+
+            brand_frame.update_idletasks()
+    
+    def perform_search(event=None):
+        query = search.get().lower().strip()
+
+        if query == "Search..." or not query:
+            refresh_brand_grid(get_brands(device))
+        else:
+            matches = search_brand(device,query)
+            refresh_brand_grid(matches)
+
+
+    search.bind("<KeyRelease>", perform_search)
+    search.bind("<FocusIn>", lambda e: (search.delete(0, "end"), search.config(fg="black")) if search.get()=="Search..." else None)
+    search.bind("<FocusOut>", lambda e: (search.insert(0, "Search..."), search.config(fg="gray")) if not search.get() else None)
+
+    refresh_brand_grid(get_brands(device))
+
+
+
+    bottom = tk.Frame(frame, bg="#eef2f7")
+    bottom.pack(side="bottom", fill="x", padx=20, pady=20)
+
+
+    back_btn = tk.Button(
+        bottom,
+        text="Back",
+        font=("Arial", 17, "bold"),
+        bg="gray", 
+        fg="black", 
+        relief="raised",
+        height=1,
+        command=lambda: app.pages["devices"].tkraise()
+    )
+    back_btn.pack(side="right")
+    add_hover(back_btn, "#232624", "gray", "white", "black")
+
+    
+     # add device
     add_btn = tk.Button(
-        btn_frame,
+        bottom,
         text="➕ Add Device Brand",
-        font=("Arial", 12, "bold"),
+        font=("Arial", 17, "bold"),
         bg="#4CAF50",
         fg="white",
         cursor="hand2",
@@ -379,21 +418,8 @@ def show_device_brands(app, device):
         height=1,
         command=lambda: add_device_brand(app, device)
     )
-    add_btn.grid(row=0, column=0, sticky = "s", padx=(0, 10), pady=(0,20)) 
+    add_btn.pack(side="right", padx=20) 
     add_hover(add_btn, "#142C14", "#4CAF50", "white", "white")
-
-    back_btn = tk.Button(
-        btn_frame,
-        text="Back",
-        font=("Arial", 12, "bold"),
-        bg="#ffd735", 
-        fg="black", 
-        relief="raised",
-        height=1,
-        command=lambda: app.pages["devices"].tkraise()
-    )
-    back_btn.grid(row=0, column=1, sticky = "s", pady=(0,20)) # FIXED by Yuri: changed from (pady=100) to (pady=20, padx=40)
-    add_hover(back_btn, "#232624", "#ffd735", "#ffd735", "black")
     
     app.pages["brand_devices"].tkraise()
 
@@ -1034,7 +1060,7 @@ def show_brand_details(app, device, brand):
     add_btn = tk.Button(
         btm_btn_frame,
         text="+ Add Another Device",
-        font=("Arial", 12, "bold"),
+        font=("Arial", 17, "bold"),
         bg="#4CAF50",
         fg="white",
         cursor="hand2",

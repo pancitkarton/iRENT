@@ -14,11 +14,6 @@ def _ensure_specs_column(conn):
         cursor.execute("ALTER TABLE Device ADD COLUMN SpecsText TEXT")
         conn.commit()
 
-    # Also ensure Functionality column exists
-    if "Functionality" not in columns:
-        cursor.execute("ALTER TABLE Device ADD COLUMN Functionality TEXT DEFAULT 'Excellent'")
-        conn.commit()
-
     if "ProductID" not in columns:
         cursor.execute("ALTER TABLE Device ADD COLUMN ProductID TEXT")
         conn.commit()
@@ -40,8 +35,8 @@ def get_brands(category_name, conn=None):
     cursor.execute('''
         SELECT DISTINCT b.BrandName
         FROM Brand b
-        JOIN Device d ON b.BrandID = d.BrandID
-        JOIN DeviceType t ON d.DeviceTypeID = t.DeviceTypeID
+        LEFT JOIN Device d ON b.BrandID = d.BrandID
+        LEFT JOIN DeviceType t ON d.DeviceTypeID = t.DeviceTypeID
         WHERE t.TypeName = ?
         ORDER BY b.BrandName
     ''', (category_name,))
@@ -63,7 +58,6 @@ def get_models(category_name, brand_name, conn=None):
             AVG(d.RentalPrice) AS avg_price,
             COUNT(CASE WHEN d.AvailabilityStatus = 'Available' THEN 1 END) AS available_count,
             d.SpecsText,
-            d.Functionality,
             d.SerialNumber
         FROM Device d
         JOIN DeviceType t ON d.DeviceTypeID = t.DeviceTypeID
@@ -85,7 +79,6 @@ def get_models(category_name, brand_name, conn=None):
             'price': int(row[3]) if row[3] else 0,               # Price
             'available': row[4] if row[4] is not None else 0,    # Count
             'specs': specs,
-            'functionality': row[6] if row[6] else 'Excellent',  # Functionality
             'serial_num': row[2] if row[2] else 'N/A'            # Serial
         })
     return result
@@ -93,7 +86,7 @@ def get_models(category_name, brand_name, conn=None):
 
 # 4. Add a new model (insert multiple devices with identical specs)
 def add_model(category_name, brand_name, model_name, product_id,
-              price, stock_count, specs_list, functionality='Excellent',
+              price, stock_count, specs_list,
               serial_num='N/A', conn=None):
 
     # Get foreign keys
@@ -136,10 +129,10 @@ def add_model(category_name, brand_name, model_name, product_id,
         serial = f"{serial_num}-{i+1:03d}"
         cursor.execute('''
             INSERT INTO Device
-            (Model, ProductID, SerialNumber, RentalPrice, FunctionalStatus,
-             Appearance, AvailabilityStatus, DeviceTypeID, BrandID, SpecsText, Functionality)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (model_name, product_id, serial, price, functionality, 'New', 'Available', type_id, brand_id, specs_text, functionality))
+            (Model, ProductID, SerialNumber, RentalPrice,
+             AvailabilityStatus, DeviceTypeID, BrandID, SpecsText)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (model_name, product_id, serial, price,'Available', type_id, brand_id, specs_text))
 
     conn.commit()
     if close_conn:
@@ -205,7 +198,7 @@ def delete_model(category_name, brand_name, model_name, conn=None):
 
 # 6. Update model details in the database
 def update_model(category_name, brand_name, model_name, new_model_name,
-                 new_id, new_serial, new_functionality, new_specs,
+                 new_id, new_serial, new_specs,
                  new_price, conn=None):
 
     if conn is None:
@@ -270,10 +263,9 @@ def update_model(category_name, brand_name, model_name, new_model_name,
             SET Model = ?,
                 ProductID = ?,
                 RentalPrice = ?,
-                SpecsText = ?,
-                Functionality = ?
+                SpecsText = ?
             WHERE Model = ? AND BrandID = ? AND DeviceTypeID = ?
-        ''', (new_model_name, new_id, new_price, specs_text, new_functionality,
+        ''', (new_model_name, new_id, new_price, specs_text,
               model_name, brand_id, type_id))
 
         # Also update the serial number for the first device (as sample)
@@ -308,5 +300,24 @@ def search_type(query, conn=None):
         ORDER BY TypeName 
         LIMIT 10
     ''', (search_term,))
+
+    return [row[0] for row in cursor.fetchall()]
+
+
+def search_brand(category_name,query, conn=None):
+    if conn is None:
+        conn = get_connection()
+    cursor = conn.cursor()
+    
+    search_term = f"%{query}%"
+
+    cursor.execute('''
+        SELECT DISTINCT b.BrandName
+        FROM Brand b
+        JOIN Device d ON b.BrandID = d.BrandID
+        JOIN DeviceType t ON d.DeviceTypeID = t.DeviceTypeID
+        WHERE t.TypeName = ? AND b.BrandName LIKE ?
+        ORDER BY b.BrandName
+    ''', (category_name, search_term,))
 
     return [row[0] for row in cursor.fetchall()]

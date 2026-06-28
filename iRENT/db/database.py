@@ -72,10 +72,7 @@ def initialize_db():
         ProductID TEXT,
         SerialNumber TEXT NOT NULL UNIQUE,
         RentalPrice REAL NOT NULL,
-        FunctionalStatus TEXT CHECK(FunctionalStatus IN ('Excellent', 'Good', 'Fair', 'Poor')),
-        Functionality TEXT DEFAULT 'Excellent',
         SpecsText TEXT,
-        Appearance TEXT CHECK(Appearance IN ('New', 'Good', 'Scratched', 'Damaged')),
         AvailabilityStatus TEXT CHECK(AvailabilityStatus IN ('Available', 'Rented', 'Maintenance', 'Retired')),
         DeviceTypeID INTEGER,
         BrandID INTEGER,
@@ -193,17 +190,18 @@ def initialize_db():
             type_id = get_type_id(category)
             for brand, models in brands.items():
                 brand_id = get_brand_id(brand)
+
                 for model, details in models.items():
                     specs_text = "|".join(details["specs"])   # store as delimiter-separated string
                     for i in range(details["available"]):
                         serial = f"{details['id']}-{i+1:03d}"
                         cursor.execute("""
                             INSERT INTO Device
-                            (Model, SerialNumber, RentalPrice, FunctionalStatus,
-                            Appearance, AvailabilityStatus, DeviceTypeID, BrandID, SpecsText)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                        """, (model, serial, details["price"], 'Excellent', 'New', 'Available',
-                            type_id, brand_id, specs_text))
+                            (Model, ProductID, SerialNumber, RentalPrice,
+                            AvailabilityStatus, DeviceTypeID, BrandID, SpecsText)
+                            VALUES (?, ?, ?, ?, ?, ?, ? ,?)
+                        """, (model, details["id"], serial, details["price"], 
+                              'Available', type_id, brand_id, specs_text))
         conn.commit()
     
     conn.close()
