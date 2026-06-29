@@ -291,25 +291,25 @@ def show_device_brands(app, device):
     bottom.pack(side="bottom", fill="x", padx=20, pady=20)
 
     back_btn = tk.Button(
-        bottom, 
-        text="Back", 
-        font=("Arial", 17, "bold"), 
-        bg="gray", 
-        fg="black", 
-        relief="raised", 
-        height=1, 
+        bottom,
+        text="Back",
+        font=("Arial", 17, "bold"),
+        bg="gray",
+        fg="black",
+        relief="raised",
+        height=1,
         command=lambda: app.pages["devices"].tkraise())
     back_btn.pack(side="right")
     add_hover(back_btn, "#232624", "gray", "white", "black")
 
     add_btn = tk.Button(
-        bottom, 
-        text="+ Add Device Brand", 
-        font=("Arial", 17, "bold"), 
-        bg="#4CAF50", 
-        fg="white", 
-        cursor="hand2", 
-        relief="raised", 
+        bottom,
+        text="+ Add Device Brand",
+        font=("Arial", 17, "bold"),
+        bg="#4CAF50",
+        fg="white",
+        cursor="hand2",
+        relief="raised",
         height=1, command=lambda: add_device_brand(app, device))
     add_btn.pack(side="left")
     add_hover(add_btn, "#142C14", "#4CAF50", "white", "white")
@@ -388,16 +388,6 @@ def show_device_brands(app, device):
 
     app.pages["brand_devices"].tkraise()
 
-#FOR TESTING ONLY
-DEVICES_DATA = {
-        "CAMERA": ["SONY", "CANON", "INSTAX"],
-        "CELLPHONE": ["IPHONE", "SAMSUNG", "XIAOMI"],
-        "CONSOLE": ["SONY", "MICROSOFT", "NINTENDO"],
-        "PORTABLE DVD PLAYER": ["SONY", "PHILIPS", "DBPOWER"],
-        "LAPTOP": ["DELL", "HP", "LENOVO"],
-        "SOUND SYSTEM": ["JBL", "SAMSUNG", "SVS"]
-    }
-
 def add_device_brand(app, device):
     frame = app.pages["add_device_brand"]
 
@@ -430,7 +420,7 @@ def add_device_brand(app, device):
     message.grid(row=1, column=0, columnspan=2, pady=(0, 10), sticky="w", padx=20)
 
     def save_device_brand():
-        """Save all changes and update DEVICES_DATA"""
+        """Save and update all changes"""
         # Get values from entries
         new_brand = devicebrand_entry.get().strip().upper()     #NEW
 
@@ -942,7 +932,7 @@ def refresh_models(container, canvas,models_data, app, device, brand):
                 pass
 
         menu_btn.bind("<Button-1>", show_menu)
-    
+
     container.update_idletasks()
     canvas.configure(scrollregion=canvas.bbox("all"))
 
@@ -1009,14 +999,14 @@ def show_brand_details(app, device, brand):
 
     def mfilter(category):
         all_models = get_models(device, brand)
-        
+
         if category == "All":
             data = all_models
         elif category == "Available":
             data = [m for m in all_models if m.get('available', m.get('stock_count', 0)) > 0]
         elif category == "Out of Stock":
             data = [m for m in all_models if m.get('available', m.get('stock_count', 0)) == 0]
-        
+
         refresh_models(container, canvas, data, app, device, brand)
 
     filter_menu.add_command(label="Show All", command=lambda: mfilter("All"))
@@ -1074,14 +1064,14 @@ def show_brand_details(app, device, brand):
             for m in all_models:
                 name_match = term in m.get('model_name', '').lower()
                 specs_match = any(term in s.lower() for s in m.get('specs', []))
-                
+
                 if name_match or specs_match:
                     data.append(m)
 
         refresh_models(container, canvas, data, app, device, brand)
 
     search.bind("<KeyRelease>", msearch)
-    
+
     # Initial load
     initial_data = get_models(device, brand)
     refresh_models(container, canvas, initial_data, app, device, brand)
@@ -1110,13 +1100,13 @@ def show_brand_details(app, device, brand):
     add_hover(add_btn, "#45a049", "#4CAF50", "white", "white")
 
     back_btn = tk.Button(
-        bottom, 
-        text="Back", 
-        font=("Arial", 17, "bold"), 
-        bg="gray", 
-        fg="black", 
-        relief="raised", 
-        height=1, 
+        bottom,
+        text="Back",
+        font=("Arial", 17, "bold"),
+        bg="gray",
+        fg="black",
+        relief="raised",
+        height=1,
         command=lambda: app.pages["brand_devices"].tkraise())
     back_btn.pack(side="right")
     add_hover(back_btn, "#232624", "gray", "white", "black")
