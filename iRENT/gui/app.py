@@ -25,6 +25,13 @@ class MainApp:
         self.staff_id = staff_id
         self.staff_name = welcome_staff(staff_id)
 
+        self.refresh_tasks = {
+            "dashboard": self.create_dashboard,
+            "customers": self.create_customers_page,
+            "rentals": self.create_rentals_page,
+            "devices": self.create_list_page
+        }
+
         self.create_layout()
         self.create_pages()
         self.create_sidebar()
@@ -44,6 +51,7 @@ class MainApp:
         self.create_list_page()
 
         self.set_active_page("dashboard")
+
 
     def add_hover(self, btn, enter_bg, leave_bg, enter_fg=None, leave_fg=None):
 
@@ -206,6 +214,13 @@ class MainApp:
         logout_btn.bind("<Leave>", on_leave)
 
     def set_active_page(self, page_name):
+
+        if page_name in self.refresh_tasks:
+            for widget in self.pages[page_name].winfo_children():
+                widget.destroy()
+            
+            self.refresh_tasks[page_name]()
+
         self.pages[page_name].tkraise()
 
         if self.active_label:
@@ -235,6 +250,10 @@ class MainApp:
 
 
     def create_dashboard(self):
+
+        for w in self.pages["dashboard"].winfo_children():
+            w.destroy()
+
         stats = get_dashboard_summary()
 
         frame = tk.LabelFrame(
