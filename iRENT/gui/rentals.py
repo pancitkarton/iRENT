@@ -284,6 +284,24 @@ def rentals_page(main_frame, app):
     add_btn.pack(side="right", padx=5)
     add_hover(add_btn, "#142C14", "#4CAF50", "white", "white")
 
+def info_row(parent, row, col, label, value, val_fg="black", val_bold=False):
+    row_frame = tk.Frame(parent, bg="#eef2f7")
+    row_frame.grid(row=row, column=col, sticky="w", pady=(0,10))
+
+    tk.Label(
+        row_frame,
+        text=label,
+        font=("Arial", 12, "bold"),
+        bg="#eef2f7",
+    ).pack(side="left")
+
+    tk.Label(
+        row_frame,
+        text=value,
+        font=("Arial", 12),
+        bg="#eef2f7"
+    ).pack(side="left")
+
 
 def show_details(app, order_id):
     app.set_active_page("order_details")
@@ -334,30 +352,12 @@ def show_details(app, order_id):
         bg="#eef2f7"
     ).grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 10))
 
-    tk.Label(
-        container_details,
-        text=f"Rental ID: {order.get('id', 'N/A')}",
-        font=("Arial", 12, "bold"),
-        bg="#eef2f7"
-    ).grid(row=1, column=0, sticky="w",  pady=(0,10))
-
-    tk.Label(
-        container_details,
-        text=f"Rental Date: {order.get('start_date', 'N/A')}",
-        font=("Arial", 12, "bold"),
-        bg="#eef2f7"
-    ).grid(row=2, column=0, sticky="w",  pady=(0,10))
-
-    tk.Label(
-        container_details,
-        text=f"Must Return By: {order.get('expected_return', 'N/A')}",
-        font=("Arial", 12, "bold"),
-        bg="#eef2f7"
-        ).grid(row=1, column=1, sticky="w",  pady=(0,10))
+    info_row(container_details, 1, 0, "Rental ID: ", str(order.get('id', 'N/A')))
+    info_row(container_details, 1, 1, "Must Return By: ", str(order.get('expected_return', 'N/A')))
+    info_row(container_details, 2, 0, "Rental Date: ", str(order.get('start_date', 'N/A')))
 
     raw_fee = order.get('total_fee', 0.00)
     base_fee = float(raw_fee) if raw_fee is not None else 0.00
-
     status = order.get('status')
     penalty = 0.00
 
@@ -373,21 +373,33 @@ def show_details(app, order_id):
     elif status == "Completed":
         penalty = saved_penalty
 
-    total_due = base_fee + penalty
+    row_penalty = tk.Frame(container_details, bg="#eef2f7")
+
+    row_penalty.grid(row=2, column=1, sticky="w", pady=(0,10))
 
     tk.Label(
-        container_details,
-        text=f"Overdue Fee: ₱{penalty:.2f}",
+        row_penalty,
+        text="Overdue Fee: ",
         font=("Arial", 12, "bold"),
         bg="#eef2f7",
         fg="red" if (status == "Overdue" or penalty > 0) else "black"
-        ).grid(row=2, column=1, sticky="w",  pady=(0,10))
+        ).pack(side="left")
+
+
+    tk.Label(
+        row_penalty,
+        text=f"₱{penalty:.2f}",
+        font=("Arial", 12, "bold"),
+        bg="#eef2f7",
+        fg="red" if (status == "Overdue" or penalty > 0) else "black"
+        ).pack(side="left") 
 
     tk.Frame(
         container_details,
         height=2,
         bg="black"
     ).grid(row=3, column=0, columnspan=2, sticky="ew", pady=20)
+
 
     tk.Label(
         container_details,
@@ -396,33 +408,10 @@ def show_details(app, order_id):
         bg="#eef2f7"
     ).grid(row=4, column=0, columnspan=2, sticky="w", pady=(0, 10))
 
-    tk.Label(
-        container_details,
-        text=f"Customer ID: {order.get('customer_id', 'N/A')}",
-        font=("Arial", 12, "bold"),
-        bg="#eef2f7"
-    ).grid(row=5, column=0, sticky="w",  pady=(0,10))
-
-    tk.Label(
-        container_details,
-        text=f"Contact Number: {order.get('contact number', 'N/A')}",
-        font=("Arial", 12, "bold"),
-        bg="#eef2f7"
-    ).grid(row=5, column=1, sticky="w",  pady=(0,10))
-
-    tk.Label(
-        container_details,
-        text=f"Rentee Name: {order.get('rentee', 'N/A')}",
-        font=("Arial", 12, "bold"),
-        bg="#eef2f7"
-    ).grid(row=6, column=0, sticky="w",  pady=(0,10))
-
-    tk.Label(
-        container_details,
-        text=f"Email Address: {order.get('email address', 'N/A')}",
-        font=("Arial", 12, "bold"),
-        bg="#eef2f7"
-    ).grid(row=6, column=1, sticky="w",  pady=(0,10))
+    info_row(container_details, 5, 0, "Customer ID: ", str(order.get('customer_id', 'N/A')))
+    info_row(container_details, 5, 1, "Contact Number: ", str(order.get('contact number', 'N/A')))
+    info_row(container_details, 6, 0, "Rentee Name: ", str(order.get('rentee', 'N/A')))
+    info_row(container_details, 6, 1, "Email Address: ", str(order.get('email address', 'N/A')))
 
     tk.Frame(
         container_details,
@@ -437,45 +426,15 @@ def show_details(app, order_id):
         bg="#eef2f7"
     ).grid(row=8, column=0, columnspan=2, sticky="w", pady=(0, 10))
 
-
-    tk.Label(
-        container_details,
-        text=f"Device ID: {order.get('device_id', 'N/A')}",
-        font=("Arial", 12, "bold"),
-        bg="#eef2f7"
-    ).grid(row=9, column=0, sticky="w",  pady=(0,10))
-
-    tk.Label(
-        container_details,
-        text=f"Serial Number: {order.get('serial_number', 'N/A')}",
-        font=("Arial", 12, "bold"),
-        bg="#eef2f7"
-    ).grid(row=9, column=1, sticky="w", pady=(0,10))
-
-
-    tk.Label(
-        container_details,
-        text=f"Brand: {order.get('brand', 'N/A')}",
-        font=("Arial", 12, "bold"),
-        bg="#eef2f7"
-    ).grid(row=10, column=0, sticky="w", pady=(0,10))
-
-    tk.Label(
-        container_details,
-        text=f"Model: {order.get('model', 'N/A')}",
-        font=("Arial", 12, "bold"),
-        bg="#eef2f7"
-    ).grid(row=10, column=1, sticky="w", pady=(0,10))
+    info_row(container_details, 9, 0, "Device ID: ", str(order.get('device_id', 'N/A')))
+    info_row(container_details, 9, 1, "Serial Number: ", str(order.get('serial_number', 'N/A')))
+    info_row(container_details, 10, 0, "Brand: ", str(order.get('brand', 'N/A')))
+    info_row(container_details, 10, 1, "Model: ", str(order.get('model', 'N/A')))
 
     raw_dev_price = order.get('device_price', 0.00)
     dev_price = float(raw_dev_price) if raw_dev_price is not None else 0.00
 
-    tk.Label(
-        container_details,
-        text=f"Daily Rate: ₱{dev_price:.2f}",
-        font=("Arial", 12, "bold"),
-        bg="#eef2f7"
-    ).grid(row=11, column=0, sticky="w", pady=(0,10))
+    info_row(container_details, 11, 0, "Daily Rate: ", f"₱{dev_price:.2f}")
 
     #bottom
     bottom_bar = tk.Frame(
@@ -487,6 +446,9 @@ def show_details(app, order_id):
     bottom_bar.grid(row=1, column=0, sticky="ew")
 
     scolor = status_colors.get(order['status'], "black")
+
+
+    total_due = base_fee + penalty
 
     total_box = tk.Frame(
         bottom_bar,
