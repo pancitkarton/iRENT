@@ -396,13 +396,14 @@ def customers_page(main_frame, app, refresh_callback):
 
     add_btn = tk.Button(
         bottom,
-        text="Add Customer",
+        text="+ Add Customer",
         font=("Arial", 17, "bold"),
-        bg="#ffd735",
+        bg="#4caf50",
+        fg="white",
         command=lambda: app.set_active_page("add_rental")
     )
     add_btn.pack(side="right", padx=5)
-    add_hover(add_btn, "#232624", "#ffd735", "#ffd735", "black")
+    add_hover(add_btn, "#142C14", "#4CAF50", "white", "white")
 
 
 
