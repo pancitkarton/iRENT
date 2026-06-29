@@ -111,7 +111,7 @@ def create_list(main_frame, app):
     add_btn.pack(side="right")
     add_hover(add_btn, "#142C14", "#4CAF50", "white", "white")
 
-    canvas = tk.Canvas(main_frame, bg="red", highlightthickness=0)
+    canvas = tk.Canvas(main_frame, bg="#eef2f7", highlightthickness=0)
     scrollbar = tk.Scrollbar(main_frame, orient="vertical", command=canvas.yview)
 
     container = tk.Frame(canvas, bg="#eef2f7")
