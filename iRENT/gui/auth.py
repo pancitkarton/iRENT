@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
-from db import logic
-from gui.app import MainApp
+from db import auth_logic
+from gui.home import MainApp
 from db.validation import validate_input
 import os
 import re
@@ -173,7 +173,7 @@ class AuthApp:
         username = self.username_entry.get()
         password = self.password_entry.get()
 
-        result = logic.login(username, password)
+        result = auth_logic.login(username, password)
 
         if result == "empty":
             messagebox.showwarning("Error", "Please fill all fields.")
@@ -379,7 +379,7 @@ class AuthApp:
                 return 
 
 
-            result = logic.signup(
+            result = auth_logic.signup(
                 create_firstname.get(),     # first_name
                 create_middlename.get(),    #middle name
                 create_lastname.get(),  #lastname
