@@ -509,8 +509,6 @@ def delete_model(app, device, brand, model_name):
 
 
 def open_edit_details(app, device, brand, model_name, current_details):
-    """Open the edit details page for a specific model"""
-
     frame = app.pages["edit_details"]
 
     # Clear existing widgets
@@ -558,7 +556,6 @@ def open_edit_details(app, device, brand, model_name, current_details):
     entries = {}
     safe_id = current_details.get('id', current_details.get('product_id', ''))
     safe_serial = current_details.get('serial_num', current_details.get('serial_number', 'N/A'))
-    safe_func = current_details.get('functionality', current_details.get('condition', 'Excellent'))
     safe_specs = current_details.get('specs', current_details.get('specs_list', []))
     safe_price = current_details.get('price', 0)
     safe_stock = current_details.get('available', current_details.get('stock_count', 0))
@@ -633,32 +630,6 @@ def open_edit_details(app, device, brand, model_name, current_details):
     )
     row += 1
 
-    # Functionality (editable - dropdown)
-    func_frame = tk.Frame(form_container, bg="#eef2f7")
-    func_frame.grid(row=row, column=0, sticky="ew", pady=8)
-    func_frame.grid_columnconfigure(1, weight=1)
-
-    tk.Label(
-        func_frame,
-        text="Functionality:",
-        font=("Arial", 12, "bold"),
-        bg="#eef2f7",
-        width=18,
-        anchor="w"
-    ).grid(row=0, column=0, sticky="w")
-
-    from tkinter import ttk
-    func_var = tk.StringVar(value=safe_func)
-    func_combo = ttk.Combobox(
-        func_frame,
-        textvariable=func_var,
-        values=["Excellent", "Good", "Fair"],
-        font=("Arial", 12),
-        state="readonly"
-    )
-    func_combo.grid(row=0, column=1, sticky="ew", padx=(10, 0))
-    entries['functionality'] = func_var
-    row += 1
 
     # Specs (editable - text area)
     specs_frame = tk.Frame(form_container, bg="#eef2f7")
@@ -704,12 +675,10 @@ def open_edit_details(app, device, brand, model_name, current_details):
     button_frame.grid_columnconfigure(1, weight=1)
 
     def save_changes():
-        """Save all changes and update DATA"""
         try:
             # Get values from entries
             new_id = entries['id'].get().strip()
             new_serial = entries['serial_number'].get().strip()
-            new_functionality = entries['functionality'].get()
             new_specs_text = entries['specs'].get("1.0", tk.END).strip()
             new_specs = [spec.strip() for spec in new_specs_text.split('\n') if spec.strip()]
             new_price = int(entries['price'].get().strip())
@@ -845,7 +814,6 @@ def show_brand_details(app, device, brand):
         model = details.get('model_name', details.get('model', 'Unknown'))
         d_id = details.get('id', details.get('product_id', 'N/A'))
         serial = details.get('serial_num', details.get('serial_number', 'N/A'))
-        func = details.get('functionality', details.get('condition', 'Unknown'))
         specs = details.get('specs', details.get('specs_list', []))
         price = details.get('price', 0)
         stock = details.get('available', details.get('stock_count', 0))
@@ -862,12 +830,11 @@ def show_brand_details(app, device, brand):
         card.grid_rowconfigure(0, weight=0)  # model: fixed
         card.grid_rowconfigure(1, weight=0)  # id: fixed
         card.grid_rowconfigure(2, weight=0)  # serial number
-        card.grid_rowconfigure(3, weight=0)  # functionality: fixed
-        card.grid_rowconfigure(4, weight=0)  # specs: fixed
-        card.grid_rowconfigure(5, weight=1)  # specs list (stretches)
-        card.grid_rowconfigure(6, weight=0)  # price: fixed
-        card.grid_rowconfigure(7, weight=0)  # stock: fixed
-        card.grid_rowconfigure(8, weight=0)  # buttons: fixed
+        card.grid_rowconfigure(3, weight=0)  # specs: fixed
+        card.grid_rowconfigure(4, weight=1)  # specs list (stretches)
+        card.grid_rowconfigure(5, weight=0)  # price: fixed
+        card.grid_rowconfigure(6, weight=0)  # stock: fixed
+        card.grid_rowconfigure(7, weight=0)  # buttons: fixed
         card.grid_columnconfigure(0, weight=1)  # column stretches
 
         # model name
@@ -894,32 +861,17 @@ def show_brand_details(app, device, brand):
             font=("Arial", 10)
         ).grid(row=2, column=0, pady=(0, 10), sticky="ew")
 
-        # functionality / condition
-        if func == "Excellent":
-            func_color = "green"
-        elif func == "Good":
-            func_color = "orange"
-        else:  # Fair
-            func_color = "red"
-
-        tk.Label(
-            card,
-            text=f"Condition: {func}",
-            bg="white",
-            fg=func_color,
-            font=("Arial", 10, "bold")
-        ).grid(row=3, column=0, sticky="w", padx=10, pady=(0, 10))
 
         tk.Label(
             card,
             text="Specs:",
             font=("Arial", 10, "bold"),
             bg="white"
-        ).grid(row=4, column=0, sticky="w", padx=10, pady=(5, 0))
+        ).grid(row=3, column=0, sticky="w", padx=10, pady=(5, 0))
 
         # specs list frame
         specs_frame = tk.Frame(card, bg="white")
-        specs_frame.grid(row=5, column=0, sticky="nsew", padx=10, pady=5)
+        specs_frame.grid(row=4, column=0, sticky="nsew", padx=10, pady=5)
         specs_frame.grid_columnconfigure(0, weight=1)
 
         # list specs
@@ -945,19 +897,19 @@ def show_brand_details(app, device, brand):
         tk.Label(
             card,
             text=f"Price: ₱{price:,}",
-            font=("Arial", 11, "bold"),
+            font=("Arial", 15, "bold"),
             fg="green",
             bg="white"
-        ).grid(row=6, column=0, pady=(10, 5), sticky="ew")
+        ).grid(row=5, column=0, pady=(0, 5), sticky="ew")
 
-        stock_color = "red" if stock == 0 else "darkgreen"
+        stock_color = "red" if stock == 0 else "gray"
         tk.Label(
             card,
             text=f"Stock: {stock}",
             fg=stock_color,
             bg="white",
-            font=("Arial", 10, "bold")
-        ).grid(row=7, column=0, pady=(0, 10), sticky="ew")
+            font=("Arial", 10, "bold", "italic")
+        ).grid(row=6, column=0, pady=(0, 5), sticky="ew")
 
         button_row = tk.Frame(card, bg="white")
         button_row.grid(row=8, column=0, pady=(0, 15), sticky="ew")
@@ -969,7 +921,7 @@ def show_brand_details(app, device, brand):
             text="Rent Me",
             bg="#ffd735",
             fg = "black",
-            font=("Arial", 12, "bold"),
+            font=("Arial", 15, "bold"),
             cursor="hand2",
             command=lambda d=device, m=model: [
                 add_rental_page(app.pages["add_rental"], app, prefill_model=m),
@@ -987,12 +939,13 @@ def show_brand_details(app, device, brand):
         menu_btn = tk.Button(
             button_row,
             text="☰",
-            font=("Arial", 16, "bold"),
+            font=("Arial", 15),
             bg="#ffd735",
+            activebackground="#ffd735",
+            activeforeground="black",
             fg="black",
             cursor="hand2",
-            width=3,
-            relief="raised"
+            width=3
         )
         menu_btn.grid(row=0, column=1, padx=10, sticky="e")
         add_hover(menu_btn, "#232624", "#ffd735", "#ffd735", "black")
@@ -1121,24 +1074,6 @@ def add_device(app, device, brand):
     serial_entry.grid(row=row, column=1, sticky="ew", pady=10)
     row += 1
 
-    # row 3: functionality (NEW - dropdown)
-    tk.Label(form, text="Functionality:", font=("Arial", 12, "bold"), bg="white"
-    ).grid(row=row, column=0, sticky="w", pady=10, padx=(0, 20))
-
-    from tkinter import ttk
-    func_var = tk.StringVar(value="Excellent")  # Default value
-    func_combo = ttk.Combobox(
-        form,
-        textvariable=func_var,
-        values=["Excellent", "Good", "Fair"],
-        font=("Arial", 12),
-        state="readonly",
-        width=33
-    )
-    func_combo.grid(row=row, column=1, sticky="ew", pady=10)
-    row += 1
-
-    # row 4: price
     tk.Label(form, text="Price (₱):", font=("Arial", 12, "bold"), bg="white"
     ).grid(row=row, column=0, sticky="w", pady=10, padx=(0, 20))
 
@@ -1146,7 +1081,6 @@ def add_device(app, device, brand):
     price_entry.grid(row=row, column=1, sticky="ew", pady=10)
     row += 1
 
-    # row 5: stock
     tk.Label(form, text="Stock:", font=("Arial", 12, "bold"), bg="white"
     ).grid(row=row, column=0, sticky="w", pady=10, padx=(0, 20))
 
@@ -1154,7 +1088,6 @@ def add_device(app, device, brand):
     stock_entry.grid(row=row, column=1, sticky="ew", pady=10)
     row += 1
 
-    # row 6: specs
     tk.Label(form, text="Specs (separate with commas):", font=("Arial", 12, "bold"), bg="white"
     ).grid(row=row, column=0, sticky="w", pady=10, padx=(0, 20))
 
@@ -1185,7 +1118,6 @@ def add_device(app, device, brand):
         name = model_entry.get().strip().upper()
         pid = id_entry.get().strip().upper()
         serial = serial_entry.get().strip()
-        functionality = func_var.get()
         price = price_entry.get().strip()
         stock = stock_entry.get().strip()
         specs_text = specs_entry.get().strip()
