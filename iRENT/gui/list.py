@@ -1093,7 +1093,7 @@ def show_brand_details(app, device, brand):
 
     # frame for buttons at the bottom (add, back)
     bottom = tk.Frame(frame)
-    bottom.pack(fill="x", padx=10, pady=20)
+    bottom.pack(fill="x", padx=20, pady=(0,20))
 
     # add device - left (sticky = "w")
     add_btn = tk.Button(
@@ -1106,7 +1106,7 @@ def show_brand_details(app, device, brand):
         relief="raised",
         command=lambda d=device, b=brand: add_device(app, device, brand)
     )
-    add_btn.pack(side="left")
+    add_btn.pack(side="left", padx=10)
     add_hover(add_btn, "#45a049", "#4CAF50", "white", "white")
 
     back_btn = tk.Button(
