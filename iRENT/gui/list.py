@@ -100,7 +100,7 @@ def create_list(main_frame, app):
 
     add_btn = tk.Button(
         bottom_bar,
-        text="➕ Add Device Category",
+        text="+ Add Device Category",
         font=("Arial", 17, "bold"),
         bg="#4CAF50",
         fg="white",
@@ -290,12 +290,28 @@ def show_device_brands(app, device):
     bottom = tk.Frame(frame, bg="#eef2f7")
     bottom.pack(side="bottom", fill="x", padx=20, pady=20)
 
-    back_btn = tk.Button(bottom, text="Back", font=("Arial", 17, "bold"), bg="gray", fg="black", relief="raised", height=1, command=lambda: app.pages["devices"].tkraise())
+    back_btn = tk.Button(
+        bottom, 
+        text="Back", 
+        font=("Arial", 17, "bold"), 
+        bg="gray", 
+        fg="black", 
+        relief="raised", 
+        height=1, 
+        command=lambda: app.pages["devices"].tkraise())
     back_btn.pack(side="right")
     add_hover(back_btn, "#232624", "gray", "white", "black")
 
-    add_btn = tk.Button(bottom, text="➕ Add Device Brand", font=("Arial", 17, "bold"), bg="#4CAF50", fg="white", cursor="hand2", relief="raised", height=1, command=lambda: add_device_brand(app, device))
-    add_btn.pack(side="right", padx=20)
+    add_btn = tk.Button(
+        bottom, 
+        text="+ Add Device Brand", 
+        font=("Arial", 17, "bold"), 
+        bg="#4CAF50", 
+        fg="white", 
+        cursor="hand2", 
+        relief="raised", 
+        height=1, command=lambda: add_device_brand(app, device))
+    add_btn.pack(side="left")
     add_hover(add_btn, "#142C14", "#4CAF50", "white", "white")
 
     content = tk.Frame(frame, bg="#eef2f7")
@@ -752,61 +768,17 @@ def open_edit_details(app, device, brand, model_name, current_details):
     # Raise the edit page
     app.pages["edit_details"].tkraise()
 
-
-def show_brand_details(app, device, brand):
-    frame = app.pages["brand_details"]
-
-    for widget in frame.winfo_children():
+def refresh_models(container, canvas,models_data, app, device, brand):
+    for widget in container.winfo_children():
         widget.destroy()
 
-    # config grid main
-    frame.grid_rowconfigure(0, weight=0)  # title - fixed
-    frame.grid_rowconfigure(1, weight=1)  # content - expand
-    frame.grid_columnconfigure(0, weight=1) # "       "
+    data = [m for m in models_data if m.get('model_name', m.get('model', '')) != "[NO MODELS YET]"]
 
-    # title
-    title = tk.Label(
-        frame,
-        text=f"{brand} - {device} MODELS",
-        font=("Arial", 24, "bold"),
-        fg="black"
-    )
-    title.grid(row=0, column=0, pady=20)
+    if not data:
+        tk.Label(container, text="No models found.", font=("Arial", 14)).grid(row=0, column=0, columnspan=3)
+        return
 
-    # container used for cards
-    container = tk.Frame(frame)
-    container.grid(row=1, column=0, sticky="nsew", padx=40, pady=20)
-
-    # 3 columns for grid layout
-    for i in range(3):
-        container.grid_columnconfigure(i, weight=1, uniform="col")
-
-    # gets models
-    models_data = get_models(device, brand)
-
-    # NEW: Filter out our hidden placeholder device so it doesn't show an empty card
-    if not models_data:
-        models_data = []
-
-    filtered_models = []
-    for m in models_data:
-        # Safely extract the model name
-        m_name = m.get('model_name', m.get('model', ''))
-        if m_name != "[NO MODELS YET]":
-            filtered_models.append(m)
-
-    models_data = filtered_models
-
-    # Safely calculate specs length
-    max_specs = max([len(m.get('specs', m.get('specs_list', []))) for m in models_data], default=0)
-
-    # calculates rows needed for 3 columns
-    num_columns = 3
-    num_rows = (len(models_data) + num_columns - 1) // num_columns if models_data else 1
-
-    # creates cards
-    if not models_data:
-        tk.Label(container, text="No models found in inventory.", font=("Arial", 14)).grid(row=0, column=0, columnspan=3)
+    max_specs = max([len(m.get('specs', m.get('specs_list', []))) for m in data], default=0)
 
     for i, details in enumerate(models_data):
         row = i // 3
@@ -970,23 +942,163 @@ def show_brand_details(app, device, brand):
                 pass
 
         menu_btn.bind("<Button-1>", show_menu)
+    
+    container.update_idletasks()
+    canvas.configure(scrollregion=canvas.bbox("all"))
 
 
-    # config row weights for even distribution
-    for r in range(num_rows):
-        container.grid_rowconfigure(r, weight=1)
+
+
+def show_brand_details(app, device, brand):
+    frame = app.pages["brand_details"]
+
+    for widget in frame.winfo_children():
+        widget.destroy()
+
+    frame.config(bg="#eef2f7")
+
+    # title
+    title = tk.Label(
+        frame,
+        text=f"{brand} - {device} MODELS",
+        font=("Arial", 24, "bold"),
+        fg="black"
+    )
+    title.pack(pady=20)
+
+    tk.Frame(
+        frame,
+        height=2,
+        bg="black"
+    ).pack(fill="x", padx=20, pady=5)
+
+    searchfilter = tk.Frame(
+        frame,
+        bg="#eef2f7")
+    searchfilter.pack(fill="x", padx=20, pady=10)
+
+    swrap = tk.Frame(searchfilter, bg="#eef2f7", highlightthickness=0 )
+    swrap.pack(side="right", padx=(10,0))
+
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    search_path = os.path.join(BASE_DIR, "assets", "search.png")
+    search_icon = ImageTk.PhotoImage(Image.open(search_path).resize((20, 20)))
+
+    icon_label = tk.Label(swrap, image=search_icon, bg="#eef2f7")
+    icon_label.image=search_icon
+    icon_label.pack(side="right")
+
+    search = tk.Entry(searchfilter, font=("Arial", 12), width=15, fg="gray")
+    search.insert(0, "Search...")
+
+    def on_focus_in(event):
+        if search.get() == "Search...":
+            search.delete(0, "end")
+            search.config(fg="black")
+
+    def on_focus_out(event):
+        if search.get() == "":
+            search.insert(0, "Search...")
+            search.config(fg="gray")
+
+    search.bind("<FocusIn>", on_focus_in)
+    search.bind("<FocusOut>", on_focus_out)
+    search.pack(side="right")
+
+    filter_menu = tk.Menu(searchfilter, tearoff=0)
+
+    def mfilter(category):
+        all_models = get_models(device, brand)
+        
+        if category == "All":
+            data = all_models
+        elif category == "Available":
+            data = [m for m in all_models if m.get('available', m.get('stock_count', 0)) > 0]
+        elif category == "Out of Stock":
+            data = [m for m in all_models if m.get('available', m.get('stock_count', 0)) == 0]
+        
+        refresh_models(container, canvas, data, app, device, brand)
+
+    filter_menu.add_command(label="Show All", command=lambda: mfilter("All"))
+    filter_menu.add_command(label="Show Available", command=lambda: mfilter("Available"))
+    filter_menu.add_command(label="Show Out of Stock", command=lambda: mfilter("Out of Stock"))
+
+    def mfilter_menu(event):
+        filter_menu.post(event.x_root, event.y_root)
+
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    filter_path = os.path.join(BASE_DIR, "assets", "filter.png")
+    filter_icon = ImageTk.PhotoImage(Image.open(filter_path).resize((25, 25)))
+
+    filter_label = tk.Label(
+        searchfilter,
+        text="Filter",
+        image=filter_icon,
+        compound="left",
+        justify="center",
+        font=("Arial", 12, "bold"),
+        bg="#eef2f7",
+        fg="#e6b800",
+        cursor="hand2",
+        padx=5
+    )
+    filter_label.image = filter_icon
+    filter_label.pack(side="right", padx=10)
+    filter_label.bind("<Button-1>", mfilter_menu)
+
+    add_hover(filter_label, "#eef2f7", "#eef2f7", "black", "#e6b800")
+
+    scroll_wrapper = tk.Frame(frame, bg="#eef2f7")
+    scroll_wrapper.pack(fill="both", expand=True, padx=20)
+
+    canvas = tk.Canvas(scroll_wrapper, bg="#eef2f7", highlightthickness=0)
+    scrollbar = tk.Scrollbar(scroll_wrapper, orient="vertical", command=canvas.yview)
+    container = tk.Frame(canvas, bg="#eef2f7")
+
+    canvas.configure(yscrollcommand=scrollbar.set)
+    canvas.pack(side="left", fill="both", expand=True)
+    scrollbar.pack(side="right", fill="y")
+
+    canvas_window = canvas.create_window((0, 0), window=container, anchor="nw")
+    canvas.bind("<Configure>", lambda e: canvas.itemconfig(canvas_window, width=e.width))
+    container.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+
+    def msearch(event=None):
+        term = search.get().lower()
+        all_models = get_models(device,brand)
+
+        if term == "search..." or term == "":
+            data = get_models(device, brand)
+        else:
+            data = []
+            for m in all_models:
+                name_match = term in m.get('model_name', '').lower()
+                specs_match = any(term in s.lower() for s in m.get('specs', []))
+                
+                if name_match or specs_match:
+                    data.append(m)
+
+        refresh_models(container, canvas, data, app, device, brand)
+
+    search.bind("<KeyRelease>", msearch)
+    
+    # Initial load
+    initial_data = get_models(device, brand)
+    refresh_models(container, canvas, initial_data, app, device, brand)
+
+    # 3 columns for grid layout
+    for i in range(3):
+        container.grid_columnconfigure(i, weight=1, uniform="col")
 
 
     # frame for buttons at the bottom (add, back)
-    btm_btn_frame = tk.Frame(frame)
-    btm_btn_frame.grid(row=2, column=0, sticky="ew", pady=20)
-    btm_btn_frame.grid_columnconfigure(0, weight=1)  # Left side
-    btm_btn_frame.grid_columnconfigure(1, weight=1)  # Right side
+    bottom = tk.Frame(frame)
+    bottom.pack(fill="x", padx=10, pady=20)
 
     # add device - left (sticky = "w")
     add_btn = tk.Button(
-        btm_btn_frame,
-        text="+ Add Another Device",
+        bottom,
+        text="+ Add New Model",
         font=("Arial", 17, "bold"),
         bg="#4CAF50",
         fg="white",
@@ -994,21 +1106,20 @@ def show_brand_details(app, device, brand):
         relief="raised",
         command=lambda d=device, b=brand: add_device(app, device, brand)
     )
-    add_btn.grid(row=0, column=0, sticky="w", padx=40)
+    add_btn.pack(side="left")
     add_hover(add_btn, "#45a049", "#4CAF50", "white", "white")
 
-    # back button - RIGHT (sticky = "e")
     back_btn = tk.Button(
-        btm_btn_frame,
-        text="Back",
-        font=("Arial", 14, "bold"),
-        bg="#ffd735",
-        fg="black",
-        cursor="hand2",
-        command=lambda: app.pages["brand_devices"].tkraise()
-    )
-    back_btn.grid(row=0, column=1, sticky="e", padx=40)
-    add_hover(back_btn, "#232624", "#ffd735", "#ffd735", "black")
+        bottom, 
+        text="Back", 
+        font=("Arial", 17, "bold"), 
+        bg="gray", 
+        fg="black", 
+        relief="raised", 
+        height=1, 
+        command=lambda: app.pages["brand_devices"].tkraise())
+    back_btn.pack(side="right")
+    add_hover(back_btn, "#232624", "gray", "white", "black")
 
     app.pages["brand_details"].tkraise()
 
