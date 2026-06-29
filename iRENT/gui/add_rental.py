@@ -266,7 +266,7 @@ def dev_win(rental, rental_total):
     apply_filters()
 
 
-def add_rental_page(container_frame,rental, prefill_device=None, prefill_model=None):
+def add_rental_page(container_frame,rental, prefill_device=None):
         
         vcmd_num = (container_frame.register(lambda P: validate_input(P, "numbers", length=11)), '%P')
         vcmd_alpha = (container_frame.register(lambda P: validate_input(P, "alpha", length=20)), '%P')
@@ -586,6 +586,23 @@ def add_rental_page(container_frame,rental, prefill_device=None, prefill_model=N
             bg="#eef2f7"
         )
         total_label.pack(side="left")
+
+        if prefill_device:
+            model_name = prefill_device.get("model_name", prefill_device.get("model"))
+
+            rental.model_display.config(state="normal")
+            rental.model_display.delete(0, tk.END)
+            rental.model_display.insert(0, model_name)
+            rental.model_display.config(state="readonly")
+
+            if model_name in rental.device_map:
+                rental.selected_device_data = {
+                    "id": rental.device_map[model_name]["id"],
+                    "model": model_name,
+                    "price": rental.device_map[model_name]["price"]
+                }
+
+                update_total(None, rental, rental_total)
 
 
         back_btn = tk.Button(

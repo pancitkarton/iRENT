@@ -895,8 +895,8 @@ def refresh_models(container, canvas,models_data, app, device, brand):
             fg = "black",
             font=("Arial", 15, "bold"),
             cursor="hand2",
-            command=lambda d=device, m=model: [
-                add_rental_page(app.pages["add_rental"], app, prefill_model=m),
+            command=lambda det=details: [
+                add_rental_page(app.pages["add_rental"], app, prefill_device=det),
                 app.pages["add_rental"].tkraise()
             ]
         )
