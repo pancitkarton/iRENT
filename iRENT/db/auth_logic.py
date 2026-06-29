@@ -1,6 +1,7 @@
 # db and functions for login
 import sqlite3
 import os
+import bcrypt
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -24,16 +25,22 @@ CREATE TABLE IF NOT EXISTS Staff (
 """)
 conn.commit()
 
+def hashed_pass(password):
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+def verify_password(plain_password, hashed_password):
+    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+
 
 #Log-in function
 def login(username, password):
         if not username or not password:
             return "empty"
 
-        cursor.execute("SELECT * FROM Staff WHERE Username = ? AND Password = ?", (username, password))
+        cursor.execute("SELECT StaffID, Password FROM Staff WHERE Username = ?", (username,))
         result = cursor.fetchone() #retrieves the username and password from the database, and checks if they match with the input
 
-        if result:
+        if result and verify_password(password, result[1]):
             return {"status": "success", "staff_id": result[0]}
         
         else:
@@ -73,6 +80,8 @@ def signup(first_name, middle_name, last_name, suffix, contact_no, email_add, us
     )
     if cursor.fetchone():
         return "email_exists"
+    
+    hashed_pw = hashed_pass(password)
 
 
 # Inserts user into database
@@ -99,7 +108,7 @@ def signup(first_name, middle_name, last_name, suffix, contact_no, email_add, us
         contact_no,
         email_add,
         username,
-        password
+        hashed_pw
     ))
 
     conn.commit()
