@@ -316,7 +316,7 @@ class MainApp:
             "#ebc427", 
             "available.png", 
             str(stats["available"]), 
-            "Available for Rent",
+            "Rentals Due Today",
             3, 
             row=1,
             command=lambda: gotopage("devices")

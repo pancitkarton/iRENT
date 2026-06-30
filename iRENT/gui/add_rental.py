@@ -9,7 +9,6 @@ from db.address_service import regionsdb, provincesdb, citiesdb, brgysdb
 from db.validation import validate_input
 import re
 
-
 def select_customer(rental, name_entries, contact_entry, email_entry):
     selector = tk.Toplevel()
     selector.title("Select Customer")
@@ -26,8 +25,8 @@ def select_customer(rental, name_entries, contact_entry, email_entry):
     search_con.pack(side="left", padx=5, anchor="s")
 
     tk.Label(
-        search_con, 
-        text="Search:", 
+        search_con,
+        text="Search:",
         bg="#ffd735",
         font=("Arial", 10, "bold")
     ).pack(anchor="w")
@@ -35,8 +34,8 @@ def select_customer(rental, name_entries, contact_entry, email_entry):
     search_entry = tk.Entry(search_con, width=30)
     search_entry.pack(ipady=3)
 
-    columns = ("id", "first", "middle", "last", "suffix", "contact", "email", "region", "city", "brgy", "postal", "street")
-    
+    columns = ("id", "first", "middle", "last", "suffix", "birthday", "contact", "email", "region", "province", "city", "brgy", "postal", "street")
+
     style = ttk.Style()
     style.configure("Treeview.Heading", font=("Arial", 10, "bold"))
 
@@ -49,8 +48,8 @@ def select_customer(rental, name_entries, contact_entry, email_entry):
     tree.column("suffix", width=100)
     tree.column("contact", width=100)
     tree.column("email", width=100)
-    
-    for col in ("region", "city", "brgy", "postal", "street"):
+
+    for col in ("birthday", "region", "province", "city", "brgy", "postal", "street"):
         tree.column(col, width=0, stretch=False)
 
     for col in columns:
@@ -58,7 +57,7 @@ def select_customer(rental, name_entries, contact_entry, email_entry):
 
     h_scroll = ttk.Scrollbar(selector, orient="horizontal", command=tree.xview)
     tree.configure(xscrollcommand=h_scroll.set)
-    
+
     tree.pack(fill="both", expand=True, padx=10, pady=5)
     h_scroll.pack(fill="x", padx=10, pady=(0, 10))
 
@@ -69,6 +68,7 @@ def select_customer(rental, name_entries, contact_entry, email_entry):
         query = search_entry.get().lower()
         for item in tree.get_children():
             tree.delete(item)
+
         for cust in customers:
             if query in str(cust[1]).lower() or query in str(cust[3]).lower():
                 tree.insert("", "end", values=cust)
@@ -81,19 +81,33 @@ def select_customer(rental, name_entries, contact_entry, email_entry):
             return
 
         values = tree.item(selected, "values")
-        (cust_id, first, middle, last, suffix, contact, email, region, province, city, brgy, postal, street) = values
+        (cust_id, first, middle, last, suffix, birthday, contact, email, region, province, city, brgy, postal, street) = values
 
         rental.entries["First Name"].delete(0, tk.END)
         rental.entries["First Name"].insert(0, first)
+
         rental.entries["Middle Name"].delete(0, tk.END)
-        rental.entries["Middle Name"].insert(0, middle)
+        if middle and middle != 'None':
+            rental.entries["Middle Name"].insert(0, middle)
+
         rental.entries["Last Name"].delete(0, tk.END)
         rental.entries["Last Name"].insert(0, last)
+
         rental.entries["Suffix"].delete(0, tk.END)
-        rental.entries["Suffix"].insert(0, suffix)
-        
+        if suffix and suffix != 'None':
+            rental.entries["Suffix"].insert(0, suffix)
+
+        # FIXED: Extract birthday and safely set it into the DateEntry widget
+        if birthday and birthday != 'None':
+            try:
+                b_date = datetime.strptime(str(birthday), "%m-%d-%Y").date()
+                rental.entries["Birthday"].set_date(b_date)
+            except ValueError:
+                pass # Defaults if the database holds invalid data
+
         rental.contact_entry.delete(0, tk.END)
         rental.contact_entry.insert(0, contact)
+
         rental.email_entry.delete(0, tk.END)
         rental.email_entry.insert(0, email)
 
@@ -101,8 +115,10 @@ def select_customer(rental, name_entries, contact_entry, email_entry):
         rental.province_cb.set(province)
         rental.city_cb.set(city)
         rental.brgy_cb.set(brgy)
+
         rental.postal_entry.delete(0, tk.END)
         rental.postal_entry.insert(0, postal)
+
         rental.street_entry.delete(0, tk.END)
         rental.street_entry.insert(0, street)
 
@@ -110,24 +126,24 @@ def select_customer(rental, name_entries, contact_entry, email_entry):
 
     tree.bind("<Double-1>", on_select)
 
-def update_total(event=None,rental=None, rental_total=None):
-            try:
-                if not hasattr(rental, 'selected_device_data'):
-                    rental_total.set("Rental Total: ₱0.00")
-                    return
-                
-                price = rental.selected_device_data["price"]
-                
-                start_date = rental.rental_calendar.get_date()
-                end_date = rental.return_calendar.get_date()
 
-                delta = (end_date - start_date).days
-                days = max(1, delta)
-                
-                total = days * price
-                rental_total.set(f"Rental Total: ₱{total:,.2f}")
-            except:
-                rental_total.set("Rental Total: ₱0.00")
+def update_total(event=None,rental=None, rental_total=None):
+        try:
+            if not hasattr(rental, 'selected_device_data'):
+                rental_total.set("Rental Total: ₱ 0.00")
+                return
+
+            price = rental.selected_device_data["price"]
+
+            start_date = rental.rental_calendar.get_date()
+            end_date = rental.return_calendar.get_date()
+            delta = (end_date - start_date).days
+            days = max(1, delta)
+
+            total = days * price
+            rental_total.set(f"Rental Total: ₱ {total:,.2f}")
+        except:
+            rental_total.set("Rental Total: ₱ 0.00")
 
 def dev_win(rental, rental_total):
     selector = tk.Toplevel()
@@ -143,12 +159,11 @@ def dev_win(rental, rental_total):
     search_con.pack(side="left", padx=5, anchor="s")
 
     tk.Label(
-        search_con, 
-        text="Search:", 
+        search_con,
+        text="Search:",
         bg="#ffd735",
         font=("Arial", 10, "bold")
     ).pack(anchor="w")
-
     search_entry = tk.Entry(search_con, width=30)
     search_entry.pack(ipady=3)
 
@@ -161,7 +176,6 @@ def dev_win(rental, rental_total):
 
     view_con = tk.Frame(filter_frame, bg="#ffd735")
     view_con.pack(side="right", padx=5, anchor="s")
-
     view_btn = tk.Button(
         view_con,
         text="View All",
@@ -171,35 +185,29 @@ def dev_win(rental, rental_total):
         bg= "#232624"
     )
     view_btn.pack (side="left", padx=5)
-
     rental.add_hover(view_btn,"#ffd735", "#232624", enter_fg="black", leave_fg="#ffd735")
-    
+
     brand_con = tk.Frame(filter_frame, bg="#ffd735")
     brand_con.pack(side="right", padx=5)
-
     tk.Label(
-        brand_con, 
-        text="Brand:", 
-        bg="#ffd735", 
+        brand_con,
+        text="Brand:",
+        bg="#ffd735",
         font=("Arial", 10, "bold")
     ).pack(anchor="w")
-
     brand_cb = ttk.Combobox(brand_con, state="readonly", width=23)
     brand_cb.pack(ipady=3)
 
     type_con = tk.Frame(filter_frame, bg="#ffd735")
     type_con.pack(side="right", padx=5)
-
     tk.Label(
-        type_con, 
-        text="Device Type:", 
-        bg="#ffd735", 
+        type_con,
+        text="Device Type:",
+        bg="#ffd735",
         font=("Arial", 10, "bold")
     ).pack(anchor="w")
-
     type_cb = ttk.Combobox(type_con, state="readonly", width=23)
     type_cb.pack(ipady=3)
-
 
     devices = all_avail_dev()
     types = sorted(list(set(d['type'] for d in devices)))
@@ -221,7 +229,6 @@ def dev_win(rental, rental_total):
         tree.heading(col, text=col.capitalize())
         if col == "id": tree.column(col, width=0, stretch=False)
 
-
     def apply_filters(*args):
         selected_type = type_cb.get()
         selected_brand = brand_cb.get()
@@ -229,9 +236,9 @@ def dev_win(rental, rental_total):
 
         if selected_type:
             brand_cb['values'] = sorted(list(set(d['brand'] for d in devices if d['type'] == selected_type)))
-        
+
         for item in tree.get_children(): tree.delete(item)
-        
+
         for d in devices:
             if (not selected_type or d['type'] == selected_type) and \
                (not selected_brand or d['brand'] == selected_brand) and \
@@ -246,20 +253,17 @@ def dev_win(rental, rental_total):
 
     def click_dev(event=None):
         selected = tree.focus()
-        if not selected: 
+        if not selected:
             return
-
         vals = tree.item(selected, "values")
-
         rental.selected_device_data = {"id": vals[0], "model": vals[3], "price": float(vals[4])}
 
         rental.model_display.config(state="normal")
         rental.model_display.delete(0, tk.END)
         rental.model_display.insert(0, vals[3])
         rental.model_display.config(state="readonly")
-        
-        update_total(None,rental, rental_total) 
 
+        update_total(None,rental, rental_total)
         selector.destroy()
 
     tree.bind("<Double-1>", click_dev)
@@ -267,7 +271,7 @@ def dev_win(rental, rental_total):
 
 
 def add_rental_page(container_frame,rental, prefill_device=None):
-        
+
         vcmd_num = (container_frame.register(lambda P: validate_input(P, "numbers", length=11)), '%P')
         vcmd_alpha = (container_frame.register(lambda P: validate_input(P, "alpha", length=20)), '%P')
         vcmd_suffix = (container_frame.register(lambda P: validate_input(P, "suffix", length=5)), '%P')
@@ -307,12 +311,11 @@ def add_rental_page(container_frame,rental, prefill_device=None):
         form_frame.pack(fill="both", expand=True)
 
         def save_rental():
-
             fn = rental.entries["First Name"].get()
             ln = rental.entries["Last Name"].get()
             contact = rental.contact_entry.get()
             email = rental.email_entry.get()
-            
+
             if not (fn and ln and contact and email):
                 messagebox.showwarning("Error", "Please fill in all required fields!")
                 return
@@ -320,11 +323,20 @@ def add_rental_page(container_frame,rental, prefill_device=None):
             if len(contact) < 11:
                 messagebox.showerror("Error", "Contact number must be 11 digits.")
                 return
-            
+
             email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
             if not re.match(email_pattern, email):
                 messagebox.showerror("Error", "Please enter a valid email address.")
                 return
+
+            # --- NEW DATE VALIDATION ---
+            start_date = rental.rental_calendar.get_date()
+            end_date = rental.return_calendar.get_date()
+
+            if end_date < start_date:
+                messagebox.showerror("Invalid Date!", "The return date cannot be earlier than the rental date.")
+                return
+            # ---------------------------
 
             try:
                 customer_id = getcreate_customer(
@@ -342,20 +354,23 @@ def add_rental_page(container_frame,rental, prefill_device=None):
                     rental.postal_entry.get(),
                     rental.street_entry.get()
                 )
-                
 
-                selected_device = rental.model_display.get()
+                # --- FIXED: USE EXPLICIT DEVICE ID ---
+                if not hasattr(rental, 'selected_device_data'):
+                    raise Exception("Please select a specific device from the list.")
+                exact_device_id = rental.selected_device_data["id"]
 
-                if selected_device not in rental.device_map:
-                    raise Exception("Please select a valid device")
-                
-                total_text = rental_total.get().replace("Rental Total: ₱", "").replace(",", "")
-                total_fee = float(total_text)
+                # --- FIXED: ROBUST FLOAT CONVERSION ---
+                # Strips out all letters, currency symbols, spaces, and commas
+                raw_total = rental_total.get()
+                clean_total = re.sub(r'[^\d.]', '', raw_total)
+                total_fee = float(clean_total) if clean_total else 0.00
+                # --------------------------------------
 
                 create_rental(
                     customer_id,
                     rental.staff_id,
-                    rental.device_map[selected_device]["id"],
+                    exact_device_id,
                     rental.rental_calendar.get(),
                     rental.return_calendar.get(),
                     total_fee
@@ -365,88 +380,81 @@ def add_rental_page(container_frame,rental, prefill_device=None):
                     rental.refresh_rentals()
 
                 messagebox.showinfo("Success", "Rental saved successfully!")
-
                 rental.pages["rentals"].tkraise()
-
                 reset_form()
 
             except Exception as e:
                 messagebox.showerror("Database Error", str(e))
 
-
         def reset_form():
             for entry in rental.entries.values():
                 entry.delete(0, tk.END)
-            
+
             rental.contact_entry.delete(0, tk.END)
             rental.email_entry.delete(0, tk.END)
             rental.postal_entry.delete(0, tk.END)
             rental.street_entry.delete(0, tk.END)
-            
+
             rental.region_cb.set('')
             rental.province_cb.set('')
             rental.city_cb.set('')
             rental.brgy_cb.set('')
-            
+
             rental.model_display.config(state="normal")
             rental.model_display.delete(0, tk.END)
             rental.model_display.config(state="readonly")
-            
-            rental_total.set("Rental Total: ₱0.00")
 
+            rental_total.set("Rental Total: ₱ 0.00")
             if hasattr(rental, 'selected_device_data'):
                 delattr(rental, 'selected_device_data')
 
-
-
         def cframe(parent, label_text, width, is_cb=False, is_date=False, helper=None, default_date=None):
-
             c = tk.Frame(parent, bg="#f0f0f0")
             c.pack(side="left", padx=(0, 15), pady=0, anchor="n")
 
-            
             tk.Label(c, text=label_text, bg="#f0f0f0", font=("Arial", 10)).pack(anchor="w")
-            
+
             if is_cb:
                 widget = ttk.Combobox(c, width=width)
             elif is_date:
                 widget = DateEntry(c, width=width, date_pattern="mm-dd-yyyy", date=default_date)
             else:
                 widget = tk.Entry(c, width=width)
-                
+
             widget.pack(anchor="w", ipady=3)
 
             if helper:
                 tk.Label(c, text=helper, bg="#f0f0f0", fg="#7F7F7F", font=("Arial", 8)).pack(anchor="w", pady=(2,0))
+
             return widget
 
 
         rentee_info_frame = tk.LabelFrame(
-            form_frame, 
-            text="RENTEE INFO", 
-            font=("Arial", 20, "bold"), 
+            form_frame,
+            text="RENTEE INFO",
+            font=("Arial", 20, "bold"),
             padx=10,
-            pady=2, 
+            pady=2,
             bg="#f0f0f0"
         )
         rentee_info_frame.pack(fill="x", padx=10, pady=5)
-
 
         row1 = tk.Frame(rentee_info_frame, bg="#f0f0f0")
         row1.pack(fill="x", pady=(0,5))
 
         select_btn = tk.Button(
-            row1, 
-            text="Select Customer", 
-            bg="#ffd735", 
+            row1,
+            text="Select Customer",
+            bg="#ffd735",
             font=("Arial", 10, "bold"),
             command=lambda: select_customer(rental, rental.entries, rental.contact_entry, rental.email_entry)
         )
-        select_btn.pack(side="right", padx=10, ipady=3) 
+        select_btn.pack(side="right", padx=10, ipady=3)
         rental.add_hover(select_btn, "#232624", "#ffd735", enter_fg="#ffd735", leave_fg="black")
 
+
         rental.entries = {}
-        
+
         rental.entries["First Name"] = cframe(row1, "First Name:", 20, helper="Ex: Juan")
         rental.entries["First Name"].config(validate="key", validatecommand=vcmd_alpha)
 
@@ -462,12 +470,9 @@ def add_rental_page(container_frame,rental, prefill_device=None):
         rental.entries["Birthday"] = cframe(row1, "Birthday:", 15, is_date=True)
         rental.entries["Birthday"].set_date(default_bday)
 
-
         addr_frame = tk.Frame(rentee_info_frame, bg="#f0f0f0")
         addr_frame.pack(fill="x", pady=5)
 
-
-        
         rental.region_cb = cframe(addr_frame, "Region:", 30, is_cb=True)
         rental.province_cb = cframe(addr_frame, "Province:", 30, is_cb=True)
         rental.city_cb = cframe(addr_frame, "City:", 15, is_cb=True)
@@ -484,14 +489,15 @@ def add_rental_page(container_frame,rental, prefill_device=None):
         rental.city_cb.bind("<<ComboboxSelected>>", on_city_select)
 
         contact_frame = tk.LabelFrame(
-            form_frame, 
-            text="CONTACT INFO", 
-            font=("Arial", 20, "bold"), 
-            padx=10, 
-            pady=2, 
+            form_frame,
+            text="CONTACT INFO",
+            font=("Arial", 20, "bold"),
+            padx=10,
+            pady=2,
             bg="#f0f0f0"
         )
         contact_frame.pack(fill="x", padx=10, pady=5)
+
         row_contact = tk.Frame(contact_frame, bg="#f0f0f0")
         row_contact.pack(fill="x")
 
@@ -501,17 +507,16 @@ def add_rental_page(container_frame,rental, prefill_device=None):
         rental.email_entry = cframe(row_contact, "Email Address:", 30, helper="Ex: example@gmail.com")
         rental.email_entry.config(validate="key", validatecommand=vcmd_email)
 
-
         device_frame = tk.LabelFrame(
-            form_frame, 
-            text="DEVICE RENTAL", 
-            font=("Arial", 20, "bold"), 
-            padx=10, 
-            pady=5, 
+            form_frame,
+            text="DEVICE RENTAL",
+            font=("Arial", 20, "bold"),
+            padx=10,
+            pady=5,
             bg="#f0f0f0"
         )
         device_frame.pack(fill="x", padx=10, pady=5)
-        
+
         row_dev = tk.Frame(device_frame, bg="#f0f0f0")
         row_dev.pack(fill="x")
 
@@ -528,32 +533,29 @@ def add_rental_page(container_frame,rental, prefill_device=None):
         rental.model_display = tk.Entry(seldev_con, width=25, font=("Arial", 10, "bold", "italic"))
         rental.model_display.pack(side="left", padx=5, ipady=3)
         rental.model_display.config(state="readonly")
-        
+
         select_dev = tk.Button(
-            row_dev, 
-            text="Select Device", 
-            bg="#ffd735", 
+            row_dev,
+            text="Select Device",
+            bg="#ffd735",
             font=("Arial", 10, "bold"),
             command= lambda: dev_win(rental, rental_total)
         )
-        select_dev.pack(side="left", padx=(0,10), pady=(15,0)) 
+        select_dev.pack(side="left", padx=(0,10), pady=(15,0))
         rental.add_hover(select_dev, "#232624", "#ffd735", enter_fg="#ffd735", leave_fg="black")
 
         devices = get_devices()
-
         rental.device_map = {}
-
         for device_id, model, price in devices:
             rental.device_map[model] = {"id": device_id, "price": price}
 
 
         d1 = tk.Frame(row_dev, bg="#f0f0f0")
         d1.pack(side="left", padx=10)
-
         tk.Label(
-            d1, 
+            d1,
             text="Rental Date:",
-            font=("Arial", 10), 
+            font=("Arial", 10),
             bg="#f0f0f0"
         ).pack(anchor="w")
         rental.rental_calendar = DateEntry(d1, width=15, date_pattern="mm-dd-yyyy")
@@ -561,49 +563,43 @@ def add_rental_page(container_frame,rental, prefill_device=None):
 
         d2 = tk.Frame(row_dev, bg="#f0f0f0")
         d2.pack(side="left", padx=10)
-        
+
         tk.Label(
-            d2, 
-            text="Return By:", 
-            font=("Arial", 10), 
+            d2,
+            text="Return By:",
+            font=("Arial", 10),
             bg="#f0f0f0"
         ).pack(anchor="w")
         rental.return_calendar = DateEntry(d2, width=15, date_pattern="mm-dd-yyyy")
         rental.return_calendar.pack(anchor="w", ipady=3, pady=(0,5))
 
-
-
         #bottom
         bottom_bar = tk.Frame(form_frame, padx=10, pady=20, bg="#eef2f7")
         bottom_bar.pack(fill="x", side="bottom")
 
-
-        rental_total = tk.StringVar(value="Rental Total: ₱0.00")
+        rental_total = tk.StringVar(value="Rental Total: ₱ 0.00")
         total_label = tk.Label(
-            bottom_bar, 
-            textvariable=rental_total, 
-            font=("Arial", 20, "bold"), 
+            bottom_bar,
+            textvariable=rental_total,
+            font=("Arial", 20, "bold"),
             bg="#eef2f7"
         )
         total_label.pack(side="left")
 
         if prefill_device:
             model_name = prefill_device.get("model_name", prefill_device.get("model"))
-
             rental.model_display.config(state="normal")
             rental.model_display.delete(0, tk.END)
             rental.model_display.insert(0, model_name)
             rental.model_display.config(state="readonly")
 
-            if model_name in rental.device_map:
-                rental.selected_device_data = {
-                    "id": rental.device_map[model_name]["id"],
-                    "model": model_name,
-                    "price": rental.device_map[model_name]["price"]
-                }
-
-                update_total(None, rental, rental_total)
-
+            # --- FIXED ID ASSIGNMENT ---
+            rental.selected_device_data = {
+                "id": prefill_device.get("id", prefill_device.get("product_id", "")),
+                "model": model_name,
+                "price": prefill_device.get("price", 0)
+            }
+            update_total(None, rental, rental_total)
 
         back_btn = tk.Button(
             bottom_bar,
