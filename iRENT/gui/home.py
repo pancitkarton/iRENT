@@ -286,7 +286,7 @@ class MainApp:
             "active.png", 
             str(stats["active"]), 
             "Ongoing Rentals", 
-            1, 
+            1,
             row=1
         )
 
@@ -314,7 +314,7 @@ class MainApp:
             frame, 
             "#888E93", 
             "nostock.png", 
-            str(stats["total_devices"]), 
+            str(stats["out_of_stock"]), 
             "Out of Stock Devices", 
             1, 
             row=2
@@ -354,33 +354,11 @@ class MainApp:
             bg=color,
             width=200,
             height=200,
+            highlightbackground="black",
+            highlightthickness=3
         )
         card.grid(row=row, column=column, sticky="n", padx=23, pady=17)
         card.pack_propagate(False)
-
-        def on_enter(e):
-            card.config(highlightbackground="black", highlightthickness=3)
-            card.grid(pady=5)
-            if command: card.config(cursor="hand2")
-
-        def on_leave(e):
-            card.config(highlightbackground="#eef2f7")
-            card.grid(pady=17)
-            card.config(cursor="")
-
-        def bind_all(widget):
-            widget.bind("<Enter>", on_enter)
-            widget.bind("<Leave>", on_leave)
-            if command:
-                widget.bind("<Button-1>", lambda e: command())
-            for child in widget.winfo_children():
-                bind_all(child)
-
-        if command:
-            card.config(cursor="hand2")
-            card.bind("<Button-1>", lambda e: command())
-            for child in card.winfo_children():
-                child.bind("<Button-1>", lambda e: command())
 
         tk.Label(card, image=icon, bg=color).pack(pady=(15, 5))
 
@@ -399,5 +377,3 @@ class MainApp:
             fg="white", 
             bg=color
         ).pack(pady=(0, 20))
-
-        bind_all(card)

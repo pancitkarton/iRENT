@@ -7,14 +7,24 @@ def get_dashboard_summary():
     def count(table, condition="1=1"):
         cursor.execute(f"SELECT COUNT(*) FROM {table} WHERE {condition}")
         return cursor.fetchone()[0]
+    
+    cursor.execute("""
+        SELECT COUNT(*) FROM (
+            SELECT Model 
+            FROM Device 
+            GROUP BY Model 
+            HAVING SUM(CASE WHEN AvailabilityStatus = 'Available' THEN 1 ELSE 0 END) = 0
+        )
+    """)
+    out_of_stock_count = cursor.fetchone()[0]
 
     data = {
         "active": count("Rental", "RentalStatus = 'Ongoing'"),
         "overdue": count("Rental", "RentalStatus = 'Overdue'"),
         "available": count("Device", "AvailabilityStatus = 'Available'"),
+        "out_of_stock": out_of_stock_count,
         "total_devices": count("Device"),
-        "total_rentees": count("Customer"),
-        "total_employees": count("Staff")
+        "total_rentees": count("Customer")
     }
     
     conn.close()
