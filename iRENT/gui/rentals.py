@@ -202,6 +202,7 @@ def rentals_page(main_frame, app):
 
     canvas.bind("<Configure>", lambda e: canvas.itemconfig(canvas_window, width=e.width))
     container.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+    canvas.bind_all("<MouseWheel>", lambda e: canvas.yview_scroll(int(-1*(e.delta/120)), "units"))
 
     app.rental_list_container = container
 

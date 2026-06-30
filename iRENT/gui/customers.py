@@ -43,6 +43,7 @@ def display_table(app, table_wrapper, customer_list, refresh_callback=None):
     scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
     canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
     canvas.configure(yscrollcommand=v_scroll.set, xscrollcommand=h_scroll.set)
+    canvas.bind_all("<MouseWheel>", lambda e: canvas.yview_scroll(int(-1*(e.delta/120)), "units"))
     
     v_scroll.pack(side="right", fill="y")
     h_scroll.pack(side="bottom", fill="x")
