@@ -117,8 +117,7 @@ def initialize_db():
                 },
                 "CANON": {
                     "CANON EOS R5 II": {"id": "CAM-004", "specs": ["45MP", "8K Video", "Dual Pixel AF"], "price": 650, "available": 2},
-                    "CANON EOS R6 III": {"id": "CAM-005", "specs": ["24MP", "4K 60fps", "Low Light Master"], "price": 550, "available": 3}
-                },
+                    "CANON EOS R6 III": {"id": "CAM-005", "specs": ["32.5MP Full-Frame", "7K 60p RAW", "4K 120p"], "price": 550, "available": 3},
                 "INSTAX": {
                     "INSTAX MINI 12": {"id": "CAM-006", "specs": ["Instant Print", "Auto Exposure", "Compact"], "price": 200, "available": 10},
                     "INSTAX MINI EVO": {"id": "CAM-007", "specs": ["Hybrid Instant Camera", "Filters", "Bluetooth"], "price": 250, "available": 6}
@@ -144,8 +143,8 @@ def initialize_db():
             },
             "PORTABLE DVD PLAYER": {
                 "SONY": {"DVP-FX980": {"id": "DVD-001", "specs": ["9-inch Screen", "Portable", "Rechargeable Battery"], "price": 150, "available": 5}},
-                "PHILIPS": {"PD9012": {"id": "DVD-002", "specs": ["10-inch Screen", "USB Support", "Compact Design"], "price": 140, "available": 4}},
-                "DBPOWER": {"MK101": {"id": "DVD-003", "specs": ["12-inch Screen", "Swivel Display", "Remote Control"], "price": 130, "available": 6}}
+                "PHILIPS": {"PD9012": {"id": "DVD-002", "specs": ["9-inch LCD", "USB Support", "Compact Design"], "price": 140, "available": 4}},
+                "DBPOWER": {"MK101": {"id": "DVD-003", "specs": ["10.5-inch Screen", "Swivel Display", "Remote Control"], "price": 130, "available": 6}}
             },
             "LAPTOP": {
                 "DELL": {"XPS 13": {"id": "LAP-001", "specs": ["i7", "16GB RAM", "512GB SSD"], "price": 700, "available": 5}},
@@ -157,7 +156,7 @@ def initialize_db():
                 "SAMSUNG": {"HW-Q990D": {"id": "AUD-002", "specs": ["Dolby Atmos", "11.1.4 Channel", "Wireless Subwoofer"], "price": 400, "available": 4}},
                 "SVS": {"PRIME TOWER": {"id": "AUD-003", "specs": ["Hi-Fi Sound", "Home Theater", "Deep Bass"], "price": 500, "available": 3}}
             }
-        }
+        }}
 
         # Insert categories and brands first
         for cat in DATA:
