@@ -325,7 +325,7 @@ class MainApp:
             "#675DB7", 
             "device.png", 
             str(stats["total_devices"]), 
-            "Total Devices", 
+            "Total Stocks", 
             2, 
             row=2
         )
