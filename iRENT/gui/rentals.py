@@ -431,7 +431,7 @@ def show_details(app, order_id):
     info_row(container_details, 10, 0, "Brand: ", str(order.get('brand', 'N/A')))
     info_row(container_details, 10, 1, "Model: ", str(order.get('model', 'N/A')))
 
-    raw_dev_price = order.get('device_price', 0.00)
+    raw_dev_price = order.get('device_price')
     dev_price = float(raw_dev_price) if raw_dev_price is not None else 0.00
 
     info_row(container_details, 11, 0, "Daily Rate: ", f"₱{dev_price:.2f}")
