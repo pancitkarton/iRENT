@@ -643,4 +643,4 @@ def add_rental_page(container_frame,rental, prefill_device=None):
         rental.add_hover(reset_btn, "#232624", "#eef2f7", "white", "black")
 
         rental.rental_calendar.bind("<<DateEntrySelected>>", lambda e: update_total(e, rental, rental_total))
-        rental.return_calendar.bind("<<DateEntrySelected>>", lambda e: update_total(e, rental, rental_total))
+        rental.return_calendar.bind("<<DateEntrySelected>>", lambda e: update_total(e, rental, rental_total)) # test push
