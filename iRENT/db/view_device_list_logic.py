@@ -309,3 +309,16 @@ def search_brand(category_name,query, conn=None):
         ORDER BY b.BrandName
     ''', (category_name, search_term,))
     return [row[0] for row in cursor.fetchall()]
+
+def create_brand(brand_name, conn=None):
+    if conn is None:
+        conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("INSERT OR IGNORE INTO Brand (BrandName) VALUES (?)", (brand_name,))
+        conn.commit()
+        return True, "Brand added successfully."
+    except Exception as e:
+        return False, str(e)
+    finally:
+        conn.close()

@@ -102,9 +102,6 @@ def initialize_db():
     )
     """)
 
-    #rental item
-
-     #ilagay ung list of devices ni charmie (pakiupdate mamaya na!)
     cursor.execute("SELECT COUNT(*) FROM Device")
     if cursor.fetchone()[0] == 0:
         # Insert DeviceTypes and Brands from the DATA dict

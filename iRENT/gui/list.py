@@ -13,7 +13,8 @@ from db.view_device_list_logic import (
     get_models,
     add_model as db_add_model,
     delete_model as db_delete_model,
-    update_model as db_update_model
+    update_model as db_update_model,
+    create_brand
 )
 
 # global func to use anywhere in the code
@@ -429,19 +430,7 @@ def add_device_brand(app, device):
             return
 
         try:
-            import os
-            dummy_id = f"DUMMY-{os.urandom(2).hex()[:6].upper()}"
-
-            success, msg = db_add_model(
-                category_name=device,
-                brand_name=new_brand,
-                model_name="[NO MODELS YET]",
-                product_id=dummy_id,
-                price=0,
-                stock_count=0,
-                specs_list=["[PLACEHOLDER]"],
-                serial_num=dummy_id
-            )
+            success, msg = create_brand(new_brand)
 
             if success:
                 message.config(text=f"✅ Added: {new_brand} for {device.upper()}", fg="green")
