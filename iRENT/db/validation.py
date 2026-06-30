@@ -16,6 +16,8 @@ def validate_input(P, mode, length=20):
         return all(x.isalpha() or x.isspace() for x in P)
     
     if mode == "email":
+        if len(P) > 50:
+            return False
         return bool(re.match(r'^[a-zA-Z0-9._%+-@]*$', P))
     
     if mode == "username":

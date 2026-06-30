@@ -207,7 +207,7 @@ class AuthApp:
         vcmd_alpha = (signup_window.register(lambda P: validate_input(P, "alpha")), '%P')
         vcmd_suffix = (signup_window.register(lambda P: validate_input(P, "suffix", length=5)), '%P')
         vcmd_user = (signup_window.register(lambda P: validate_input(P, "username")), '%P')
-        vcmd_email = (signup_window.register(lambda P: validate_input(P, "email")), '%P')
+        vcmd_email = (signup_window.register(lambda P: validate_input(P, "email", length=50)), '%P')
 
         form_frame = tk.Frame(signup_window, bg="#313338")
         form_frame.place(relx=0.5, rely=0.5, anchor="center", width=400)

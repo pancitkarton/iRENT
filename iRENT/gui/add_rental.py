@@ -276,6 +276,7 @@ def add_rental_page(container_frame,rental, prefill_device=None):
         vcmd_alpha = (container_frame.register(lambda P: validate_input(P, "alpha", length=20)), '%P')
         vcmd_suffix = (container_frame.register(lambda P: validate_input(P, "suffix", length=5)), '%P')
         vcmd_email = (container_frame.register(lambda P: validate_input(P, "email", length=50)), '%P')
+        vcmd_postal = (container_frame.register(lambda P: validate_input(P, "numbers", length=4)), '%P')
 
         default_year = datetime.now().year - 21
         default_bday = date(default_year, 1, 1)
@@ -481,6 +482,7 @@ def add_rental_page(container_frame,rental, prefill_device=None):
         rental.city_cb = cframe(addr_frame, "City:", 15, is_cb=True)
         rental.brgy_cb = cframe(addr_frame, "Brgy:", 15, is_cb=True)
         rental.postal_entry = cframe(addr_frame, "Postal:", 8, is_cb=False, helper="e.g. 1000")
+        rental.postal_entry.config(validate="key", validatecommand=vcmd_postal)
         rental.street_entry = cframe(addr_frame, "Street/Bldg:", 30, is_cb=False, helper="Ex: 1234 Maple Street, Apt 5B")
 
         regions_data = regionsdb()
