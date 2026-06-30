@@ -49,10 +49,10 @@ def refresh_device_grid(container, devices, app):
             bg="#ffd735",
             fg="black",
             relief="ridge",
-            height=5,
+            height=3,
             command=lambda d=device: open_brands(app, d)
         )
-        btn.grid(row=row, column=col, padx=15, pady=15, sticky="nsew")
+        btn.grid(row=row, column=col, padx=15, pady=10, sticky="nsew")
 
         add_hover(btn, "#232624", "#ffd735", "#ffd735", "black")
 
