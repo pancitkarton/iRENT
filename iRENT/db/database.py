@@ -51,7 +51,7 @@ def initialize_db():
         MiddleName TEXT,
         LastName TEXT NOT NULL,
         Suffix TEXT,
-        Birthday TEXT,
+        Birthday TEXT NOT NULL,
         ContactNumber TEXT NOT NULL UNIQUE,
         EmailAddress TEXT NOT NULL UNIQUE,
         Region TEXT,
