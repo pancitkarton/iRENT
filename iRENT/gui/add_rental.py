@@ -373,6 +373,9 @@ def add_rental_page(container_frame,rental, prefill_device=None):
                     exact_device_id,
                     rental.rental_calendar.get(),
                     rental.return_calendar.get(),
+                    total_fee,
+                    "",
+                    0.0,
                     total_fee
                 )
 

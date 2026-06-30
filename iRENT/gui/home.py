@@ -280,25 +280,15 @@ class MainApp:
             fg="black"
         ).grid(row=0, column=0, columnspan=4, pady=(0, 20), sticky="w")
 
-        def filtered_rentals(status):
-            self.set_active_page("rentals")
-            if hasattr(self, 'rental_list_container'):
-                refresh_rental_list(self, self.rental_list_container, get_rentals_by_status(status))
-
-        def gotopage(page_name):
-            self.set_active_page(page_name)
-
         self.create_card(
             frame, 
-            "#5CB85C", 
+            "#ebc427", 
             "active.png", 
             str(stats["active"]), 
-            "Active Rentals", 
+            "Ongoing Rentals", 
             1, 
-            row=1,
-            command=lambda: filtered_rentals("Ongoing")
+            row=1
         )
-
 
         self.create_card(
             frame,
@@ -307,19 +297,27 @@ class MainApp:
             str(stats["overdue"]), 
             "Overdue Rentals", 
             2, 
-            row=1,
-            command=lambda: filtered_rentals("Overdue")
+            row=1
         )
 
         self.create_card(
             frame, 
-            "#ebc427", 
+            "#5CB85C",
             "available.png", 
             str(stats["available"]), 
-            "Rentals Due Today",
+            "Available Devices",
             3, 
-            row=1,
-            command=lambda: gotopage("devices")
+            row=1
+        )
+
+        self.create_card(
+            frame, 
+            "#888E93", 
+            "nostock.png", 
+            str(stats["total_devices"]), 
+            "Out of Stock Devices", 
+            1, 
+            row=2
         )
 
         self.create_card(
@@ -328,9 +326,8 @@ class MainApp:
             "device.png", 
             str(stats["total_devices"]), 
             "Total Devices", 
-            1, 
-            row=2,
-            command=lambda: gotopage("devices")
+            2, 
+            row=2
         )
 
         self.create_card(
@@ -339,17 +336,6 @@ class MainApp:
             "customers.png", 
             str(stats["total_rentees"]), 
             "Total Rentees", 
-            2, 
-            row=2,
-            command=lambda: gotopage("customers")
-        )
-
-        self.create_card(
-            frame, 
-            "#888E93", 
-            "employees.png", 
-            str(stats["total_employees"]), 
-            "Total Employees", 
             3, 
             row=2
         )

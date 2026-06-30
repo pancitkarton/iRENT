@@ -77,6 +77,9 @@ def create_rental(
         device_id,
         rental_date,
         return_date,
+        price_at_rental,
+        date_returned,
+        penalty_fee,
         total_fee
     ):
     conn = get_connection()
@@ -89,15 +92,21 @@ def create_rental(
                 DeviceID,
                 RentalDate,
                 ReturnDate,
+                PriceAtRental,
+                DateReturned,
+                PenaltyFee,
                 TotalRentalFee
             )
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             customer_id,
             staff_id,
             device_id,
             rental_date,
             return_date,
+            price_at_rental,
+            date_returned,
+            penalty_fee,
             total_fee
         ))
 

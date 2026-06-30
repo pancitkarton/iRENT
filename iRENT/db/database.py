@@ -91,6 +91,9 @@ def initialize_db():
         RentalDate TEXT NOT NULL,
         ReturnDate TEXT NOT NULL,
         RentalStatus TEXT NOT NULL DEFAULT 'Ongoing',
+        PriceAtRental DECIMAL (10, 2) NOT NULL,
+        DateReturned TEXT NOT NULL,
+        PenaltyFee DECIMAL (10, 2) NOT NULL,
         TotalRentalFee REAL DEFAULT 0,
         CHECK(RentalStatus IN ('Ongoing', 'Completed', 'Overdue')),
         FOREIGN KEY(CustomerID) REFERENCES Customer(CustomerID) ON DELETE CASCADE,
@@ -100,18 +103,6 @@ def initialize_db():
     """)
 
     #rental item
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS RentalItem (
-        RentalItemID INTEGER PRIMARY KEY AUTOINCREMENT,
-        PriceAtRental DECIMAL (10, 2) NOT NULL,
-        DateReturned TEXT NOT NULL,
-        PenaltyFee DECIMAL (10, 2) NOT NULL,
-        RentalID INTEGER NOT NULL,
-        DeviceID INTEGER NOT NULL,
-        FOREIGN KEY (RentalID) REFERENCES Rental(RentalID) ON DELETE CASCADE,
-        FOREIGN KEY (DeviceID) REFERENCES Device(DeviceID) ON DELETE RESTRICT
-    )
-    """)
 
      #ilagay ung list of devices ni charmie (pakiupdate mamaya na!)
     cursor.execute("SELECT COUNT(*) FROM Device")
