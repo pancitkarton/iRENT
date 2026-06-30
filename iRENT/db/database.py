@@ -118,6 +118,7 @@ def initialize_db():
                 "CANON": {
                     "CANON EOS R5 II": {"id": "CAM-004", "specs": ["45MP", "8K Video", "Dual Pixel AF"], "price": 650, "available": 2},
                     "CANON EOS R6 III": {"id": "CAM-005", "specs": ["32.5MP Full-Frame", "7K 60p RAW", "4K 120p"], "price": 550, "available": 3},
+                },
                 "INSTAX": {
                     "INSTAX MINI 12": {"id": "CAM-006", "specs": ["Instant Print", "Auto Exposure", "Compact"], "price": 200, "available": 10},
                     "INSTAX MINI EVO": {"id": "CAM-007", "specs": ["Hybrid Instant Camera", "Filters", "Bluetooth"], "price": 250, "available": 6}
@@ -156,7 +157,7 @@ def initialize_db():
                 "SAMSUNG": {"HW-Q990D": {"id": "AUD-002", "specs": ["Dolby Atmos", "11.1.4 Channel", "Wireless Subwoofer"], "price": 400, "available": 4}},
                 "SVS": {"PRIME TOWER": {"id": "AUD-003", "specs": ["Hi-Fi Sound", "Home Theater", "Deep Bass"], "price": 500, "available": 3}}
             }
-        }}
+        }
 
         # Insert categories and brands first
         for cat in DATA:
