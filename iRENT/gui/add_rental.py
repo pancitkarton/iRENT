@@ -308,7 +308,7 @@ def add_rental_page(container_frame,rental, prefill_device=None):
         container_frame.grid_rowconfigure(0, weight=1)
         container_frame.grid_columnconfigure(0, weight=1)
 
-        form_frame = tk.Frame(container_frame, bg="#f0f0f0")
+        form_frame = tk.Frame(container_frame, bg="#eef2f7")
         form_frame.pack(fill="both", expand=True)
 
         def save_rental():
@@ -413,10 +413,10 @@ def add_rental_page(container_frame,rental, prefill_device=None):
                 delattr(rental, 'selected_device_data')
 
         def cframe(parent, label_text, width, is_cb=False, is_date=False, helper=None, default_date=None):
-            c = tk.Frame(parent, bg="#f0f0f0")
+            c = tk.Frame(parent, bg="#eef2f7")
             c.pack(side="left", padx=(0, 15), pady=0, anchor="n")
 
-            tk.Label(c, text=label_text, bg="#f0f0f0", font=("Arial", 10)).pack(anchor="w")
+            tk.Label(c, text=label_text, bg="#eef2f7", font=("Arial", 10)).pack(anchor="w")
 
             if is_cb:
                 widget = ttk.Combobox(c, width=width)
@@ -428,7 +428,7 @@ def add_rental_page(container_frame,rental, prefill_device=None):
             widget.pack(anchor="w", ipady=3)
 
             if helper:
-                tk.Label(c, text=helper, bg="#f0f0f0", fg="#7F7F7F", font=("Arial", 8)).pack(anchor="w", pady=(2,0))
+                tk.Label(c, text=helper, bg="#eef2f7", fg="#7F7F7F", font=("Arial", 8)).pack(anchor="w", pady=(2,0))
 
             return widget
 
@@ -439,11 +439,11 @@ def add_rental_page(container_frame,rental, prefill_device=None):
             font=("Arial", 20, "bold"),
             padx=10,
             pady=2,
-            bg="#f0f0f0"
+            bg="#eef2f7"
         )
         rentee_info_frame.pack(fill="x", padx=10, pady=5)
 
-        row1 = tk.Frame(rentee_info_frame, bg="#f0f0f0")
+        row1 = tk.Frame(rentee_info_frame, bg="#eef2f7")
         row1.pack(fill="x", pady=(0,5))
 
         select_btn = tk.Button(
@@ -474,7 +474,7 @@ def add_rental_page(container_frame,rental, prefill_device=None):
         rental.entries["Birthday"] = cframe(row1, "Birthday:", 15, is_date=True)
         rental.entries["Birthday"].set_date(default_bday)
 
-        addr_frame = tk.Frame(rentee_info_frame, bg="#f0f0f0")
+        addr_frame = tk.Frame(rentee_info_frame, bg="#eef2f7")
         addr_frame.pack(fill="x", pady=5)
 
         rental.region_cb = cframe(addr_frame, "Region:", 30, is_cb=True)
@@ -499,11 +499,11 @@ def add_rental_page(container_frame,rental, prefill_device=None):
             font=("Arial", 20, "bold"),
             padx=10,
             pady=2,
-            bg="#f0f0f0"
+            bg="#eef2f7"
         )
         contact_frame.pack(fill="x", padx=10, pady=5)
 
-        row_contact = tk.Frame(contact_frame, bg="#f0f0f0")
+        row_contact = tk.Frame(contact_frame, bg="#eef2f7")
         row_contact.pack(fill="x")
 
         rental.contact_entry = cframe(row_contact, "Contact Number:", 30, helper="Ex: 09XX-XXX-YYYY")
@@ -518,20 +518,20 @@ def add_rental_page(container_frame,rental, prefill_device=None):
             font=("Arial", 20, "bold"),
             padx=10,
             pady=5,
-            bg="#f0f0f0"
+            bg="#eef2f7"
         )
         device_frame.pack(fill="x", padx=10, pady=5)
 
-        row_dev = tk.Frame(device_frame, bg="#f0f0f0")
+        row_dev = tk.Frame(device_frame, bg="#eef2f7")
         row_dev.pack(fill="x")
 
-        seldev_con = tk.Frame(row_dev, bg="#f0f0f0")
+        seldev_con = tk.Frame(row_dev, bg="#eef2f7")
         seldev_con.pack(side="left", anchor="n")
 
         tk.Label(
             seldev_con,
             text="Device to Rent:",
-            bg="#f0f0f0",
+            bg="#eef2f7",
             font=("Arial", 10),
         ).pack(anchor="w", padx=3)
 
@@ -555,25 +555,25 @@ def add_rental_page(container_frame,rental, prefill_device=None):
             rental.device_map[model] = {"id": device_id, "price": price}
 
 
-        d1 = tk.Frame(row_dev, bg="#f0f0f0")
+        d1 = tk.Frame(row_dev, bg="#eef2f7")
         d1.pack(side="left", padx=10)
         tk.Label(
             d1,
             text="Rental Date:",
             font=("Arial", 10),
-            bg="#f0f0f0"
+            bg="#eef2f7"
         ).pack(anchor="w")
         rental.rental_calendar = DateEntry(d1, width=15, date_pattern="mm-dd-yyyy")
         rental.rental_calendar.pack(anchor="w", ipady=3, pady=(0,5))
 
-        d2 = tk.Frame(row_dev, bg="#f0f0f0")
+        d2 = tk.Frame(row_dev, bg="#eef2f7")
         d2.pack(side="left", padx=10)
 
         tk.Label(
             d2,
             text="Return By:",
             font=("Arial", 10),
-            bg="#f0f0f0"
+            bg="#eef2f7"
         ).pack(anchor="w")
         rental.return_calendar = DateEntry(d2, width=15, date_pattern="mm-dd-yyyy")
         rental.return_calendar.pack(anchor="w", ipady=3, pady=(0,5))

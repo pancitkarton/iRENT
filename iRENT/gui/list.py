@@ -516,6 +516,7 @@ def delete_model(app, device, brand, model_name):
 
 def open_edit_details(app, device, brand, model_name, current_details):
     frame = app.pages["edit_details"]
+    frame.configure(bg="#eef2f7")
 
     # Clear existing widgets
     for widget in frame.winfo_children():

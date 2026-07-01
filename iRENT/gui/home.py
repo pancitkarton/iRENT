@@ -101,7 +101,7 @@ class MainApp:
         self.left.pack_propagate(False)
         self.left.grid(row=0, column=0, sticky="ns")
 
-        self.right = tk.Frame(main_frame, width=800, bg="#ffffff")
+        self.right = tk.Frame(main_frame, width=800, bg="#eef2f7")
         self.right.grid(row=0, column=1, sticky="nsew")
         self.right.grid_rowconfigure(0, weight=1)
         self.right.grid_columnconfigure(0, weight=1)
@@ -115,7 +115,7 @@ class MainApp:
                      "add_rental", 
                      "customers", "customer_details", 
                      "devices", "brand_devices", "brand_details", "add_device", "edit_details", "add_device_type", "add_device_brand"]:
-            frame = tk.Frame(self.right)
+            frame = tk.Frame(self.right, bg="#eef2f7")
             frame.grid(row=0, column=0, sticky="nsew")
             self.pages[name] = frame
 
