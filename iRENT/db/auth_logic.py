@@ -36,8 +36,10 @@ def verify_password(plain_password, hashed_password):
 def login(username, password):
         if not username or not password:
             return "empty"
+        
+        username_lower = username.lower()
 
-        cursor.execute("SELECT StaffID, Password FROM Staff WHERE Username = ?", (username,))
+        cursor.execute("SELECT StaffID, Password FROM Staff WHERE Username = ?", (username_lower,))
         result = cursor.fetchone() #retrieves the username and password from the database, and checks if they match with the input
 
         if result and verify_password(password, result[1]):
@@ -56,11 +58,13 @@ def signup(first_name, middle_name, last_name, suffix, contact_no, email_add, us
     # Check if password matches
     if password != confirm:
          return "mismatch"
+    
+    username_lower = username.lower()
 
     # Check if username exists
     cursor.execute(
         "SELECT * FROM Staff WHERE Username = ?",
-        (username,)
+        (username_lower,)
     )
     if cursor.fetchone():
         return "exists"
@@ -107,7 +111,7 @@ def signup(first_name, middle_name, last_name, suffix, contact_no, email_add, us
         suffix,
         contact_no,
         email_add,
-        username,
+        username_lower,
         hashed_pw
     ))
 
