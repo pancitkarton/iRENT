@@ -13,8 +13,7 @@ from db.view_device_list_logic import (
     get_models,
     add_model as db_add_model,
     delete_model as db_delete_model,
-    update_model as db_update_model,
-    create_brand
+    update_model as db_update_model
 )
 
 # global func to use anywhere in the code
@@ -430,7 +429,19 @@ def add_device_brand(app, device):
             return
 
         try:
-            success, msg = create_brand(new_brand)
+            import os
+            dummy_id = f"DUMMY-{os.urandom(2).hex()[:6].upper()}"
+
+            success, msg = db_add_model(
+                category_name=device,
+                brand_name=new_brand,
+                model_name="[NO MODELS YET]",
+                product_id=dummy_id,
+                price=0,
+                stock_count=0,
+                specs_list=["[PLACEHOLDER]"],
+                serial_num=dummy_id
+            )
 
             if success:
                 message.config(text=f"✅ Added: {new_brand} for {device.upper()}", fg="green")
@@ -759,7 +770,7 @@ def refresh_models(container, canvas,models_data, app, device, brand):
 
     max_specs = max([len(m.get('specs', m.get('specs_list', []))) for m in data], default=0)
 
-    for i, details in enumerate(models_data):
+    for i, details in enumerate(data):
         row = i // 3
         col = i % 3
         model = details.get('model_name', details.get('model', 'Unknown'))
