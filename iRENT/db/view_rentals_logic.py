@@ -34,7 +34,10 @@ def get_all_rentals():
 
     cursor.execute("""
         SELECT r.RentalID,
-               c.FirstName || ' ' || c.LastName AS CustomerName,
+               c.FirstName || 
+               CASE WHEN c.MiddleName IS NOT NULL AND c.MiddleName != '' THEN ' ' || c.MiddleName ELSE '' END || 
+               ' ' || c.LastName || 
+               CASE WHEN c.Suffix IS NOT NULL AND c.Suffix != '' THEN ' ' || c.Suffix ELSE '' END AS CustomerName,
                r.RentalStatus
         FROM Rental r
         JOIN Customer c
@@ -63,7 +66,10 @@ def display_rentals():
     # FIXED: Replaced outdated SRentalMonth columns with the new RentalDate column
     cursor.execute("""
         SELECT r.RentalID,
-               c.FirstName || ' ' || c.LastName AS CustomerName,
+               c.FirstName || 
+               CASE WHEN c.MiddleName IS NOT NULL AND c.MiddleName != '' THEN ' ' || c.MiddleName ELSE '' END || 
+               ' ' || c.LastName || 
+               CASE WHEN c.Suffix IS NOT NULL AND c.Suffix != '' THEN ' ' || c.Suffix ELSE '' END AS CustomerName,
                c.ContactNumber,
                r.RentalStatus,
                r.TotalRentalFee,
@@ -98,7 +104,10 @@ def get_rentals_by_status(status):
 
     cursor.execute("""
         SELECT r.RentalID,
-               c.FirstName || ' ' || c.LastName AS CustomerName,
+               c.FirstName || 
+               CASE WHEN c.MiddleName IS NOT NULL AND c.MiddleName != '' THEN ' ' || c.MiddleName ELSE '' END || 
+               ' ' || c.LastName || 
+               CASE WHEN c.Suffix IS NOT NULL AND c.Suffix != '' THEN ' ' || c.Suffix ELSE '' END AS CustomerName,
                r.RentalStatus
         FROM Rental r
         JOIN Customer c
@@ -129,7 +138,10 @@ def search_rentals(search_term):
 
     cursor.execute("""
         SELECT r.RentalID,
-               c.FirstName || ' ' || c.LastName AS CustomerName,
+               c.FirstName || 
+               CASE WHEN c.MiddleName IS NOT NULL AND c.MiddleName != '' THEN ' ' || c.MiddleName ELSE '' END || 
+               ' ' || c.LastName || 
+               CASE WHEN c.Suffix IS NOT NULL AND c.Suffix != '' THEN ' ' || c.Suffix ELSE '' END AS CustomerName,
                r.RentalStatus
         FROM Rental r
         JOIN Customer c
@@ -137,7 +149,7 @@ def search_rentals(search_term):
         WHERE CAST(r.RentalID AS TEXT) LIKE ?
            OR c.FirstName LIKE ?
            OR c.LastName LIKE ?
-           OR (c.FirstName || ' ' || c.LastName) LIKE ?
+           OR (c.FirstName || ' ' || IFNULL(c.MiddleName, '') || ' ' || c.LastName || ' ' || IFNULL(c.Suffix, '')) LIKE ?
         ORDER BY r.RentalID DESC
     """, (search_pattern,) * 4)
 
@@ -163,7 +175,13 @@ def get_rental_details(rental_id):
         SELECT
             r.RentalID,
             c.CustomerID,
-            IFNULL(c.FirstName || ' ' || c.LastName, 'Unknown') AS CustomerName,
+            CASE 
+                WHEN c.FirstName IS NULL THEN 'Unknown'
+                ELSE c.FirstName || 
+                     CASE WHEN c.MiddleName IS NOT NULL AND c.MiddleName != '' THEN ' ' || c.MiddleName ELSE '' END || 
+                     ' ' || c.LastName || 
+                     CASE WHEN c.Suffix IS NOT NULL AND c.Suffix != '' THEN ' ' || c.Suffix ELSE '' END
+            END AS CustomerName,
             c.ContactNumber,
             c.EmailAddress,
             d.DeviceID,
